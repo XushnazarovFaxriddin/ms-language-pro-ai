@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.uv-cache/
+
+# Build outputs
+.next/
+.turbo/
+dist/
+build/
+out/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Testing
+coverage/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+playwright-report/
+test-results/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Database (local dev)
+*.db
+*.sqlite
+postgres-data/
+redis-data/
+minio-data/
+
+# Generated
+.next/types/
+next-env.d.ts
+generated/
+*.generated.ts
+
+# OS
+Thumbs.db

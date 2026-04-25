@@ -1,0 +1,5 @@
+packages:
+  - "apps/landing"
+  - "apps/data-engine-web"
+  - "apps/exam-platform-web"
+  - "packages/*"

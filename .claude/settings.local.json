@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:ielts.org)",
+      "WebFetch(domain:www.coe.int)",
+      "WebFetch(domain:www.efset.org)",
+      "WebFetch(domain:arxiv.org)"
+    ]
+  }
+}
