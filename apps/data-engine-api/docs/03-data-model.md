@@ -77,6 +77,38 @@
 
 ## Cross-schema reads
 - `analytics.item_response_data` — read by calibration job (right-join via `question_id`)
+- `analytics.llm_calls` — read by `/v1/analytics/llm-usage/*` endpoints (LLM dashboard)
+- `analytics.llm_budgets` — read+write by budget endpoints
+
+## Schema `analytics` (joint, but data-engine owns the LLM dashboard reads)
+
+### `llm_calls` (every LLM invocation across all services)
+| col | type | notes |
+|---|---|---|
+| request_id | uuid PK | |
+| ts | timestamptz default now() | indexed |
+| service | text | `data-engine \| exam-platform` |
+| purpose | text | `generate_question \| score_writing \| ...` |
+| user_id | uuid nullable FK auth.users | initiator (admin or student) |
+| attempt_id | uuid nullable | for exam-platform calls |
+| question_id | uuid nullable | for data-engine calls |
+| provider | text | `gemini` |
+| model | text | `gemini-2.5-pro`, `text-embedding-004`, ... |
+| prompt_version_id | uuid nullable FK | |
+| tokens_in | int | |
+| tokens_out | int | |
+| cost_usd | numeric(10,6) | computed from price tables |
+| latency_ms | int | |
+| cache_hit | bool | Redis cache |
+| status | text | `success \| error \| timeout` |
+| error_class | text nullable | |
+| INDEX | (ts), (purpose, ts), (model, ts), (user_id, ts), (service, ts) | for dashboard query speed |
+
+### `llm_budgets`
+- id, scope (`global | per_purpose | per_user`), scope_value text, monthly_usd numeric, alert_threshold numeric (e.g. 0.8 = 80%), last_alerted_at, created_at
+
+### `llm_pricing` (seed)
+- model text PK, input_per_1m_usd numeric, output_per_1m_usd numeric, valid_from timestamptz
 
 ## Migrations
 - Alembic env: `apps/data-engine-api/alembic.ini`, `apps/data-engine-api/alembic/`

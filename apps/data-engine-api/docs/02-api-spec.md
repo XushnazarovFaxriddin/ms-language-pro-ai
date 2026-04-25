@@ -36,6 +36,20 @@
 | GET | `/v1/exports/responses.csv` | Anonymized empirical data |
 | GET | `/v1/exports/questions.csv` | Approved question metadata |
 
+### LLM Usage Analytics (admin/superadmin)
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/v1/analytics/llm-usage/summary` | Today/Week/Month totals: cost, tokens (in/out), calls, avg latency |
+| GET | `/v1/analytics/llm-usage/timeseries` | Time-bucketed usage: `?from=&to=&granularity=hour\|day&group_by=purpose\|model\|provider` |
+| GET | `/v1/analytics/llm-usage/by-purpose` | Breakdown per purpose (generate_question, score_writing, ...) |
+| GET | `/v1/analytics/llm-usage/by-model` | Breakdown per model (gemini-2.5-pro, ...) |
+| GET | `/v1/analytics/llm-usage/by-user` | Per-user attribution (admin/student) |
+| GET | `/v1/analytics/llm-usage/calls` | Paginated raw calls list with filters |
+| GET | `/v1/analytics/llm-usage/calls/{request_id}` | Full call detail: prompt, response, tokens, cost |
+| GET | `/v1/analytics/llm-usage/budget` | Configured budget + consumption + projection |
+| PATCH | `/v1/analytics/llm-usage/budget` | Set monthly budget + alert thresholds (superadmin) |
+| GET | `/v1/analytics/llm-usage/export.csv` | Raw call log CSV export |
+
 ## Auth matrix
 - Browser (admin UI) → JWT cookie set by `auth-api`
 - exam-platform-api → S2S JWT (HS256, scoped, 5min TTL)
