@@ -34,38 +34,31 @@ export function ExamRunner({
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load first item
+  // Load current item from the server snapshot; sessionStorage is only a fast path
+  // for the first client-side navigation after starting an attempt.
   useEffect(() => {
     let cancelled = false;
     async function bootstrap() {
       try {
-        // We piggy-back on submitResponse(...) returning next_item, but for the very
-        // first item we hit an internal "get next" endpoint. MVP: use an empty submit?
-        // Simpler: if attempt has been started, the SSR didn't pass current_item.
-        // So we restart by calling /attempts (start) — but that creates new. Instead,
-        // call the data-engine via exam API by submitting nothing.
-        //
-        // For now: fall back to calling startAttempt again is destructive. The cleanest
-        // path is to add /attempts/{id}/next-item. Until then, fetch via a minimal
-        // helper using attempt_complete=false signal.
-        //
-        // Pragmatic: if the user just landed here, we kick off by submitting a
-        // sentinel — but that's wrong. Instead we expose `current_item` via initialAttempt
-        // (server enriched). For the MVP, attempt_id was created in /exams flow
-        // which already gave us current_item; we cache it in sessionStorage.
         const cached = typeof window !== "undefined" ? sessionStorage.getItem(`first-item:${attemptId}`) : null;
-        if (cached) {
+        const current = initialAttempt.current_item ?? (cached ? JSON.parse(cached) as ItemView : null);
+        if (current) {
           if (!cancelled) {
-            setItem(JSON.parse(cached));
+            setItem(current);
             setLoading(false);
             setStartTime(Date.now());
           }
           return;
         }
-        // Fallback: load via a probe submit (won't run in normal flow)
+
+        const next = await api.exam.getNextItem(attemptId);
         if (!cancelled) {
-          setError("Birinchi savol topilmadi. Iltimos, /exams sahifasiga qayting va imtihonni qaytadan boshlang.");
+          setItem(next.current_item);
+          if (!next.current_item) {
+            setError("Keyingi savol topilmadi.");
+          }
           setLoading(false);
+          setStartTime(Date.now());
         }
       } catch (e) {
         if (!cancelled) {
@@ -115,10 +108,13 @@ export function ExamRunner({
         setChoice(null);
         if (r.next_item) {
           setItem(r.next_item);
+          sessionStorage.setItem(`first-item:${attemptId}`, JSON.stringify(r.next_item));
           setStartTime(Date.now());
         } else if (r.attempt_complete) {
+          sessionStorage.removeItem(`first-item:${attemptId}`);
           setDone(true);
         } else {
+          sessionStorage.removeItem(`first-item:${attemptId}`);
           setItem(null);
           setError("Keyingi savol topilmadi.");
         }

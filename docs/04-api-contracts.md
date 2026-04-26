@@ -10,7 +10,7 @@
 |---|---|---|
 | `X-Request-Id` | C ↔ S | ULID; auto-generated if missing |
 | `Idempotency-Key` | C → S | Required on `POST` mutations; 24h TTL in Redis |
-| `X-CSRF-Token` | C → S | Required on mutation when authed via cookie; matches `__Host-lp_csrf` cookie |
+| `X-CSRF-Token` | C → S | Required on mutation when authed via cookie; matches `lp_csrf` cookie |
 | `Accept-Language` | C → S | `uz, en;q=0.8` — affects locale-bound feedback |
 | `Authorization: Bearer <s2s>` | exam-api → data-api | Short-lived S2S JWT |
 | `Authorization: Bearer lp_pk_…` | researcher → data-api | API key |

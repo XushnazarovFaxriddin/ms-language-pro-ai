@@ -6,11 +6,11 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column
-
 from languagepro_common.db import Base
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 SCHEMA = "exam_platform"
 
@@ -36,6 +36,9 @@ class ExamAttempt(Base):
     )
     blueprint_snapshot: Mapped[dict] = mapped_column(JSONB)
     state: Mapped[str] = mapped_column(String(16), default="in_progress")
+    current_section_index: Mapped[int] = mapped_column(Integer, default=0)
+    current_item_snapshot: Mapped[dict | None] = mapped_column(JSONB)
+    current_item_issued_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     theta_estimates: Mapped[dict] = mapped_column(JSONB, default=dict)
     theta_se: Mapped[dict] = mapped_column(JSONB, default=dict)
     locale: Mapped[str] = mapped_column(String(8), default="uz")
@@ -61,7 +64,9 @@ class AttemptResponse(Base):
     theta_at_answer: Mapped[Decimal] = mapped_column(Numeric(8, 4), default=0)
     skill: Mapped[str] = mapped_column(String(16))
     time_ms: Mapped[int] = mapped_column(Integer, default=0)
-    answered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    answered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class AudioRecording(Base):
@@ -75,7 +80,9 @@ class AudioRecording(Base):
     duration_seconds: Mapped[Decimal | None] = mapped_column(Numeric(8, 3))
     bytes: Mapped[int | None] = mapped_column(Integer)
     format: Mapped[str] = mapped_column(String(32), default="audio/webm")
-    uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    uploaded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class LLMScoringRun(Base):
@@ -111,4 +118,6 @@ class ScoringResult(Base):
     criteria: Mapped[dict] = mapped_column(JSONB, default=dict)
     feedback_uz: Mapped[str | None] = mapped_column(Text)
     feedback_en: Mapped[str | None] = mapped_column(Text)
-    finalized_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    finalized_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

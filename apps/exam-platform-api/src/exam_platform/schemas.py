@@ -31,6 +31,11 @@ class StartAttemptResponse(BaseModel):
     current_item: ItemView | None
 
 
+class NextItemResponse(BaseModel):
+    current_section_index: int
+    current_item: ItemView | None
+
+
 class SubmitResponseIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     item_id: UUID
@@ -54,6 +59,8 @@ class AttemptOut(BaseModel):
     id: UUID
     state: str
     blueprint_snapshot: dict[str, Any]
+    current_section_index: int
+    current_item: ItemView | None = None
     theta_estimates: dict[str, float]
     started_at: datetime
     finished_at: datetime | None

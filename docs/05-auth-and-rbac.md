@@ -1,6 +1,6 @@
 # 05 — Auth & RBAC
 
-> **TL;DR.** `auth-api` issues HS256 JWT access cookies (15 min) + opaque rotating refresh cookies (30 days). All cookies use `Domain=.aiexam.uz` apex so subdomains share session. Other services verify JWTs locally — they never call auth-api. East-west traffic between `exam-api` ↔ `data-api` uses 5-min S2S JWTs with explicit `scope[]`. RBAC has 5 roles; entitlement checks (e.g. "can use writing scoring") happen at the API boundary using a single helper.
+> **TL;DR.** `auth-api` issues HS256 JWT access cookies (15 min) + opaque rotating refresh cookies (30 days). Session cookies use `Domain=.aiexam.uz` apex so subdomains share session. Other services verify JWTs locally — they never call auth-api. East-west traffic between `exam-api` ↔ `data-api` uses 5-min S2S JWTs with explicit `scope[]`. RBAC has 5 roles; entitlement checks (e.g. "can use writing scoring") happen at the API boundary using a single helper.
 
 ---
 
@@ -10,11 +10,16 @@
 
 | Cookie | TTL | Path | SameSite | HttpOnly | Notes |
 |---|---|---|---|---|---|
-| `__Host-lp_access` | 15 min | `/` | `Lax` | yes | HS256 JWT |
-| `__Host-lp_refresh` | 30 days | `/auth/v1/refresh` | `Strict` | yes | Opaque random; hash stored in DB |
-| `__Host-lp_csrf` | session | `/` | `Lax` | **no** (JS reads it) | Double-submit token |
+| `lp_access` | 15 min | `/` | `Lax` | yes | HS256 JWT |
+| `lp_refresh` | 30 days | `/auth/v1/refresh` | `Strict` | yes | Opaque random; hash stored in DB |
+| `lp_csrf` | session | `/` | `Lax` | **no** (JS reads it) | Double-submit token |
 
 In production, `Domain=.aiexam.uz`, `Secure=true`. In dev, `Domain=.localhost`, `Secure=false`.
+Do not use the `__Host-` prefix for these cookies: that prefix forbids an explicit
+`Domain` attribute, so it is incompatible with the required cross-subdomain session.
+When calling `auth-api` through Caddy at `api.aiexam.uz/auth/v1/*`, set
+`AUTH_REFRESH_COOKIE_PATH=/auth/v1/refresh`; direct local service calls may use
+`/v1/refresh`.
 
 ### Access JWT payload
 
@@ -220,7 +225,7 @@ The `FOR UPDATE` row lock plus the chain detection make replay attacks self-dest
 ## 10. OAuth Google flow
 
 1. `GET /auth/v1/oauth/google/start?return_to=/exams`
-   - server stores a random `state` in Redis (`oauth_state:<state>` → `{return_to, ts}`, TTL 10 min) and sets it as a `__Host-lp_oauth_state` cookie
+   - server stores a random `state` in Redis (`oauth_state:<state>` → `{return_to, ts}`, TTL 10 min) and sets it as a `lp_oauth_state` cookie
    - returns 302 to Google's authorize URL with `state`, `redirect_uri=https://api.aiexam.uz/auth/v1/oauth/google/callback`
 2. User signs in at Google → redirect back with `code` + `state`
 3. `GET /auth/v1/oauth/google/callback?code=...&state=...`
@@ -250,9 +255,9 @@ POST /auth/v1/logout
 ## 12. Frontend integration
 
 - **Server Components / Server Actions**: use Next's `cookies()` to read the cookie on the request, forward it as `Cookie:` header when calling APIs (already implemented in `apps/exam-platform-web/src/lib/auth-server.ts`).
-- **Client Components**: use `fetch(..., { credentials: 'include' })`. Browser sends `__Host-lp_access` automatically.
+- **Client Components**: use `fetch(..., { credentials: 'include' })`. Browser sends `lp_access` automatically.
 - **Auto refresh**: client wrapper detects `401`, calls `POST /auth/v1/refresh`, retries the original request **once**.
-- **CSRF**: all `fetch` mutations add `X-CSRF-Token: ${getCookie('__Host-lp_csrf')}`.
+- **CSRF**: all `fetch` mutations add `X-CSRF-Token: ${getCookie('lp_csrf')}`.
 
 ---
 

@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 Locale = Literal["uz", "en"]
+Theme = Literal["system", "light", "dark"]
 
 
 class RegisterRequest(BaseModel):
@@ -27,6 +28,7 @@ class UserOut(BaseModel):
     display_name: str | None
     roles: list[str]
     locale: Locale
+    theme: Theme
     created_at: datetime
 
 
@@ -38,3 +40,4 @@ class MeUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     display_name: str | None = None
     locale: Locale | None = None
+    theme: Theme | None = None

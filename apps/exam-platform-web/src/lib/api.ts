@@ -1,8 +1,8 @@
 // Universal fetch wrapper. Works in RSC, Server Actions, and Client Components.
-// Includes credentials so cookies cross between localhost:3001 ↔ localhost:8001/8002.
+// Includes credentials so cookies cross app.localhost/admin.localhost/api.localhost.
 
-const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://localhost:8002";
-const EXAM_API = process.env.NEXT_PUBLIC_EXAM_API ?? "http://localhost:8001";
+const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth";
+const EXAM_API = process.env.NEXT_PUBLIC_EXAM_API ?? "http://api.localhost/exam";
 
 export class ApiError extends Error {
   constructor(
@@ -82,6 +82,8 @@ export const api = {
       }),
     getAttempt: (id: string, cookieHeader?: string) =>
       call<AttemptOut>(`/v1/attempts/${id}`, { api: "exam", cookieHeader }),
+    getNextItem: (id: string) =>
+      call<NextItemResponse>(`/v1/attempts/${id}/next-item`, { api: "exam" }),
     submitResponse: (
       attemptId: string,
       body: SubmitResponseIn,
@@ -101,6 +103,7 @@ export type User = {
   display_name: string | null;
   roles: string[];
   locale: "uz" | "en";
+  theme: "system" | "light" | "dark";
   created_at: string;
 };
 
@@ -136,9 +139,16 @@ export type AttemptOut = {
   id: string;
   state: string;
   blueprint_snapshot: StartAttemptResponse["blueprint_snapshot"];
+  current_section_index: number;
+  current_item: ItemView | null;
   theta_estimates: Record<string, number>;
   started_at: string;
   finished_at: string | null;
+};
+
+export type NextItemResponse = {
+  current_section_index: number;
+  current_item: ItemView | null;
 };
 
 export type SubmitResponseIn = {

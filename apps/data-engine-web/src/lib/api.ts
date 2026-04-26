@@ -1,7 +1,7 @@
 // data-engine-web API client. Talks to auth-api + data-engine-api directly.
 
-const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://localhost:8002";
-const DATA_API = process.env.NEXT_PUBLIC_DATA_API ?? "http://localhost:8000";
+const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth";
+const DATA_API = process.env.NEXT_PUBLIC_DATA_API ?? "http://api.localhost/data";
 
 export class ApiError extends Error {
   constructor(public status: number, public detail: string, public payload?: unknown) {
@@ -53,6 +53,7 @@ export type User = {
   display_name: string | null;
   roles: string[];
   locale: "uz" | "en";
+  theme: "system" | "light" | "dark";
   created_at: string;
 };
 

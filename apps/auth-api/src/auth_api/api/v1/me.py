@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends
 from jose import JWTError, jwt
+from languagepro_common.errors import UnauthorizedError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth_api.api.cookies import ACCESS_COOKIE
@@ -11,7 +12,6 @@ from auth_api.db import get_session
 from auth_api.schemas import MeUpdate, UserOut
 from auth_api.services import users
 from auth_api.settings import settings
-from languagepro_common.errors import UnauthorizedError
 
 router = APIRouter(tags=["me"])
 
@@ -48,7 +48,8 @@ async def me(
         email=user.email,
         display_name=user.display_name,
         roles=users.user_role_codes(user),
-        locale=user.locale,  # type: ignore[arg-type]
+        locale=user.locale,
+        theme=user.theme,
         created_at=user.created_at,
     )
 
@@ -69,12 +70,15 @@ async def update_me(
         user.display_name = body.display_name
     if body.locale is not None:
         user.locale = body.locale
+    if body.theme is not None:
+        user.theme = body.theme
     await db.commit()
     return UserOut(
         id=user.id,
         email=user.email,
         display_name=user.display_name,
         roles=users.user_role_codes(user),
-        locale=user.locale,  # type: ignore[arg-type]
+        locale=user.locale,
+        theme=user.theme,
         created_at=user.created_at,
     )

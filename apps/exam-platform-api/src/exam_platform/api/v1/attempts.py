@@ -6,6 +6,8 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from languagepro_common.auth import CurrentUser
+from languagepro_common.errors import NotFoundError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,14 +17,13 @@ from exam_platform.db import get_session
 from exam_platform.models import ExamAttempt
 from exam_platform.schemas import (
     AttemptOut,
+    NextItemResponse,
     StartAttemptRequest,
     StartAttemptResponse,
     SubmitResponseIn,
     SubmitResponseOut,
 )
 from exam_platform.services import attempt as attempt_svc
-from languagepro_common.auth import CurrentUser
-from languagepro_common.errors import NotFoundError
 
 router = APIRouter(tags=["attempts"])
 
@@ -47,9 +48,7 @@ async def get_attempt(
 ) -> AttemptOut:
     row = (
         await db.execute(
-            select(ExamAttempt).where(
-                ExamAttempt.id == attempt_id, ExamAttempt.user_id == user.id
-            )
+            select(ExamAttempt).where(ExamAttempt.id == attempt_id, ExamAttempt.user_id == user.id)
         )
     ).scalar_one_or_none()
     if row is None:
@@ -58,9 +57,26 @@ async def get_attempt(
         id=row.id,
         state=row.state,
         blueprint_snapshot=row.blueprint_snapshot,
+        current_section_index=row.current_section_index,
+        current_item=attempt_svc.item_from_snapshot(row.current_item_snapshot),
         theta_estimates={k: float(v) for k, v in row.theta_estimates.items()},
         started_at=row.started_at,
         finished_at=row.finished_at,
+    )
+
+
+@router.get("/attempts/{attempt_id}/next-item", response_model=NextItemResponse)
+async def next_item(
+    attempt_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    de: Annotated[DataEngineClient, Depends(get_data_engine_client)],
+) -> NextItemResponse:
+    return await attempt_svc.next_item_for_attempt(
+        db,
+        de,
+        user_id=user.id,
+        attempt_id=attempt_id,
     )
 
 
@@ -73,7 +89,8 @@ async def submit(
     de: Annotated[DataEngineClient, Depends(get_data_engine_client)],
 ) -> SubmitResponseOut:
     return await attempt_svc.submit_response(
-        db, de,
+        db,
+        de,
         user_id=user.id,
         attempt_id=attempt_id,
         item_id=body.item_id,

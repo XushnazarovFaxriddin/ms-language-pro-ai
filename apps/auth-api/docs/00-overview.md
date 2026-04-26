@@ -31,7 +31,7 @@ PostgreSQL `auth` schema. Jadvallar:
 FastAPI 0.115+, SQLAlchemy 2.0 async, Pydantic v2, `argon2-cffi`, `python-jose` (JWT), `authlib` (OAuth).
 
 ## Cookie
-- `__Host-lp_access` — 15 min, HS256 JWT
-- `__Host-lp_refresh` — 30 days, opaque, in DB
-- `__Host-lp_csrf` — session, double-submit token
+- `lp_access` — 15 min, HS256 JWT
+- `lp_refresh` — 30 days, opaque, in DB
+- `lp_csrf` — session, double-submit token
 - All `Domain=.aiexam.uz` (prod), `Domain=.localhost` (dev)

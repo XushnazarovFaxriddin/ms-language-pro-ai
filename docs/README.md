@@ -38,7 +38,7 @@
 - **Tariffs**: Free · Starter · Pro · Team — full pricing in `07-payments-and-billing.md`.
 - **Locales (hard rule)**: every user-facing surface ships in **two languages** — Uzbek (`uz`, default) and English (`en`). Routes use `[locale]` segment (`/uz/...`, `/en/...`); a hard-coded English string in JSX is a build error. Server-side errors include both `feedback_uz` and `feedback_en` for student-visible content.
 - **Theme (hard rule)**: every page supports **light + dark** themes. Defaults to system preference; a toggle in the header persists the choice in `localStorage` + a `theme` cookie. **Never** hard-code a colour — always use a CSS variable from the design system token set in [`08-design-system.md`](08-design-system.md). Use semantic tokens (`bg-surface`, `text-foreground`) so dark mode is automatic; never `bg-white` or `text-zinc-900`.
-- **Apex cookie domain**: `.aiexam.uz` (production), `.localhost` (dev).
+- **Apex cookie domain**: `.aiexam.uz` (production), `.localhost` (dev). Auth cookies are `lp_access`, `lp_refresh`, `lp_csrf`; do not use `__Host-` because cross-subdomain cookies require an explicit `Domain`.
 - **Subdomains**: `aiexam.uz` (landing) · `app.aiexam.uz` (student) · `admin.aiexam.uz` (content team) · `api.aiexam.uz` (REST).
 
 ---

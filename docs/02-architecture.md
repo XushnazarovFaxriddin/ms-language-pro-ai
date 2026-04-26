@@ -1,6 +1,6 @@
 # 02 — Architecture
 
-> **TL;DR.** Six deployable services on three subdomains: `landing` (marketing), `app` (student exam UI), `admin` (content team UI), `auth-api` (SSO), `data-api` (questions, generation, billing read), `exam-api` (attempts, scoring). Two background workers: `data-worker`, `exam-worker`. One Postgres cluster (4 logical schemas). One Redis. One S3 bucket family. Caddy in front, Sentry + Langfuse for observability. Stateless services; cookies cross subdomains via `.aiexam.uz` apex.
+> **TL;DR.** Six deployable services on three subdomains: `landing` (marketing), `app` (student exam UI), `admin` (content team UI), `auth-api` (SSO), `data-api` (questions, generation, billing read), `exam-api` (attempts, scoring). Two background workers: `data-worker`, `exam-worker`. One Postgres cluster (5 logical schemas). One Redis. One S3 bucket family. Caddy in front, Sentry + Langfuse for observability. Stateless services; cookies cross subdomains via `.aiexam.uz` apex.
 
 ---
 
@@ -69,7 +69,7 @@
 | `api.aiexam.uz/data/v1/*` | `apps/data-engine-api` | content squad | mixed |
 | `api.aiexam.uz/exam/v1/*` | `apps/exam-platform-api` | exam squad | requires student cookie |
 
-Cookies: `__Host-lp_access`, `__Host-lp_refresh`, `__Host-lp_csrf` — all `Domain=.aiexam.uz`. See [`05-auth-and-rbac.md`](05-auth-and-rbac.md).
+Cookies: `lp_access`, `lp_refresh`, `lp_csrf` — all `Domain=.aiexam.uz`. See [`05-auth-and-rbac.md`](05-auth-and-rbac.md).
 
 ---
 
@@ -138,7 +138,7 @@ Allowed scopes for `iss=exam-platform`, `aud=data-engine`:
 
 ```
 Browser → Caddy → app.aiexam.uz (Next.js RSC)
-                ├── reads __Host-lp_access cookie (server-side)
+                ├── reads lp_access cookie (server-side)
                 └── server-side fetch: api.aiexam.uz/exam/v1/exams
                       → exam-platform-api
                           ├── verifies JWT locally
