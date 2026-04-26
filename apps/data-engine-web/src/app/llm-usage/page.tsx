@@ -4,6 +4,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { TimeseriesChart } from "./TimeseriesChart";
 import { ModelBreakdownChart } from "./ModelBreakdownChart";
 import { CallsTable } from "./CallsTable";
+import { Activity } from "lucide-react";
 
 export default async function LLMUsagePage({
   searchParams,
@@ -24,100 +25,127 @@ export default async function LLMUsagePage({
 
   return (
     <AdminShell user={user}>
-      <main className="px-8 py-10">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">LLM xarajat dashboardi</h1>
-          <PeriodPicker current={period} />
-        </div>
+      <div className="relative min-h-full p-6 sm:p-10">
+        <div className="absolute top-0 right-1/4 h-96 w-96 -translate-y-1/2 translate-x-1/2 rounded-full bg-teal-500/10 blur-[120px] pointer-events-none" />
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-4">
-          <Stat title="Jami xarajat" value={summary ? `$${Number(summary.total_cost_usd).toFixed(4)}` : "—"} />
-          <Stat title="Chaqiruvlar" value={summary ? String(summary.total_calls) : "—"} />
-          <Stat
-            title="Tokenlar (in / out)"
-            value={summary ? `${summary.total_tokens_in.toLocaleString()} / ${summary.total_tokens_out.toLocaleString()}` : "—"}
-          />
-          <Stat title="O'rtacha latency" value={summary ? `${summary.avg_latency_ms} ms` : "—"} />
-        </section>
-
-        <section className="mt-10">
-          <h2 className="text-lg font-semibold">Vaqt bo&apos;yicha ({period}, kun)</h2>
-          <div className="mt-3 rounded border border-[var(--color-border)] p-4">
-            <TimeseriesChart data={timeseries} />
-          </div>
-        </section>
-
-        <section className="mt-10 grid gap-6 lg:grid-cols-2">
-          <div>
-            <h2 className="text-lg font-semibold">Maqsad bo&apos;yicha</h2>
-            <table className="mt-3 w-full text-sm">
-              <thead className="border-b border-[var(--color-border)] text-left text-xs uppercase tracking-wider text-[var(--color-muted-fg)]">
-                <tr>
-                  <th className="py-2">Purpose</th>
-                  <th className="py-2 text-right">Calls</th>
-                  <th className="py-2 text-right">Tokens (in/out)</th>
-                  <th className="py-2 text-right">Cost</th>
-                </tr>
-              </thead>
-              <tbody>
-                {byPurpose.map((p) => (
-                  <tr key={p.purpose} className="border-b border-[var(--color-border)]/50">
-                    <td className="py-2 font-mono text-xs">{p.purpose}</td>
-                    <td className="py-2 text-right">{p.calls}</td>
-                    <td className="py-2 text-right text-xs">
-                      {p.tokens_in.toLocaleString()} / {p.tokens_out.toLocaleString()}
-                    </td>
-                    <td className="py-2 text-right font-mono">${Number(p.cost_usd).toFixed(4)}</td>
-                  </tr>
-                ))}
-                {byPurpose.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="py-4 text-center text-[var(--color-muted-fg)]">
-                      Ma&apos;lumot yo&apos;q
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-semibold">Model bo&apos;yicha</h2>
-            <div className="mt-3 rounded border border-[var(--color-border)] p-4">
-              <ModelBreakdownChart data={byModel} />
+        <div className="relative z-10 mx-auto max-w-6xl space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-800/60 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500/20 to-emerald-500/5 text-teal-400 border border-teal-500/20 shadow-inner">
+                <Activity className="h-8 w-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">LLM Xarajat Analytics</h1>
+                <p className="mt-2 text-lg text-slate-400">
+                  AI modellarining foydalanilishi, xarajatlar va kechikishlar tahlili.
+                </p>
+              </div>
             </div>
+            <PeriodPicker current={period} />
           </div>
-        </section>
 
-        <section className="mt-10">
-          <h2 className="text-lg font-semibold">So&apos;nggi qo&apos;ng&apos;iroqlar (50)</h2>
-          <CallsTable rows={calls} />
-        </section>
-      </main>
+          <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat title="Jami xarajat" value={summary ? `$${Number(summary.total_cost_usd).toFixed(4)}` : "—"} color="emerald" />
+            <Stat title="Chaqiruvlar" value={summary ? String(summary.total_calls) : "—"} color="blue" />
+            <Stat
+              title="Tokenlar (in / out)"
+              value={summary ? `${summary.total_tokens_in.toLocaleString()} / ${summary.total_tokens_out.toLocaleString()}` : "—"}
+              color="amber"
+            />
+            <Stat title="O'rtacha latency" value={summary ? `${summary.avg_latency_ms} ms` : "—"} color="teal" />
+          </section>
+
+          <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+            <h2 className="text-xl font-bold text-white mb-6">Vaqt bo&apos;yicha ({period}, kun)</h2>
+            <div className="h-72">
+              <TimeseriesChart data={timeseries} />
+            </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+              <h2 className="text-xl font-bold text-white mb-6">Maqsad bo&apos;yicha</h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="border-b border-slate-800/60 text-xs uppercase tracking-wider text-slate-400 font-semibold bg-black/20">
+                    <tr>
+                      <th className="px-4 py-3 rounded-tl-xl">Purpose</th>
+                      <th className="px-4 py-3 text-right">Calls</th>
+                      <th className="px-4 py-3 text-right">Tokens (in/out)</th>
+                      <th className="px-4 py-3 text-right rounded-tr-xl">Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {byPurpose.map((p) => (
+                      <tr key={p.purpose} className="hover:bg-slate-800/20 transition-colors">
+                        <td className="px-4 py-3 font-mono text-xs text-emerald-400">{p.purpose}</td>
+                        <td className="px-4 py-3 text-right text-slate-300">{p.calls}</td>
+                        <td className="px-4 py-3 text-right text-xs text-slate-400">
+                          {p.tokens_in.toLocaleString()} / {p.tokens_out.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono font-semibold text-white">${Number(p.cost_usd).toFixed(4)}</td>
+                      </tr>
+                    ))}
+                    {byPurpose.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-slate-500">
+                          Ma&apos;lumot yo&apos;q
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+              <h2 className="text-xl font-bold text-white mb-6">Model bo&apos;yicha</h2>
+              <div className="h-64">
+                <ModelBreakdownChart data={byModel} />
+              </div>
+            </div>
+          </section>
+
+          <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+            <h2 className="text-xl font-bold text-white mb-6">So&apos;nggi qo&apos;ng&apos;iroqlar (50)</h2>
+            <div className="rounded-xl overflow-hidden border border-slate-800/60">
+              <CallsTable rows={calls} />
+            </div>
+          </section>
+        </div>
+      </div>
     </AdminShell>
   );
 }
 
-function Stat({ title, value }: { title: string; value: string }) {
+function Stat({ title, value, color }: { title: string; value: string; color: "emerald" | "blue" | "amber" | "teal" }) {
+  const colorMap = {
+    emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-400",
+    blue: "from-blue-500/20 to-blue-500/5 border-blue-500/20 text-blue-400",
+    amber: "from-amber-500/20 to-amber-500/5 border-amber-500/20 text-amber-400",
+    teal: "from-teal-500/20 to-teal-500/5 border-teal-500/20 text-teal-400",
+  };
+
   return (
-    <div className="rounded border border-[var(--color-border)] p-5">
-      <p className="text-xs uppercase tracking-wider text-[var(--color-muted-fg)]">{title}</p>
-      <p className="mt-2 text-2xl font-bold">{value}</p>
+    <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-center">
+      <div className={`absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-gradient-to-br ${colorMap[color].split(" ")[0]} blur-2xl opacity-40`} />
+      <p className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">{title}</p>
+      <p className={`text-3xl font-black tracking-tight ${colorMap[color].split(" ")[2]}`}>{value}</p>
     </div>
   );
 }
 
 function PeriodPicker({ current }: { current: string }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex bg-black/50 p-1.5 rounded-xl border border-slate-800/60 backdrop-blur-md">
       {(["24h", "7d", "30d"] as const).map((p) => (
         <a
           key={p}
           href={`?period=${p}`}
-          className={`rounded px-3 py-1.5 text-sm ${
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
             p === current
-              ? "bg-[var(--color-primary)] text-[var(--color-primary-fg)]"
-              : "border border-[var(--color-border)] hover:border-[var(--color-primary)]"
+              ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
+              : "text-slate-400 hover:text-white hover:bg-slate-800"
           }`}
         >
           {p}

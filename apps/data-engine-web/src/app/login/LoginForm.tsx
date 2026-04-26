@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 
 export function LoginForm({ returnTo }: { returnTo: string }) {
   const router = useRouter();
@@ -10,6 +11,7 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
   const [password, setPassword] = useState("admin12345");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   return (
     <form
       onSubmit={async (e) => {
@@ -26,39 +28,62 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
           setPending(false);
         }
       }}
-      className="flex flex-col gap-4"
+      className="space-y-5"
     >
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Email</span>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 outline-none focus:border-[var(--color-primary)]"
-        />
-      </label>
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium">Parol</span>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="rounded border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 outline-none focus:border-[var(--color-primary)]"
-        />
-      </label>
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-slate-300 ml-1">Email manzilingiz</label>
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
+            <Mail className="h-5 w-5" />
+          </div>
+          <input
+            type="email"
+            required
+            placeholder="admin@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 py-3 pl-12 pr-4 text-white placeholder-slate-600 outline-none ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between ml-1">
+          <label className="text-sm font-semibold text-slate-300">Maxfiy parol</label>
+        </div>
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
+            <Lock className="h-5 w-5" />
+          </div>
+          <input
+            type="password"
+            required
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 py-3 pl-12 pr-4 text-white placeholder-slate-600 outline-none ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
+          />
+        </div>
+      </div>
+
       {error && (
-        <p className="rounded border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400 animate-in fade-in slide-in-from-top-2">
           {error}
-        </p>
+        </div>
       )}
+
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-[var(--color-primary)] px-4 py-2 font-medium text-[var(--color-primary-fg)] disabled:opacity-50"
+        className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 px-6 py-3.5 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] hover:shadow-emerald-500/30 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
       >
-        {pending ? "Kirilmoqda…" : "Kirish"}
+        {pending ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <>
+            Kirish <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+          </>
+        )}
       </button>
     </form>
   );

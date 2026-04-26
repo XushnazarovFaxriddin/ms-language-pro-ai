@@ -1,8 +1,15 @@
 // Universal fetch wrapper. Works in RSC, Server Actions, and Client Components.
 // Includes credentials so cookies cross app.localhost/admin.localhost/api.localhost.
 
-const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth";
-const EXAM_API = process.env.NEXT_PUBLIC_EXAM_API ?? "http://api.localhost/exam";
+const isBrowser = typeof window !== "undefined";
+
+const AUTH_API = isBrowser 
+  ? "/api/auth" 
+  : (process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth");
+
+const EXAM_API = isBrowser 
+  ? "/api/exam" 
+  : (process.env.NEXT_PUBLIC_EXAM_API ?? "http://api.localhost/exam");
 
 export class ApiError extends Error {
   constructor(

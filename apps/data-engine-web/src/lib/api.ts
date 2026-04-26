@@ -1,7 +1,14 @@
 // data-engine-web API client. Talks to auth-api + data-engine-api directly.
 
-const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth";
-const DATA_API = process.env.NEXT_PUBLIC_DATA_API ?? "http://api.localhost/data";
+const isBrowser = typeof window !== "undefined";
+
+const AUTH_API = isBrowser 
+  ? "/api/auth" 
+  : (process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth");
+
+const DATA_API = isBrowser 
+  ? "/api/data" 
+  : (process.env.NEXT_PUBLIC_DATA_API ?? "http://api.localhost/data");
 
 export class ApiError extends Error {
   constructor(public status: number, public detail: string, public payload?: unknown) {
