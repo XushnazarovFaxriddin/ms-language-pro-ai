@@ -21,12 +21,13 @@
   },
   "Landing": {
     "hero": {
-      "title": "Ingliz tilingiz darajasini biling.",
-      "titleHighlight": "30 daqiqada.",
-      "description": "AI baholash · IELTS / CEFR · Sertifikat",
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "IELTS va CEFR darajangizni sun'iy intellekt yordamida, soniyalar ichida aniqlang. Adaptiv testlar va professional tahlil.",
       "startFree": "Bepul boshlash",
       "watchDemo": "Demo ko'rish",
-      "socialProof": "5,000+ talaba sinovdan o'tdi"
+      "socialProof": "50+ muvaffaqiyatli topshiruvchilar",
+      "mission": "Bilim — bu kuch, AI — bu imkoniyat."
     },
     "howItWorks": {
       "title": "Qanday ishlaydi?",

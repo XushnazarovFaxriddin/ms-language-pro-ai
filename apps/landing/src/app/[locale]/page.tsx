@@ -59,7 +59,7 @@ export default function HomePage() {
   };
 
   return (
-    <div ref={containerRef} className="flex min-h-screen flex-col bg-[#050505] text-white selection:bg-blue-500/30 overflow-x-hidden">
+    <div ref={containerRef} className="flex min-h-screen flex-col bg-white dark:bg-[#050505] text-slate-900 dark:text-white selection:bg-blue-500/30 overflow-x-hidden">
       {/* Noise Overlay */}
       <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       
@@ -99,7 +99,7 @@ export default function HomePage() {
                   transition={{ delay: 0.1, duration: 0.8 }}
                   className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tighter leading-[0.9] mb-6 lg:mb-8"
                 >
-                  <span className="block text-white">
+                  <span className="block text-slate-900 dark:text-white">
                     {t("hero.title")}
                   </span>
                   <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 italic">
@@ -127,7 +127,7 @@ export default function HomePage() {
                     <ArrowRight className="h-5 w-5 lg:h-6 lg:w-6 transition-transform group-hover:translate-x-1" />
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   </a>
-                  <button className="flex w-full sm:w-auto items-center justify-center gap-4 rounded-2xl lg:rounded-3xl border border-white/10 bg-white/5 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-bold text-white backdrop-blur-3xl transition-all hover:bg-white/10 hover:border-white/30">
+                  <button className="flex w-full sm:w-auto items-center justify-center gap-4 rounded-2xl lg:rounded-3xl border border-black/10 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-bold text-slate-900 dark:text-white backdrop-blur-3xl transition-all hover:bg-slate-100 dark:hover:bg-white/10 hover:border-black/20 dark:hover:border-white/30">
                     <Play className="h-5 w-5 lg:h-6 lg:w-6 fill-current text-blue-500" />
                     {t("hero.watchDemo")}
                   </button>
@@ -168,13 +168,13 @@ export default function HomePage() {
                   initial={{ opacity: 0, scale: 0.8, x: -20 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   transition={{ delay: 1 }}
-                  className="absolute bottom-10 left-0 lg:-left-4 z-20 w-56 lg:w-64 rounded-[2rem] lg:rounded-[2.5rem] border border-white/10 bg-white/5 p-6 lg:p-8 backdrop-blur-3xl shadow-2xl"
+                  className="absolute bottom-10 left-0 lg:-left-4 z-20 w-56 lg:w-64 rounded-[2rem] lg:rounded-[2.5rem] border border-black/10 dark:border-white/10 bg-white/5 dark:bg-white/5 p-6 lg:p-8 backdrop-blur-3xl shadow-2xl"
                 >
                   <div className="absolute -left-3 -top-3 lg:-left-4 lg:-top-4 flex h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl lg:rounded-2xl bg-blue-600 text-white shadow-xl">
                     <GraduationCap className="h-5 w-5 lg:h-6 lg:w-6" />
                   </div>
-                  <p className="text-base lg:text-lg font-bold italic leading-tight text-white/90">
-                    &ldquo;Bilim — bu kuch, AI — bu imkoniyat.&rdquo;
+                  <p className="text-base lg:text-lg font-bold italic leading-tight text-slate-900 dark:text-white/90">
+                    &ldquo;{t("hero.mission")}&rdquo;
                   </p>
                   <div className="mt-4 flex items-center gap-2">
                     <div className="h-1 flex-1 bg-blue-500/20 rounded-full" />
@@ -194,7 +194,7 @@ export default function HomePage() {
               initial="initial" whileInView="whileInView" variants={staggerContainer}
               className="mb-16 lg:mb-32 text-center"
             >
-              <motion.h2 variants={fadeUp} className="text-5xl font-black tracking-tight sm:text-7xl lg:text-9xl text-white">
+              <motion.h2 variants={fadeUp} className="text-5xl font-black tracking-tight sm:text-7xl lg:text-9xl text-slate-900 dark:text-white">
                 Next-Gen <span className="text-blue-500">Intelligence</span>
               </motion.h2>
             </motion.div>
@@ -256,8 +256,8 @@ export default function HomePage() {
               initial="initial" whileInView="whileInView" variants={fadeUp}
               className="mb-16 lg:mb-20 text-center"
             >
-              <h2 className="text-4xl lg:text-6xl font-black tracking-tight text-white">{t("howItWorks.title")}</h2>
-              <p className="mt-4 text-lg lg:text-xl text-slate-400">{t("howItWorks.subtitle")}</p>
+              <h2 className="text-4xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white">{t("howItWorks.title")}</h2>
+              <p className="mt-4 text-lg lg:text-xl text-slate-600 dark:text-slate-400">{t("howItWorks.subtitle")}</p>
             </motion.div>
 
             <div className="grid gap-12 lg:grid-cols-3 relative">
@@ -357,21 +357,21 @@ function BentoCard({ className, icon: Icon, title, desc, image, href }: { classN
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`group relative overflow-hidden rounded-[3rem] border border-white/10 bg-white/5 p-10 transition-all duration-700 hover:border-blue-500/50 hover:shadow-[0_0_80px_-20px_rgba(37,99,235,0.3)] ${className}`}
+      className={`group relative overflow-hidden rounded-[3rem] border border-black/10 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-10 transition-all duration-700 hover:border-blue-500/50 hover:shadow-[0_0_80px_-20px_rgba(37,99,235,0.3)] ${className}`}
     >
       {image && (
         <div className="absolute inset-0 z-0">
           <img src={image} className="h-full w-full object-cover opacity-20 grayscale transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-50" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-[#050505] dark:via-[#050505]/40" />
         </div>
       )}
       
       <div className="relative z-10 h-full flex flex-col justify-end">
-        <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 text-blue-400 border border-white/10 shadow-2xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-400 transition-all duration-500">
+        <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white dark:bg-white/5 text-blue-400 border border-black/10 dark:border-white/10 shadow-2xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-400 transition-all duration-500">
           <Icon className="size-8" />
         </div>
-        <h3 className="text-3xl font-black text-white mb-4 tracking-tighter group-hover:text-blue-400 transition-colors">{title}</h3>
-        <p className="text-lg text-slate-400 group-hover:text-slate-200 transition-colors line-clamp-2">
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter group-hover:text-blue-400 transition-colors">{title}</h3>
+        <p className="text-lg text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200 transition-colors line-clamp-2">
           {desc}
         </p>
       </div>
@@ -382,12 +382,12 @@ function BentoCard({ className, icon: Icon, title, desc, image, href }: { classN
 function StepItem({ number, title, desc, icon: Icon }: { number: string; title: string; desc: string; icon: any }) {
   return (
     <motion.div initial="initial" whileInView="whileInView" variants={{ initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 } }} className="relative z-10 flex flex-col items-center text-center">
-      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-900 border-4 border-blue-500/20 text-blue-400 shadow-2xl transition-transform hover:scale-110">
+      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-blue-500/20 text-blue-400 shadow-2xl transition-transform hover:scale-110">
         <Icon className="size-10" />
       </div>
       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 mb-2">{number} Step</span>
-      <h3 className="text-2xl font-black text-white mb-3">{title}</h3>
-      <p className="text-slate-400 leading-relaxed max-w-xs">{desc}</p>
+      <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">{title}</h3>
+      <p className="text-slate-600 dark:text-slate-400 leading-relaxed max-w-xs">{desc}</p>
     </motion.div>
   );
 }
@@ -395,13 +395,13 @@ function StepItem({ number, title, desc, icon: Icon }: { number: string; title: 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <div className="rounded-3xl border border-white/5 bg-white/5 overflow-hidden">
-      <button onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between p-6 text-left hover:bg-white/5 transition-colors">
-        <span className="text-lg font-bold text-white">{q}</span>
+    <div className="rounded-3xl border border-black/5 dark:border-white/5 bg-slate-50 dark:bg-white/5 overflow-hidden">
+      <button onClick={() => setIsOpen(!isOpen)} className="flex w-full items-center justify-between p-6 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+        <span className="text-lg font-bold text-slate-900 dark:text-white">{q}</span>
         <ArrowRight className={`size-5 transition-transform ${isOpen ? "rotate-90" : ""}`} />
       </button>
       {isOpen && (
-        <div className="p-6 pt-0 text-slate-400 leading-relaxed animate-in slide-in-from-top-2">
+        <div className="p-6 pt-0 text-slate-600 dark:text-slate-400 leading-relaxed animate-in slide-in-from-top-2">
           {a}
         </div>
       )}

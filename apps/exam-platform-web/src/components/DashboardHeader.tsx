@@ -1,15 +1,21 @@
 "use client";
 
 import type { User } from "@/lib/api";
-import { Menu, Globe } from "lucide-react";
+import { Menu, Globe, Sun, Moon } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { useParams } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
 
 export function DashboardHeader({ user, onMenuClick }: { user: User | null; onMenuClick?: () => void }) {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
   const currentLocale = params.locale as string;
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const toggleLocale = () => {
     const nextLocale = currentLocale === "uz" ? "en" : "uz";
@@ -35,6 +41,14 @@ export function DashboardHeader({ user, onMenuClick }: { user: User | null; onMe
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Theme Toggle */}
+        <button
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border)]/50 bg-white/5 text-[var(--color-muted-fg)] hover:text-[var(--color-fg)] transition-all dark:bg-black/20"
+        >
+          {mounted && (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />)}
+        </button>
+
         <button
           onClick={toggleLocale}
           className="group flex items-center gap-2 rounded-full border border-[var(--color-border)]/50 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all hover:border-[var(--color-border)] hover:bg-white/10 dark:bg-black/20"

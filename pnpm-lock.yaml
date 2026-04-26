@@ -29,6 +29,9 @@ importers:
       next-intl:
         specifier: ^3.26.0
         version: 3.26.5(next@15.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: ^19.0.0
         version: 19.2.5
@@ -93,6 +96,9 @@ importers:
       next-intl:
         specifier: ^3.26.0
         version: 3.26.5(next@15.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react@19.2.5)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       react:
         specifier: ^19.0.0
         version: 19.2.5

@@ -24,23 +24,23 @@ export function Header() {
 
   return (
     <header className="fixed top-0 z-50 w-full px-6 py-4">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl border border-white/10 bg-black/40 px-6 backdrop-blur-xl shadow-2xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl border border-black/5 dark:border-white/10 bg-white/40 dark:bg-black/40 px-6 backdrop-blur-xl shadow-2xl">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <Sparkles className="h-5 w-5" />
             </div>
-            <span className="text-xl font-black tracking-tight text-white">
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
               LanguagePro <span className="text-blue-400">AI</span>
             </span>
           </Link>
           
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-            <Link href="/pricing" className="hover:text-white transition-colors relative group">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <Link href="/pricing" className="hover:text-blue-600 dark:hover:text-white transition-colors relative group">
               {t("nav.pricing") || "Ta'riflar"}
               <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-blue-500 transition-all group-hover:w-full" />
             </Link>
-            <Link href="#" className="hover:text-white transition-colors relative group">
+            <Link href="#" className="hover:text-blue-600 dark:hover:text-white transition-colors relative group">
               {t("nav.features") || "Imkoniyatlar"}
               <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-blue-500 transition-all group-hover:w-full" />
             </Link>
@@ -51,20 +51,20 @@ export function Header() {
           {/* Theme Toggle */}
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 hover:text-white transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all"
           >
-            {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {mounted && (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />)}
           </button>
 
           {/* Locale Switcher */}
-          <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-1.5 border border-white/10 text-[10px] font-black text-slate-500">
+          <div className="flex items-center gap-2 rounded-xl bg-black/5 dark:bg-white/5 px-3 py-1.5 border border-black/10 dark:border-white/10 text-[10px] font-black text-slate-500">
             <button 
               onClick={() => toggleLocale("uz")}
               className={`hover:text-blue-400 transition-colors uppercase ${locale === "uz" ? "text-blue-400" : ""}`}
             >
               UZ
             </button>
-            <span className="text-white/10">|</span>
+            <span className="text-black/10 dark:text-white/10">|</span>
             <button 
               onClick={() => toggleLocale("en")}
               className={`hover:text-blue-400 transition-colors uppercase ${locale === "en" ? "text-blue-400" : ""}`}
@@ -76,7 +76,7 @@ export function Header() {
           <div className="flex items-center gap-3">
             <a
               href="http://app.localhost/login"
-              className="hidden lg:flex items-center gap-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
+              className="hidden lg:flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors"
             >
               <User className="h-4 w-4" />
               {t("actions.login")}
@@ -89,7 +89,7 @@ export function Header() {
             </a>
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+              className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-colors"
             >
               <Menu className="h-6 w-6" />
             </button>

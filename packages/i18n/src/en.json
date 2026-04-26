@@ -21,12 +21,13 @@
   },
   "Landing": {
     "hero": {
-      "title": "Know your English level.",
-      "titleHighlight": "In 30 minutes.",
-      "description": "AI Assessment · IELTS / CEFR · Certificates",
-      "startFree": "Start for free",
-      "watchDemo": "Watch demo",
-      "socialProof": "Over 5,000 students tested"
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "Determine your IELTS and CEFR level in seconds using artificial intelligence. Adaptive tests and professional analysis.",
+      "startFree": "Start for Free",
+      "watchDemo": "Watch Demo",
+      "socialProof": "50+ successful candidates",
+      "mission": "Knowledge is power, AI is opportunity."
     },
     "howItWorks": {
       "title": "How it works?",
