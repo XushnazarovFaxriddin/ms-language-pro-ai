@@ -22,7 +22,8 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
           router.push(returnTo);
           router.refresh();
         } catch (err) {
-          setError(err instanceof ApiError ? err.detail : String(err));
+          const errorMessage = err instanceof ApiError ? err.detail : String(err);
+          setError(typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage));
         } finally {
           setPending(false);
         }

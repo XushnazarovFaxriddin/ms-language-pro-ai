@@ -50,6 +50,7 @@ seed: ## Seed dev data (taxonomies, demo users, etc.)
 	@echo "✅ Seeded."
 
 dev: ## Start Next.js dev servers (host-side, fast HMR)
+	@set -a; [ ! -f .env ] || . ./.env; set +a; \
 	pnpm --parallel --filter landing --filter exam-platform-web --filter data-engine-web dev
 
 typecheck: ## Type-check Python (mypy) + TS (tsc)
