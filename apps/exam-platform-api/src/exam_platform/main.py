@@ -40,6 +40,11 @@ app.add_middleware(
 
 register_error_handlers(app)
 
+from exam_platform.api.v1 import attempts, exams  # noqa: E402
+
+app.include_router(exams.router, prefix="/v1")
+app.include_router(attempts.router, prefix="/v1")
+
 
 @app.get("/healthz")
 async def healthz() -> dict:

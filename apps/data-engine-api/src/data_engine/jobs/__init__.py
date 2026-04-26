@@ -3,6 +3,7 @@
 from arq.connections import RedisSettings
 
 from data_engine.settings import settings
+from data_engine.jobs.generation import generate_batch
 
 
 async def healthz_task(ctx) -> dict:
@@ -11,7 +12,7 @@ async def healthz_task(ctx) -> dict:
 
 class WorkerSettings:
     redis_settings = RedisSettings.from_dsn(settings.REDIS_URL)
-    functions = [healthz_task]
+    functions = [healthz_task, generate_batch]
     job_timeout = 300
     keep_result = 3600
     max_jobs = 10

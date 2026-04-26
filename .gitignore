@@ -21,6 +21,7 @@ out/
 .env.*.local
 !.env.example
 .env
+uv.lock
 
 # IDEs
 .vscode/
