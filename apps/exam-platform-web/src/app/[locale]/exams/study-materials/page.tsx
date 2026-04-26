@@ -3,14 +3,14 @@ import { DemoPageBanner } from "@/components/DemoPageBanner";
 import { BookOpen, Video, FileText } from "lucide-react";
 
 export default async function StudyMaterialsPage() {
-  const tNav = await getTranslations("Dashboard.nav");
+  const tPage = await getTranslations("Dashboard.studyMaterialsPage");
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <div className="mb-8 border-b border-[var(--color-border)]/50 pb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tNav("studyMaterials")}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tPage("title")}</h1>
         <p className="mt-2 text-lg text-[var(--color-muted-fg)]">
-          Kuchsiz tomonlaringizni kuchaytirish uchun maxsus materiallar.
+          {tPage("description")}
         </p>
       </div>
 
@@ -24,8 +24,8 @@ export default async function StudyMaterialsPage() {
             <Video className="h-14 w-14 text-blue-400 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-md" />
           </div>
           <div className="p-6">
-            <h3 className="text-xl font-bold tracking-tight">IELTS Speaking Task 2</h3>
-            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">15 daqiqalik masterklass. Band 7.0+ uchun strategiyalar.</p>
+            <h3 className="text-xl font-bold tracking-tight">{tPage("card1Title")}</h3>
+            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">{tPage("card1Desc")}</p>
           </div>
         </div>
         
@@ -36,8 +36,8 @@ export default async function StudyMaterialsPage() {
             <FileText className="h-14 w-14 text-emerald-400 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-md" />
           </div>
           <div className="p-6">
-            <h3 className="text-xl font-bold tracking-tight">Grammar Focus: B2</h3>
-            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">PDF qo'llanma va qoidalar toplami. Interfaol mashqlar.</p>
+            <h3 className="text-xl font-bold tracking-tight">{tPage("card2Title")}</h3>
+            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">{tPage("card2Desc")}</p>
           </div>
         </div>
 
@@ -48,8 +48,8 @@ export default async function StudyMaterialsPage() {
             <BookOpen className="h-14 w-14 text-orange-400 group-hover:scale-110 transition-transform duration-500 relative z-10 drop-shadow-md" />
           </div>
           <div className="p-6">
-            <h3 className="text-xl font-bold tracking-tight">Vocabulary: Academic</h3>
-            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">100 ta eng kerakli akademik so'zlar ro'yxati.</p>
+            <h3 className="text-xl font-bold tracking-tight">{tPage("card3Title")}</h3>
+            <p className="text-sm font-medium text-[var(--color-muted-fg)] mt-2">{tPage("card3Desc")}</p>
           </div>
         </div>
       </div>

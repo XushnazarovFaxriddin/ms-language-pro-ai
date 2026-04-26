@@ -8,15 +8,14 @@ export default async function ResultsPage() {
   const user = await requireUser("/exams/results");
   const ck = await getCookieHeader();
   const attempts = await api.exam.listAttempts(ck);
-  const tNav = await getTranslations("Dashboard.nav");
-  const tStats = await getTranslations("Dashboard.stats");
+  const tRes = await getTranslations("Dashboard.resultsPage");
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
       <div className="mb-8 border-b border-[var(--color-border)] pb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight">{tNav("results")}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">{tRes("title")}</h1>
         <p className="mt-2 text-[var(--color-muted-fg)]">
-          Barcha topshirgan imtihonlaringiz va ularning natijalari tarixi.
+          {tRes("description")}
         </p>
       </div>
 
@@ -25,15 +24,15 @@ export default async function ResultsPage() {
           <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 mb-6">
             <History className="h-10 w-10" />
           </div>
-          <h3 className="mb-2 text-xl font-bold">Siz hali imtihon topshirmadingiz</h3>
+          <h3 className="mb-2 text-xl font-bold">{tRes("emptyTitle")}</h3>
           <p className="mb-8 text-[var(--color-muted-fg)] max-w-sm">
-            Bilimingizni sinash uchun birinchi imtihonni hoziroq boshlang.
+            {tRes("emptyDesc")}
           </p>
           <Link
             href="/exams"
             className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[var(--color-primary)] to-blue-500 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary)]/20 transition-all hover:-translate-y-0.5 hover:shadow-xl"
           >
-            Imtihonlarni ko'rish <MoveRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            {tRes("startExam")} <MoveRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
       ) : (
@@ -42,10 +41,10 @@ export default async function ResultsPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-black/5 dark:bg-white/5 border-b border-[var(--color-border)]/50 text-[var(--color-muted-fg)] text-xs uppercase tracking-wider font-semibold">
                 <tr>
-                  <th className="px-6 py-4">Imtihon</th>
-                  <th className="px-6 py-4">Sana</th>
-                  <th className="px-6 py-4">Holati</th>
-                  <th className="px-6 py-4 text-right">Natija</th>
+                  <th className="px-6 py-4">{tRes("tableExam")}</th>
+                  <th className="px-6 py-4">{tRes("tableDate")}</th>
+                  <th className="px-6 py-4">{tRes("tableStatus")}</th>
+                  <th className="px-6 py-4 text-right">{tRes("tableScore")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]/50">
@@ -82,12 +81,12 @@ export default async function ResultsPage() {
                       {attempt.state === "completed" ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-600 dark:text-green-400">
                           <CheckCircle2 className="h-3.5 w-3.5" />
-                          Tugallangan
+                          {tRes("completed")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
                           <Clock className="h-3.5 w-3.5 animate-pulse" />
-                          Jarayonda
+                          {tRes("inProgress")}
                         </span>
                       )}
                     </td>
@@ -97,7 +96,7 @@ export default async function ResultsPage() {
                           <span className={`text-xl ${attempt.score >= 50 ? 'text-green-500' : 'text-red-500'}`}>
                             {attempt.score}%
                           </span>
-                          <span className="text-xs text-[var(--color-muted-fg)] font-medium">Umumiy</span>
+                          <span className="text-xs text-[var(--color-muted-fg)] font-medium">{tRes("overall")}</span>
                         </div>
                       ) : (
                         <span className="text-[var(--color-muted-fg)]">—</span>

@@ -35,6 +35,12 @@ BANK_ID = UUID("00000000-0000-4000-a000-000000000001")
 BLUEPRINT_ID = UUID("00000000-0000-4000-a000-000000000010")
 EXAM_ID = UUID("00000000-0000-4000-a000-000000000020")
 
+BLUEPRINT_ID_IELTS = UUID("00000000-0000-4000-a000-000000000011")
+EXAM_ID_IELTS = UUID("00000000-0000-4000-a000-000000000021")
+
+BLUEPRINT_ID_CEFR = UUID("00000000-0000-4000-a000-000000000012")
+EXAM_ID_CEFR = UUID("00000000-0000-4000-a000-000000000022")
+
 # Question IDs
 Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000001{i:02d}") for i in range(1, 6)]
 
@@ -49,6 +55,38 @@ IELTS_READING_BLUEPRINT = {
             "name_en": "Reading Section",
             "item_count": 5,
             "time_limit_seconds": 600,
+            "stop_rule": {"type": "budget", "max_items": 5},
+        }
+    ],
+}
+
+IELTS_FULL_BLUEPRINT = {
+    "code": "ielts_full_mock",
+    "name_uz": "IELTS Academic Full Test",
+    "name_en": "IELTS Academic Full Test",
+    "sections": [
+        {
+            "skill": "reading",
+            "name_uz": "O'qish bo'limi",
+            "name_en": "Reading Section",
+            "item_count": 5,  # Demo uchun 5 ta qo'yildi
+            "time_limit_seconds": 3600,
+            "stop_rule": {"type": "budget", "max_items": 5},
+        }
+    ],
+}
+
+CEFR_FULL_BLUEPRINT = {
+    "code": "cefr_multilevel",
+    "name_uz": "CEFR Multilevel Full Test",
+    "name_en": "CEFR Multilevel Full Test",
+    "sections": [
+        {
+            "skill": "reading",
+            "name_uz": "O'qish bo'limi",
+            "name_en": "Reading Section",
+            "item_count": 5, # Demo uchun 5 ta qo'yildi
+            "time_limit_seconds": 3600,
             "stop_rule": {"type": "budget", "max_items": 5},
         }
     ],
@@ -275,45 +313,55 @@ async def main() -> None:
         print(f"   ✅ {q_count} questions seeded (of {len(SAMPLE_QUESTIONS)} total)")
 
         # ── 4. Seed blueprint ──
-        existing_bp = (
-            await db.execute(
-                select(ExamBlueprint.id).where(ExamBlueprint.id == BLUEPRINT_ID)
-            )
-        ).scalar_one_or_none()
-
-        if existing_bp is None:
-            await db.execute(
-                insert(ExamBlueprint).values(
-                    id=BLUEPRINT_ID,
-                    code=IELTS_READING_BLUEPRINT["code"],
-                    name_uz=IELTS_READING_BLUEPRINT["name_uz"],
-                    name_en=IELTS_READING_BLUEPRINT["name_en"],
-                    sections=IELTS_READING_BLUEPRINT["sections"],
+        for bp_id, bp_data in [
+            (BLUEPRINT_ID, IELTS_READING_BLUEPRINT),
+            (BLUEPRINT_ID_IELTS, IELTS_FULL_BLUEPRINT),
+            (BLUEPRINT_ID_CEFR, CEFR_FULL_BLUEPRINT),
+        ]:
+            existing_bp = (
+                await db.execute(
+                    select(ExamBlueprint.id).where(ExamBlueprint.id == bp_id)
                 )
-            )
-            print("   ✅ Blueprint created")
-        else:
-            print("   ⏭️  Blueprint already exists")
+            ).scalar_one_or_none()
+
+            if existing_bp is None:
+                await db.execute(
+                    insert(ExamBlueprint).values(
+                        id=bp_id,
+                        code=bp_data["code"],
+                        name_uz=bp_data["name_uz"],
+                        name_en=bp_data["name_en"],
+                        sections=bp_data["sections"],
+                    )
+                )
+                print(f"   ✅ Blueprint {bp_data['code']} created")
+            else:
+                print(f"   ⏭️  Blueprint {bp_data['code']} already exists")
 
         # ── 5. Seed exam in exam_platform schema ──
-        existing_exam = (
-            await db.execute(
-                select(Exam.id).where(Exam.id == EXAM_ID)
-            )
-        ).scalar_one_or_none()
-
-        if existing_exam is None:
-            await db.execute(
-                insert(Exam).values(
-                    id=EXAM_ID,
-                    blueprint_code=IELTS_READING_BLUEPRINT["code"],
-                    name_uz=IELTS_READING_BLUEPRINT["name_uz"],
-                    name_en=IELTS_READING_BLUEPRINT["name_en"],
+        for ex_id, bp_data in [
+            (EXAM_ID, IELTS_READING_BLUEPRINT),
+            (EXAM_ID_IELTS, IELTS_FULL_BLUEPRINT),
+            (EXAM_ID_CEFR, CEFR_FULL_BLUEPRINT),
+        ]:
+            existing_exam = (
+                await db.execute(
+                    select(Exam.id).where(Exam.id == ex_id)
                 )
-            )
-            print("   ✅ Exam created")
-        else:
-            print("   ⏭️  Exam already exists")
+            ).scalar_one_or_none()
+
+            if existing_exam is None:
+                await db.execute(
+                    insert(Exam).values(
+                        id=ex_id,
+                        blueprint_code=bp_data["code"],
+                        name_uz=bp_data["name_uz"],
+                        name_en=bp_data["name_en"],
+                    )
+                )
+                print(f"   ✅ Exam {bp_data['name_en']} created")
+            else:
+                print(f"   ⏭️  Exam {bp_data['name_en']} already exists")
 
         await db.commit()
 

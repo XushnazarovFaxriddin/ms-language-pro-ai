@@ -4,13 +4,14 @@ import { TrendingUp, BarChart2 } from "lucide-react";
 
 export default async function AnalyticsPage() {
   const tNav = await getTranslations("Dashboard.nav");
+  const tPage = await getTranslations("Dashboard.analyticsPage");
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <div className="mb-8 border-b border-[var(--color-border)]/50 pb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tNav("analytics")}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tPage("title")}</h1>
         <p className="mt-2 text-lg text-[var(--color-muted-fg)]">
-          Sizning o'sish dinamikangiz va kuchsiz tomonlaringiz tahlili.
+          {tPage("description")}
         </p>
       </div>
 
@@ -24,10 +25,8 @@ export default async function AnalyticsPage() {
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-600/20 text-blue-500 shadow-inner group-hover:scale-110 transition-transform duration-500">
               <TrendingUp className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-bold tracking-tight">Baho o'sish dinamikasi</h3>
-            <p className="mt-3 text-[var(--color-muted-fg)]">
-              Oy davomida Writing va Speaking ko'nikmalari <span className="text-blue-500 font-bold">15%</span> ga yaxshilangan. Muntazam mashg'ulotlar o'z natijasini bermoqda.
-            </p>
+            <h3 className="text-2xl font-bold tracking-tight">{tPage("growthTitle")}</h3>
+            <p className="mt-3 text-[var(--color-muted-fg)]" dangerouslySetInnerHTML={{ __html: tPage("growthDesc").replace('<growth>', '<span class="text-blue-500 font-bold">').replace('</growth>', '</span>') }} />
           </div>
         </div>
 
@@ -38,10 +37,8 @@ export default async function AnalyticsPage() {
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-fuchsia-600/20 text-purple-500 shadow-inner group-hover:scale-110 transition-transform duration-500">
               <BarChart2 className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-bold tracking-tight">Kuchli va kuchsiz tomonlar</h3>
-            <p className="mt-3 text-[var(--color-muted-fg)]">
-              Grammar Range ko'rsatkichi <span className="text-purple-500 font-bold">B1</span> darajada, Lexical Resource esa ajoyib <span className="text-purple-500 font-bold">B2</span> darajada.
-            </p>
+            <h3 className="text-2xl font-bold tracking-tight">{tPage("strengthTitle")}</h3>
+            <p className="mt-3 text-[var(--color-muted-fg)]" dangerouslySetInnerHTML={{ __html: tPage("strengthDesc").replace(/<level>/g, '<span class="text-purple-500 font-bold">').replace(/<\/level>/g, '</span>') }} />
           </div>
         </div>
       </div>

@@ -3,14 +3,14 @@ import { DemoPageBanner } from "@/components/DemoPageBanner";
 import { Award, Download } from "lucide-react";
 
 export default async function CertificatesPage() {
-  const tNav = await getTranslations("Dashboard.nav");
+  const tPage = await getTranslations("Dashboard.certificatesPage");
 
   return (
     <div className="mx-auto max-w-6xl space-y-10">
       <div className="mb-8 border-b border-[var(--color-border)]/50 pb-6">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tNav("certificates")}</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{tPage("title")}</h1>
         <p className="mt-2 text-lg text-[var(--color-muted-fg)]">
-          Sizning rasmiy elektron sertifikatlaringiz va yutuqlaringiz.
+          {tPage("description")}
         </p>
       </div>
 
@@ -29,10 +29,10 @@ export default async function CertificatesPage() {
                   <Award className="h-7 w-7" />
                 </div>
                 <h3 className="mb-2 text-2xl font-black tracking-tight">{i === 1 ? 'CEFR B2 Level' : i === 2 ? 'IELTS Academic 7.0' : 'CEFR C1 Level'}</h3>
-                <p className="text-sm font-medium text-[var(--color-muted-fg)]">Berilgan sana: {10 + i} May 2026</p>
+                <p className="text-sm font-medium text-[var(--color-muted-fg)]">{tPage("issued", { date: `${10 + i} May 2026` })}</p>
                 <div className="mt-6 flex items-center justify-between border-t border-[var(--color-border)]/50 pt-6">
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1 text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider">
-                    Tasdiqlangan
+                    {tPage("verified")}
                   </span>
                   <span className="font-mono text-xs font-semibold text-[var(--color-muted-fg)]">CERT-10{i}834</span>
                 </div>
@@ -40,7 +40,7 @@ export default async function CertificatesPage() {
             </div>
             <div className="border-t border-[var(--color-border)]/50 bg-black/5 px-8 py-4 dark:bg-white/5">
               <button className="flex w-full items-center justify-center gap-2 text-sm font-bold text-[var(--color-primary)] hover:text-blue-500 transition-colors">
-                <Download className="h-4 w-4" /> PDF yuklab olish
+                <Download className="h-4 w-4" /> {tPage("downloadPdf")}
               </button>
             </div>
           </div>
