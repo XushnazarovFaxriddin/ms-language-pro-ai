@@ -22,11 +22,23 @@ localhost:80 {
 
 # Exam platform (Faxriddin)
 app.localhost:80 {
+	handle_path /api/auth/* {
+		reverse_proxy auth-api:8000
+	}
+	handle_path /api/exam/* {
+		reverse_proxy exam-platform-api:8000
+	}
 	reverse_proxy host.docker.internal:3001
 }
 
 # Admin / data-engine (Bobomurod)
 admin.localhost:80 {
+	handle_path /api/auth/* {
+		reverse_proxy auth-api:8000
+	}
+	handle_path /api/data/* {
+		reverse_proxy data-engine-api:8000
+	}
 	reverse_proxy host.docker.internal:3002
 }
 

@@ -94,5 +94,35 @@
         "cta": "Contact us"
       }
     }
+  },
+  "Dashboard": {
+    "title": "Available Exams",
+    "description": "Select an exam to begin. Adaptive: subsequent questions are chosen based on your answers.",
+    "empty": "No exams available at the moment.",
+    "goHome": "Home",
+    "blueprint": "Blueprint: ",
+    "startAttempt": "Start Attempt",
+    "starting": "Starting…"
+  },
+  "Exam": {
+    "loading": "Loading…",
+    "errorNotFound": "Next question not found.",
+    "backToExams": "Back to Exams",
+    "question": "Question",
+    "skill": "Skill",
+    "submit": "Submit",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "submitted": "Submitted"
+  },
+  "Results": {
+    "title": "Exam Results",
+    "score": "Correct Answers",
+    "timeTaken": "Time Taken",
+    "backToDashboard": "Back to Dashboard",
+    "questionDetails": "Question Details",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "questionNumber": "Question #"
   }
 }

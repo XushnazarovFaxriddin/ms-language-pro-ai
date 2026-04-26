@@ -94,5 +94,35 @@
         "cta": "Biz bilan aloqa"
       }
     }
+  },
+  "Dashboard": {
+    "title": "Mavjud imtihonlar",
+    "description": "Bitta imtihonni tanlang va boshlang. Adaptive: javoblaringizga qarab keyingi savollar tanlanadi.",
+    "empty": "Hozircha imtihonlar yo'q.",
+    "goHome": "Bosh sahifa",
+    "blueprint": "Blueprint: ",
+    "startAttempt": "Boshlash",
+    "starting": "Boshlanmoqda…"
+  },
+  "Exam": {
+    "loading": "Yuklanmoqda…",
+    "errorNotFound": "Keyingi savol topilmadi.",
+    "backToExams": "Imtihonlarga qaytish",
+    "question": "Savol",
+    "skill": "Skill",
+    "submit": "Yuborish",
+    "correct": "To'g'ri",
+    "incorrect": "Noto'g'ri",
+    "submitted": "Yuborildi"
+  },
+  "Results": {
+    "title": "Imtihon Natijalari",
+    "score": "To'g'ri javoblar",
+    "timeTaken": "Sarflangan vaqt",
+    "backToDashboard": "Bosh sahifaga qaytish",
+    "questionDetails": "Savollar tahlili",
+    "correct": "To'g'ri",
+    "incorrect": "Noto'g'ri",
+    "questionNumber": "Savol #"
   }
 }

@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ApiError, api, type AttemptOut, type ItemView } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, CheckCircle2, XCircle } from "lucide-react";
 
 type Result = {
   itemId: string;
@@ -18,6 +21,15 @@ export function ExamRunner({
   initialAttempt: AttemptOut;
 }) {
   const router = useRouter();
+  const t = useTranslations("Exam");
+  
+  // If attempt is already completed, redirect immediately
+  useEffect(() => {
+    if (initialAttempt.state === "completed") {
+      router.replace(`/results/${attemptId}`);
+    }
+  }, [initialAttempt.state, attemptId, router]);
+
   const section = initialAttempt.blueprint_snapshot.sections[0];
   const totalItems = section?.item_count ?? 5;
   const sectionTimeLimit = section?.time_limit_seconds ?? 600;
@@ -112,11 +124,11 @@ export function ExamRunner({
           setStartTime(Date.now());
         } else if (r.attempt_complete) {
           sessionStorage.removeItem(`first-item:${attemptId}`);
-          setDone(true);
+          router.replace(`/results/${attemptId}`);
         } else {
           sessionStorage.removeItem(`first-item:${attemptId}`);
           setItem(null);
-          setError("Keyingi savol topilmadi.");
+          setError(t("errorNotFound"));
         }
       }, 800);
     } catch (e) {
@@ -125,7 +137,7 @@ export function ExamRunner({
   }
 
   if (loading) {
-    return <main className="container mx-auto max-w-3xl px-6 py-12 text-center">Yuklanmoqda…</main>;
+    return <main className="container mx-auto max-w-3xl px-6 py-12 text-center">{t("loading")}</main>;
   }
   if (error && !item) {
     return (
@@ -137,43 +149,15 @@ export function ExamRunner({
             onClick={() => router.push("/exams")}
             className="rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-[var(--color-primary-fg)]"
           >
-            Imtihonlarga qaytish
+            {t("backToExams")}
           </button>
         </div>
       </main>
     );
   }
   if (done) {
-    return (
-      <main className="container mx-auto max-w-2xl px-6 py-16">
-        <h1 className="text-3xl font-bold">Imtihon tugadi 🎉</h1>
-        <p className="mt-3 text-[var(--color-muted-fg)]">
-          {results.filter((r) => r.isCorrect).length} / {results.length} to&apos;g&apos;ri javob
-        </p>
-        <div className="mt-8 grid gap-2">
-          {results.map((r, i) => (
-            <div
-              key={r.itemId}
-              className={`flex items-center justify-between rounded border px-4 py-2 text-sm ${
-                r.isCorrect
-                  ? "border-green-500/40 bg-green-500/10"
-                  : "border-red-500/40 bg-red-500/10"
-              }`}
-            >
-              <span>Savol #{i + 1}</span>
-              <span>{r.isCorrect ? "To'g'ri" : "Noto'g'ri"}</span>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push("/exams")}
-          className="mt-8 rounded bg-[var(--color-primary)] px-4 py-2 text-sm text-[var(--color-primary-fg)]"
-        >
-          Yana imtihon
-        </button>
-      </main>
-    );
+    // This is a fallback in case the redirect takes a moment
+    return <main className="container mx-auto max-w-2xl px-6 py-16 text-center">{t("loading")}</main>;
   }
   if (!item) return null;
 
@@ -183,82 +167,108 @@ export function ExamRunner({
     <main className="container mx-auto max-w-3xl px-6 py-8">
       {/* Status bar */}
       <div className="mb-6 flex items-center justify-between text-sm">
-        <span className="text-[var(--color-muted-fg)]">
-          Savol {results.length + 1} / {totalItems} · Skill: {item.skill} · {item.cefr_level}
-        </span>
-        <span
-          className={`rounded px-2 py-0.5 font-mono ${
+        <div className="flex items-center gap-2 text-[var(--color-muted-fg)] font-medium">
+          <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-[var(--color-primary)]">
+            {t("question")} {results.length + 1} / {totalItems}
+          </span>
+          <span className="hidden sm:inline">· {t("skill")}: {item.skill} · {item.cefr_level}</span>
+        </div>
+        <div
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-mono font-medium shadow-sm ${
             sectionRemaining < 60
-              ? "bg-red-500/10 text-red-600"
-              : "bg-[var(--color-muted)] text-[var(--color-fg)]"
+              ? "bg-red-500 text-white animate-pulse"
+              : "bg-white text-black dark:bg-zinc-800 dark:text-white"
           }`}
         >
+          <Clock className="h-4 w-4" />
           {fmtTime(sectionRemaining)}
-        </span>
+        </div>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 w-full overflow-hidden rounded bg-[var(--color-muted)]">
-        <div
-          className="h-full bg-[var(--color-primary)] transition-all"
-          style={{ width: `${progress * 100}%` }}
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-muted)]">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress * 100}%` }}
+          className="h-full bg-[var(--color-primary)]"
+          layout
         />
       </div>
 
-      {/* Passage */}
-      {item.payload.passage && (
-        <article className="mt-8 rounded border border-[var(--color-border)] bg-[var(--color-muted)]/40 p-6 leading-relaxed">
-          {item.payload.passage}
-        </article>
-      )}
-
-      {/* Prompt */}
-      <p className="mt-6 text-lg font-medium">{item.payload.prompt}</p>
-
-      {/* Options */}
-      <fieldset className="mt-4 grid gap-2">
-        {opts.map((o) => (
-          <label
-            key={o.id}
-            className={`flex cursor-pointer items-center gap-3 rounded border px-4 py-3 transition ${
-              choice === o.id
-                ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10"
-                : "border-[var(--color-border)] hover:border-[var(--color-primary)]/60"
-            }`}
-          >
-            <input
-              type="radio"
-              name="mcq"
-              value={o.id}
-              checked={choice === o.id}
-              onChange={() => setChoice(o.id)}
-              className="h-4 w-4"
-            />
-            <span className="font-medium">{o.id}.</span>
-            <span>{o.label}</span>
-          </label>
-        ))}
-      </fieldset>
-
-      {/* Submit / feedback */}
-      <div className="mt-6 flex items-center gap-4">
-        <button
-          type="button"
-          disabled={!choice || feedback !== null}
-          onClick={submit}
-          className="rounded bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-fg)] disabled:opacity-50"
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={item.id}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
         >
-          Yuborish
-        </button>
-        {feedback && (
-          <span
-            className={feedback.ok ? "text-green-600" : "text-red-600"}
-          >
-            {feedback.msg}
-          </span>
-        )}
-        {error && <span className="text-red-600">{error}</span>}
-      </div>
+          {/* Passage */}
+          {item.payload.passage && (
+            <article className="mt-8 rounded-2xl border border-[var(--color-border)] bg-white/5 p-6 md:p-8 shadow-sm backdrop-blur-md leading-relaxed dark:bg-black/20 text-lg">
+              {item.payload.passage}
+            </article>
+          )}
+
+          {/* Prompt */}
+          <p className="mt-8 text-xl font-bold tracking-tight">{item.payload.prompt}</p>
+
+          {/* Options */}
+          <fieldset className="mt-6 grid gap-3">
+            {opts.map((o) => (
+              <label
+                key={o.id}
+                className={`group relative flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition-all ${
+                  choice === o.id
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-[0_0_0_1px_var(--color-primary)]"
+                    : "border-[var(--color-border)] bg-white/5 hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/5 dark:bg-black/10"
+                }`}
+              >
+                <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                  choice === o.id ? "border-[var(--color-primary)]" : "border-[var(--color-muted-fg)]"
+                }`}>
+                  {choice === o.id && <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)]" />}
+                </div>
+                <input
+                  type="radio"
+                  name="mcq"
+                  value={o.id}
+                  checked={choice === o.id}
+                  onChange={() => setChoice(o.id)}
+                  className="hidden"
+                />
+                <span className="font-semibold text-[var(--color-muted-fg)]">{o.id}.</span>
+                <span className="text-lg">{o.label}</span>
+              </label>
+            ))}
+          </fieldset>
+
+          {/* Submit / feedback */}
+          <div className="mt-10 flex items-center gap-6 border-t border-[var(--color-border)] pt-6">
+            <button
+              type="button"
+              disabled={!choice || feedback !== null}
+              onClick={submit}
+              className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 hover:shadow-md disabled:opacity-50"
+            >
+              {t("submit")}
+            </button>
+            {feedback && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className={`flex items-center gap-2 font-medium ${
+                  feedback.ok ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {feedback.ok ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                {feedback.ok ? t("correct") : t("incorrect")}
+              </motion.div>
+            )}
+            {error && <span className="text-red-600 font-medium">{error}</span>}
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Theta debug (only visible in dev) */}
       {process.env.NODE_ENV !== "production" && (
