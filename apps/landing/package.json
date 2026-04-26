@@ -13,6 +13,8 @@
     "@languagepro/contracts": "workspace:*",
     "@languagepro/i18n": "workspace:*",
     "@languagepro/ui": "workspace:*",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.11.0",
     "next": "15.1.0",
     "next-intl": "^3.26.0",
     "react": "^19.0.0",

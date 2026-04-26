@@ -14,5 +14,85 @@
       "logout": "Chiqish",
       "register": "Ro'yxatdan o'tish"
     }
+  },
+  "Landing": {
+    "hero": {
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "Sun'iy intellekt yordamida xorijiy tilini bilish darajasini onlayn aniqlang. IELTS Academic va CEFR formatida adaptiv test, avtomatik baholash va shaxsiylashtirilgan fikr-mulohaza.",
+      "startFree": "Bepul boshlash",
+      "watchDemo": "Demo ko'rish",
+      "socialProof": "5,000+ talaba sinovdan o'tdi"
+    },
+    "features": {
+      "exam": {
+        "title": "Imtihon topshirish",
+        "description": "IELTS yoki CEFR testini topshiring. Tezkor natija va sertifikat."
+      },
+      "studio": {
+        "title": "Content Studio",
+        "description": "Mualliflar uchun AI bilan savollar generatsiyasi va kalibratsiyasi."
+      }
+    },
+    "footer": {
+      "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Buxoro Davlat Universiteti · Dastur guvohnomasi: LanguagePro AI"
+    }
+  },
+  "Pricing": {
+    "title": "Ta'riflar",
+    "description": "O'zingizga mos tarifni tanlang",
+    "yearlyToggle": "Yillik (-17% chegirma)",
+    "monthlyToggle": "Oylik",
+    "currencyUZS": "UZS",
+    "currencyUSD": "USD",
+    "perMonth": "/oy",
+    "perYear": "/yil",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "0 so'm",
+        "priceUSD": "$0",
+        "features": {
+          "0": "1 ta test/oy",
+          "1": "Faqat Reading/Listening"
+        },
+        "cta": "Boshlash"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "49 000",
+        "priceUSD": "$4",
+        "features": {
+          "0": "5 ta test/oy",
+          "1": "4 ta ko'nikma (Writing/Speaking)"
+        },
+        "cta": "Tanlash"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Eng mashhur",
+        "price": "119 000",
+        "priceUSD": "$10",
+        "features": {
+          "0": "Cheksiz testlar",
+          "1": "Sertifikat",
+          "2": "Tarix va Tahlil",
+          "3": "Priority support"
+        },
+        "cta": "Tanlash"
+      },
+      "team": {
+        "name": "Team",
+        "price": "Aloqa",
+        "priceUSD": "Contact",
+        "features": {
+          "0": "10+ o'rin (seats)",
+          "1": "Brending",
+          "2": "CSV eksport",
+          "3": "SSO"
+        },
+        "cta": "Biz bilan aloqa"
+      }
+    }
   }
 }

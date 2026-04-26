@@ -14,5 +14,85 @@
       "logout": "Log out",
       "register": "Sign up"
     }
+  },
+  "Landing": {
+    "hero": {
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "Assess your foreign language proficiency online using AI. Adaptive tests in IELTS Academic and CEFR formats with automated grading and personalized feedback.",
+      "startFree": "Start for free",
+      "watchDemo": "Watch demo",
+      "socialProof": "Over 5,000 students tested"
+    },
+    "features": {
+      "exam": {
+        "title": "Take an Exam",
+        "description": "Take an IELTS or CEFR test. Get instant results and a certificate."
+      },
+      "studio": {
+        "title": "Content Studio",
+        "description": "AI-powered question generation and calibration for authors."
+      }
+    },
+    "footer": {
+      "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Bukhara State University · Software Certificate: LanguagePro AI"
+    }
+  },
+  "Pricing": {
+    "title": "Pricing Plans",
+    "description": "Choose the right plan for you",
+    "yearlyToggle": "Yearly (Save 17%)",
+    "monthlyToggle": "Monthly",
+    "currencyUZS": "UZS",
+    "currencyUSD": "USD",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "0 UZS",
+        "priceUSD": "$0",
+        "features": {
+          "0": "1 test/month",
+          "1": "Reading/Listening only"
+        },
+        "cta": "Start"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "49,000",
+        "priceUSD": "$4",
+        "features": {
+          "0": "5 tests/month",
+          "1": "All 4 skills"
+        },
+        "cta": "Select"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Most Popular",
+        "price": "119,000",
+        "priceUSD": "$10",
+        "features": {
+          "0": "Unlimited tests",
+          "1": "Certificate",
+          "2": "History & Analytics",
+          "3": "Priority support"
+        },
+        "cta": "Select"
+      },
+      "team": {
+        "name": "Team",
+        "price": "Contact",
+        "priceUSD": "Contact",
+        "features": {
+          "0": "10+ seats",
+          "1": "Branding",
+          "2": "CSV export",
+          "3": "SSO"
+        },
+        "cta": "Contact us"
+      }
+    }
   }
 }
