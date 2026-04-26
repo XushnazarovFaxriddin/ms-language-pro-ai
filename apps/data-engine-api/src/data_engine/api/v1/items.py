@@ -8,7 +8,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from data_engine.api.deps import require_s2s
+from data_engine.api.deps import require_roles, require_s2s
+from languagepro_common.auth import CurrentUser
 from data_engine.db import get_session
 from data_engine.schemas.api import (
     AnswerKeyOut,
@@ -86,3 +87,47 @@ async def record_response(
         .values(n_responses=Question.n_responses + 1)
     )
     await db.commit()
+
+
+# -------- Admin endpoints --------
+
+@router.get("/items", response_model=list[ItemOut])
+async def list_items(
+    db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
+    status: str | None = Query(None),
+    skill: str | None = Query(None),
+    cefr: str | None = Query(None),
+    limit: int = Query(50),
+    offset: int = Query(0),
+) -> list[ItemOut]:
+    from sqlalchemy import select
+    from data_engine.models import Question, Skill, CefrLevel
+
+    stmt = (
+        select(Question, Skill.code.label("skill_code"), CefrLevel.code.label("cefr_code"))
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        stmt = stmt.where(Question.status == status)
+    if skill:
+        stmt = stmt.where(Skill.code == skill)
+    if cefr:
+        stmt = stmt.where(CefrLevel.code == cefr)
+    
+    stmt = stmt.order_by(Question.created_at.desc()).limit(limit).offset(offset)
+    result = await db.execute(stmt)
+    
+    items = []
+    for row in result:
+        q, s_code, c_code = row
+        items.append(ItemOut(
+            id=q.id,
+            type=q.type,
+            skill=s_code,
+            cefr_level=c_code,
+            payload=ItemPayload.model_validate(q.payload),
+            estimated_seconds=q.estimated_seconds,
+        ))
+    return items

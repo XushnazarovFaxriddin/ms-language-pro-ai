@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import { Zap, Target, BookOpen, Layers, Loader2, Sparkles } from "lucide-react";
 
 const SKILLS = [
   { v: "reading", l: "Reading" },
@@ -41,81 +42,112 @@ export function GenerationForm() {
           setPending(false);
         }
       }}
-      className="flex flex-col gap-4"
+      className="grid gap-8"
     >
-      <Field label="Skill">
-        <select value={skill} onChange={(e) => setSkill(e.target.value)} className="select">
-          {SKILLS.map((s) => (
-            <option key={s.v} value={s.v}>
-              {s.l}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="CEFR daraja">
-        <select value={cefr} onChange={(e) => setCefr(e.target.value)} className="select">
-          {LEVELS.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Mavzu">
+      <div className="grid gap-6 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+            <Zap className="h-4 w-4 text-emerald-400" />
+            Ko'nikma (Skill)
+          </label>
+          <select 
+            value={skill} 
+            onChange={(e) => setSkill(e.target.value)} 
+            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all appearance-none cursor-pointer"
+          >
+            {SKILLS.map((s) => (
+              <option key={s.v} value={s.v} className="bg-slate-900">
+                {s.l}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+            <Layers className="h-4 w-4 text-emerald-400" />
+            CEFR Darajasi
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {LEVELS.map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setCefr(l)}
+                className={`flex-1 rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
+                  cefr === l
+                    ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20"
+                    : "bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+          <BookOpen className="h-4 w-4 text-emerald-400" />
+          Mavzu yoki Kontekst
+        </label>
         <input
           type="text"
           required
+          placeholder="Masalan: Artificial intelligence in medicine"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          className="input"
+          className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all"
         />
-      </Field>
-      <Field label="Soni (1-50)">
-        <input
-          type="number"
-          min={1}
-          max={50}
-          required
-          value={count}
-          onChange={(e) => setCount(Number(e.target.value))}
-          className="input"
-        />
-      </Field>
+      </div>
+
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+          <Target className="h-4 w-4 text-emerald-400" />
+          Savollar soni (1-50)
+        </label>
+        <div className="flex items-center gap-4">
+          <input
+            type="range"
+            min={1}
+            max={50}
+            step={1}
+            value={count}
+            onChange={(e) => setCount(Number(e.target.value))}
+            className="flex-1 accent-emerald-500"
+          />
+          <span className="flex h-12 w-16 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-lg font-black text-emerald-400">
+            {count}
+          </span>
+        </div>
+      </div>
+
       {error && (
-        <p className="rounded border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-600">
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
           {error}
-        </p>
+        </div>
       )}
+
       <button
         type="submit"
         disabled={pending}
-        className="rounded bg-[var(--color-primary)] px-4 py-2 font-medium text-[var(--color-primary-fg)] disabled:opacity-50"
+        className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 px-8 py-4 font-bold text-white shadow-xl shadow-emerald-500/20 transition-all hover:scale-[1.01] hover:shadow-emerald-500/30 active:scale-[0.99] disabled:opacity-50"
       >
-        {pending ? "Yuborilmoqda…" : "Generatsiyani boshlash"}
+        {pending ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+        ) : (
+          <>
+            <Sparkles className="h-5 w-5" />
+            Generatsiyani boshlash
+          </>
+        )}
       </button>
-      <p className="text-xs text-[var(--color-muted-fg)]">
-        Ish navbatga qo&apos;shiladi va arq worker tomonidan ishlanadi. Har bir savol ~10-30s.
-      </p>
-      <style>{`
-        .input, .select {
-          background: var(--color-bg);
-          border: 1px solid var(--color-border);
-          border-radius: 0.375rem;
-          padding: 0.5rem 0.75rem;
-          outline: none;
-          width: 100%;
-        }
-        .input:focus, .select:focus { border-color: var(--color-primary); }
-      `}</style>
-    </form>
-  );
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium">{label}</span>
-      {children}
-    </label>
+      <div className="rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10 text-xs text-slate-400 leading-relaxed">
+        <span className="font-bold text-emerald-400 uppercase tracking-widest block mb-1">Eslatma</span>
+        Savollar AI tomonidan navbat asosida yaratiladi. Har bir savol uchun o'rtacha 15-30 soniya vaqt sarflanadi. Natijalarni "Savollar banki" bo'limida ko'rishingiz mumkin.
+      </div>
+    </form>
   );
 }

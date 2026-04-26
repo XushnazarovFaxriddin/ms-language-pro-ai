@@ -119,6 +119,20 @@ export type LLMCallRow = {
   status: string;
 };
 
+export type Item = {
+  id: string;
+  type: string;
+  skill: string;
+  cefr_level: string;
+  payload: {
+    passage?: string;
+    prompt?: string;
+    options?: { id: string; label: string }[];
+    audio_url?: string;
+  };
+  estimated_seconds: number;
+};
+
 // ---------------------------------------------------------------- API
 export const api = {
   auth: {
@@ -132,6 +146,18 @@ export const api = {
       call<GenerationJob>("/v1/generation/jobs", { api: "data", method: "POST", body }),
     get: (id: string, cookieHeader?: string) =>
       call<GenerationJob>(`/v1/generation/jobs/${id}`, { api: "data", cookieHeader }),
+  },
+  items: {
+    list: (params: { status?: string; skill?: string; cefr?: string; limit?: number; offset?: number } = {}, cookieHeader?: string) => {
+      const sp = new URLSearchParams();
+      if (params.status) sp.set("status", params.status);
+      if (params.skill) sp.set("skill", params.skill);
+      if (params.cefr) sp.set("cefr", params.cefr);
+      if (params.limit) sp.set("limit", String(params.limit));
+      if (params.offset) sp.set("offset", String(params.offset));
+      const query = sp.toString() ? `?${sp.toString()}` : "";
+      return call<Item[]>(`/v1/items${query}`, { api: "data", cookieHeader });
+    },
   },
   usage: {
     summary: (period: "24h" | "7d" | "30d" = "7d", cookieHeader?: string) =>

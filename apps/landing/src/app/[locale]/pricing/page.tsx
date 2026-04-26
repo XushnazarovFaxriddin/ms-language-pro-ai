@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Check, Info } from "lucide-react";
+import { Check, Info, Sparkles, Zap, ShieldCheck, Crown } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -10,150 +10,193 @@ export default function PricingPage() {
   const t = useTranslations("Pricing");
 
   const fadeUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5, ease: "easeOut" }
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true },
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
   };
 
   const stagger = {
-    animate: { transition: { staggerChildren: 0.1 } }
+    initial: {},
+    whileInView: { transition: { staggerChildren: 0.1 } }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-bg)]">
+    <div className="flex min-h-screen flex-col bg-[#050505] text-white">
       <Header />
       
-      <main className="flex-1">
-        <section className="container mx-auto max-w-7xl px-6 py-24 lg:py-32">
+      <main className="flex-1 relative overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute top-0 left-1/4 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/10 blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 h-[500px] w-[500px] translate-x-1/2 translate-y-1/2 rounded-full bg-indigo-600/10 blur-[120px] pointer-events-none" />
+
+        <section className="container relative z-10 mx-auto max-w-7xl px-6 py-32">
           <motion.div 
-            initial="initial" animate="animate" variants={fadeUp}
+            initial="initial" whileInView="whileInView" variants={fadeUp}
             className="mx-auto max-w-3xl text-center"
           >
-            <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">{t("title")}</h1>
-            <p className="mt-6 text-xl leading-8 text-[var(--color-muted-fg)]">{t("description")}</p>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-bold tracking-wide text-blue-400 backdrop-blur-xl">
+              <Sparkles className="h-4 w-4" />
+              Eng maqbul narxlar
+            </div>
+            <h1 className="text-5xl font-black tracking-tighter sm:text-7xl bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
+              {t("title")}
+            </h1>
+            <p className="mt-8 text-xl leading-relaxed text-slate-400">{t("description")}</p>
             
-            <div className="mt-10 flex justify-center items-center gap-3">
-              <span className="text-sm font-semibold">{t("monthlyToggle")}</span>
-              <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-[var(--color-primary)]">
-                <span className="inline-block h-4 w-4 translate-x-6 transform rounded-full bg-white transition" />
+            <div className="mt-12 flex justify-center items-center gap-4">
+              <span className="text-sm font-bold text-slate-500 uppercase tracking-widest">{t("monthlyToggle")}</span>
+              <button className="relative inline-flex h-8 w-14 items-center rounded-full bg-blue-600/20 border border-blue-500/30">
+                <span className="inline-block h-5 w-5 translate-x-8 transform rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-transform duration-300" />
               </button>
-              <span className="text-sm font-semibold flex items-center gap-2">
+              <span className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
                 {t("yearlyToggle")} 
-                <span className="rounded-full bg-[var(--color-success-soft)] px-2 py-0.5 text-xs text-[var(--color-success-fg)]">Save 17%</span>
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[10px] font-black text-emerald-400">SAVE 17%</span>
               </span>
             </div>
           </motion.div>
 
           <motion.div 
-            initial="initial" animate="animate" variants={stagger}
-            className="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-y-6 sm:mt-20 lg:max-w-none lg:grid-cols-4 lg:gap-8"
+            initial="initial" whileInView="whileInView" variants={stagger}
+            className="mx-auto mt-24 grid max-w-lg grid-cols-1 gap-8 sm:mt-32 lg:max-w-none lg:grid-cols-4"
           >
             {/* Free Plan */}
-            <motion.div variants={fadeUp} className="flex flex-col justify-between rounded-3xl bg-[var(--color-surface)] p-8 ring-1 ring-[var(--color-border)] xl:p-10 transition-all hover:shadow-md">
-              <div>
-                <div className="flex items-center justify-between gap-x-4">
-                  <h3 className="text-lg font-semibold leading-8">{t("plans.free.name")}</h3>
-                </div>
-                <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight">{t("plans.free.price")}</span>
-                  <span className="text-sm font-semibold leading-6 text-[var(--color-muted-fg)]">{t("perMonth")}</span>
-                </p>
-                <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-[var(--color-muted-fg)]">
-                  {[0, 1].map((i) => (
-                    <li key={i} className="flex gap-x-3">
-                      <Check className="h-6 w-5 flex-none text-[var(--color-primary)]" aria-hidden="true" />
-                      {t(`plans.free.features.${i}`)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <a href="http://app.localhost/login" className="mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 bg-[var(--color-surface-2)] text-[var(--color-fg)] ring-1 ring-inset ring-[var(--color-border)] hover:bg-[var(--color-surface-3)] transition-colors">
-                {t("plans.free.cta")}
-              </a>
-            </motion.div>
+            <PricingCard 
+              name={t("plans.free.name")}
+              price={t("plans.free.price")}
+              perMonth={t("perMonth")}
+              features={[0, 1].map(i => t(`plans.free.features.${i}`))}
+              cta={t("plans.free.cta")}
+              href="http://app.localhost/login"
+              icon={Zap}
+            />
 
             {/* Starter Plan */}
-            <motion.div variants={fadeUp} className="flex flex-col justify-between rounded-3xl bg-[var(--color-surface)] p-8 ring-1 ring-[var(--color-border)] xl:p-10 transition-all hover:shadow-md">
-              <div>
-                <div className="flex items-center justify-between gap-x-4">
-                  <h3 className="text-lg font-semibold leading-8">{t("plans.starter.name")}</h3>
-                </div>
-                <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight">{t("plans.starter.price")}</span>
-                  <span className="text-sm font-semibold leading-6 text-[var(--color-muted-fg)]">{t("perMonth")}</span>
-                </p>
-                <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-[var(--color-muted-fg)]">
-                  {[0, 1].map((i) => (
-                    <li key={i} className="flex gap-x-3">
-                      <Check className="h-6 w-5 flex-none text-[var(--color-primary)]" aria-hidden="true" />
-                      {t(`plans.starter.features.${i}`)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <a href="http://app.localhost/login" className="mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 bg-[var(--color-surface-2)] text-[var(--color-fg)] ring-1 ring-inset ring-[var(--color-border)] hover:bg-[var(--color-surface-3)] transition-colors">
-                {t("plans.starter.cta")}
-              </a>
-            </motion.div>
+            <PricingCard 
+              name={t("plans.starter.name")}
+              price={t("plans.starter.price")}
+              perMonth={t("perMonth")}
+              features={[0, 1].map(i => t(`plans.starter.features.${i}`))}
+              cta={t("plans.starter.cta")}
+              href="http://app.localhost/login"
+              icon={ShieldCheck}
+            />
 
             {/* Pro Plan */}
-            <motion.div variants={fadeUp} className="relative flex flex-col justify-between rounded-3xl bg-[var(--color-surface)] p-8 shadow-xl ring-2 ring-[var(--color-primary)] xl:p-10 transform lg:-translate-y-4">
-              <div>
-                <div className="flex items-center justify-between gap-x-4">
-                  <h3 className="text-lg font-semibold leading-8 text-[var(--color-primary)]">{t("plans.pro.name")}</h3>
-                  <span className="rounded-full bg-[var(--color-primary-soft)] px-2.5 py-1 text-xs font-semibold leading-5 text-[var(--color-primary-fg)]">
-                    {t("plans.pro.badge")}
-                  </span>
-                </div>
-                <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight">{t("plans.pro.price")}</span>
-                  <span className="text-sm font-semibold leading-6 text-[var(--color-muted-fg)]">{t("perMonth")}</span>
-                </p>
-                <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-[var(--color-muted-fg)]">
-                  {[0, 1, 2, 3].map((i) => (
-                    <li key={i} className="flex gap-x-3">
-                      <Check className="h-6 w-5 flex-none text-[var(--color-primary)]" aria-hidden="true" />
-                      <span className="text-[var(--color-fg)]">{t(`plans.pro.features.${i}`)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <a href="http://app.localhost/login" className="mt-8 block rounded-md bg-[var(--color-primary)] px-3 py-2 text-center text-sm font-semibold leading-6 text-white shadow-sm hover:bg-[var(--color-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 transition-colors">
-                {t("plans.pro.cta")}
-              </a>
-            </motion.div>
+            <PricingCard 
+              name={t("plans.pro.name")}
+              price={t("plans.pro.price")}
+              perMonth={t("perMonth")}
+              features={[0, 1, 2, 3].map(i => t(`plans.pro.features.${i}`))}
+              cta={t("plans.pro.cta")}
+              href="http://app.localhost/login"
+              icon={Crown}
+              featured={true}
+              badge={t("plans.pro.badge")}
+            />
 
             {/* Team Plan */}
-            <motion.div variants={fadeUp} className="flex flex-col justify-between rounded-3xl bg-[var(--color-surface)] p-8 ring-1 ring-[var(--color-border)] xl:p-10 transition-all hover:shadow-md">
-              <div>
-                <div className="flex items-center justify-between gap-x-4">
-                  <h3 className="text-lg font-semibold leading-8">{t("plans.team.name")}</h3>
-                </div>
-                <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight">{t("plans.team.price")}</span>
-                </p>
-                <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-[var(--color-muted-fg)]">
-                  {[0, 1, 2, 3].map((i) => (
-                    <li key={i} className="flex gap-x-3">
-                      <Check className="h-6 w-5 flex-none text-[var(--color-primary)]" aria-hidden="true" />
-                      {t(`plans.team.features.${i}`)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <a href="mailto:hi@aiexam.uz" className="mt-8 block rounded-md px-3 py-2 text-center text-sm font-semibold leading-6 bg-[var(--color-surface-2)] text-[var(--color-fg)] ring-1 ring-inset ring-[var(--color-border)] hover:bg-[var(--color-surface-3)] transition-colors">
-                {t("plans.team.cta")}
-              </a>
-            </motion.div>
+            <PricingCard 
+              name={t("plans.team.name")}
+              price={t("plans.team.price")}
+              perMonth=""
+              features={[0, 1, 2, 3].map(i => t(`plans.team.features.${i}`))}
+              cta={t("plans.team.cta")}
+              href="mailto:hi@aiexam.uz"
+              icon={Sparkles}
+            />
           </motion.div>
           
-          <div className="mt-20 flex items-center justify-center gap-2 text-sm text-[var(--color-muted-fg)]">
-            <Info className="size-4" /> Barcha to'lovlar xavfsiz va shifrlangan. 14 kunlik pulni qaytarish kafolati (faqat Pro tarifida).
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            className="mt-24 flex items-center justify-center gap-3 text-sm font-bold text-slate-500 uppercase tracking-widest"
+          >
+            <ShieldCheck className="size-5 text-emerald-400" /> Barcha to'lovlar xavfsiz va shifrlangan. 14 kunlik kafolat.
+          </motion.div>
         </section>
       </main>
       
       <Footer />
     </div>
+  );
+}
+
+function PricingCard({ 
+  name, 
+  price, 
+  perMonth, 
+  features, 
+  cta, 
+  href, 
+  icon: Icon, 
+  featured = false, 
+  badge = "" 
+}: { 
+  name: string; 
+  price: string; 
+  perMonth: string; 
+  features: string[]; 
+  cta: string; 
+  href: string; 
+  icon: any; 
+  featured?: boolean; 
+  badge?: string;
+}) {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`relative flex flex-col justify-between rounded-[40px] p-8 transition-all duration-500 hover:-translate-y-2 ${
+        featured 
+          ? "bg-blue-600 shadow-[0_0_50px_rgba(37,99,235,0.3)] ring-4 ring-blue-500/50 scale-105 z-10" 
+          : "bg-white/5 border border-white/5 hover:bg-white/10"
+      }`}
+    >
+      {badge && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-1 text-[10px] font-black text-blue-600 uppercase tracking-widest shadow-xl">
+          {badge}
+        </div>
+      )}
+      
+      <div>
+        <div className="flex items-center justify-between mb-8">
+          <div className={`p-3 rounded-2xl ${featured ? "bg-white/20" : "bg-blue-500/10 text-blue-400"}`}>
+            <Icon className="size-6" />
+          </div>
+          <h3 className={`text-xl font-black ${featured ? "text-white" : "text-slate-300"}`}>{name}</h3>
+        </div>
+        
+        <div className="mb-10">
+          <div className="flex items-baseline gap-1">
+            <span className="text-5xl font-black tracking-tighter">{price}</span>
+            {perMonth && <span className={`text-sm font-bold uppercase tracking-widest ${featured ? "text-white/60" : "text-slate-500"}`}>{perMonth}</span>}
+          </div>
+        </div>
+        
+        <ul className="space-y-4 mb-10">
+          {features.map((feature, i) => (
+            <li key={i} className="flex items-start gap-3">
+              <div className={`mt-1 flex h-5 w-5 items-center justify-center rounded-full ${featured ? "bg-white/20 text-white" : "bg-blue-500/10 text-blue-400"}`}>
+                <Check className="size-3" />
+              </div>
+              <span className={`text-sm font-medium ${featured ? "text-white" : "text-slate-400"}`}>{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <a 
+        href={href} 
+        className={`w-full rounded-2xl py-4 text-center text-sm font-black uppercase tracking-widest transition-all ${
+          featured 
+            ? "bg-white text-blue-600 shadow-xl hover:scale-105" 
+            : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
+        }`}
+      >
+        {cta}
+      </a>
+    </motion.div>
   );
 }

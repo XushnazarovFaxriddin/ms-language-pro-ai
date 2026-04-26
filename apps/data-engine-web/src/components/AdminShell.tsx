@@ -5,12 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@/lib/api";
 import { LogoutButton } from "./LogoutButton";
-import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight } from "lucide-react";
+import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight, Database, ClipboardCheck, Settings } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Bosh sahifa", icon: LayoutDashboard },
   { href: "/generation", label: "Savol generatsiyasi", icon: BrainCircuit },
+  { href: "/items", label: "Savollar banki", icon: Database },
+  { href: "/review", label: "Tasdiqlash navbati", icon: ClipboardCheck },
   { href: "/llm-usage", label: "LLM xarajat", icon: Activity },
+  { href: "/settings", label: "Sozlamalar", icon: Settings },
 ];
 
 export function AdminShell({

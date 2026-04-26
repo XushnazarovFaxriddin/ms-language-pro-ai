@@ -13,12 +13,16 @@
     "@languagepro/contracts": "workspace:*",
     "@languagepro/i18n": "workspace:*",
     "@languagepro/ui": "workspace:*",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.0",
+    "@types/three": "^0.184.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.11.0",
     "next": "15.1.0",
     "next-intl": "^3.26.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "three": "^0.184.0"
   },
   "devDependencies": {
     "@languagepro/config-eslint": "workspace:*",
