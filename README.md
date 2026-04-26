@@ -18,8 +18,8 @@ Loyiha **2 ta magistrlik dissertatsiyasi** doirasida ishlab chiqilmoqda — bitt
 
 | Talaba | Mavzu | Hissasi | Subdomen |
 |---|---|---|---|
-| **Ismatov Bobomurod Raxmat o'g'li** | _Sun'iy intellekt arxitekturasi yordamida xorijiy tilni bilish darajasini aniqlash platformasining ma'lumotlar manbaini shakllantirish_ | Ma'lumotlar bazasi: AI orqali savollar generatsiya, multi-jury validatsiya, CEFR klassifikatsiya, IRT 2PL kalibratsiya | `data-engine.languagepro.ai` |
-| **Xushnazarov Faxriddin Farhod o'g'li** | _Sun'iy intellekt arxitekturalari yordamida xorijiy tilini bilish darajasini aniqlash platformasini ishlab chiqish_ | Imtihon platformasi: adaptiv test runner, audio (Whisper), writing/speaking LLM scoring, sertifikatlar | `app.languagepro.ai` |
+| **Ismatov Bobomurod Raxmat o'g'li** | _Sun'iy intellekt arxitekturasi yordamida xorijiy tilni bilish darajasini aniqlash platformasining ma'lumotlar manbaini shakllantirish_ | Ma'lumotlar bazasi: AI orqali savollar generatsiya, multi-jury validatsiya, CEFR klassifikatsiya, IRT 2PL kalibratsiya | `admin.aiexam.uz` |
+| **Xushnazarov Faxriddin Farhod o'g'li** | _Sun'iy intellekt arxitekturalari yordamida xorijiy tilini bilish darajasini aniqlash platformasini ishlab chiqish_ | Imtihon platformasi: adaptiv test runner, audio (Whisper), writing/speaking LLM scoring, sertifikatlar | `app.aiexam.uz` |
 
 Yo'nalish: **70610101 — Kompyuter tizimlari va ularning dasturiy ta'minoti (sohalar bo'yichа)**
 
@@ -30,10 +30,10 @@ Yo'nalish: **70610101 — Kompyuter tizimlari va ularning dasturiy ta'minoti (so
 ```
 desertation/
 ├── apps/
-│   ├── landing/                # languagepro.ai — marketing landing
-│   ├── data-engine-web/        # data-engine.languagepro.ai — Bobomurod admin UI
+│   ├── landing/                # aiexam.uz — marketing landing
+│   ├── data-engine-web/        # admin.aiexam.uz — Bobomurod admin UI
 │   ├── data-engine-api/        # Bobomurod FastAPI backend
-│   ├── exam-platform-web/      # app.languagepro.ai — Faxriddin student UI
+│   ├── exam-platform-web/      # app.aiexam.uz — Faxriddin student UI
 │   ├── exam-platform-api/      # Faxriddin FastAPI backend
 │   └── auth-api/               # Shared SSO (joint ownership)
 ├── packages/                   # @languagepro/{ui,contracts,i18n,config-*}
@@ -57,8 +57,8 @@ To'liq arxitektura: [`docs/system-overview.md`](docs/system-overview.md).
 | Database | PostgreSQL 17 + pgvector |
 | Cache/Queue | Redis 7 + arq |
 | Storage | MinIO (dev), S3-compatible (prod) |
-| LLM | OpenAI GPT-4o + Google Gemini 2.0 (LiteLLM gateway) |
-| STT | OpenAI Whisper |
+| LLM | OpenAI SDK + Google Gemini 2.5 (no ChatGPT) — `OPENAI_BASE_URL` Gemini OpenAI-compat endpoint |
+| STT | Gemini 2.5 Flash multimodal (no Whisper) |
 | IRT | py-irt (Pyro), 2PL model |
 | Tooling | uv (Python), pnpm + Turborepo (JS) |
 | Deploy | Docker Compose, Caddy 2 |
@@ -99,11 +99,17 @@ uv run alembic -c apps/exam-platform-api/alembic.ini upgrade head
 pnpm dev
 ```
 
-Subdomen xaritasi (Caddy avtomatik konfiguratsiya):
+Subdomen xaritasi (dev, Caddy avtomatik):
 - http://localhost — landing
-- http://app.localhost — exam platform
-- http://data-engine.localhost — admin
+- http://app.localhost — exam platform (Faxriddin)
+- http://admin.localhost — admin/data-engine (Bobomurod)
 - http://api.localhost/{auth,data,exam}/v1/* — API'lar
+
+Production:
+- https://aiexam.uz — landing
+- https://app.aiexam.uz — exam platform
+- https://admin.aiexam.uz — admin
+- https://api.aiexam.uz/{auth,data,exam}/v1/* — API'lar
 
 ---
 

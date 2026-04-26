@@ -20,4 +20,4 @@ Content adminlar (Bobomurod va kelajakdagi tilshunoslar) uchun browser-based adm
 Next.js 15, App Router, Tailwind v4, shadcn/ui, TanStack Query + Server Actions, recharts (dashboards)
 
 ## Subdomain
-`https://data-engine.languagepro.ai`
+`https://admin.aiexam.uz`

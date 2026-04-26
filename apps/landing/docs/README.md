@@ -1,7 +1,7 @@
 # landing — Hujjatlar
 
 > **Egasi**: Joint
-> **Maqsad**: `languagepro.ai` marketing sayt
+> **Maqsad**: `aiexam.uz` marketing sayt
 
 | # | Fayl | Mavzu |
 |---|---|---|

@@ -6,7 +6,7 @@
 
 ## Context
 
-LanguagePro AI has 3 web subdomains: `languagepro.ai` (landing), `app.languagepro.ai` (exam), `data-engine.languagepro.ai` (admin). One user (e.g., a researcher with role=`content_admin` AND `student`) may use multiple subdomains in one session and should not have to log in twice.
+LanguagePro AI has 3 web subdomains: `aiexam.uz` (landing), `app.aiexam.uz` (exam), `admin.aiexam.uz` (admin). One user (e.g., a researcher with role=`content_admin` AND `student`) may use multiple subdomains in one session and should not have to log in twice.
 
 Auth must:
 1. Be shared across all subdomains.
@@ -32,11 +32,11 @@ Auth must:
 
 | Cookie | Lifetime | Path | Domain | SameSite | Secure | HttpOnly |
 |---|---|---|---|---|---|---|
-| `__Host-lp_access` | 15 min | `/` | `.languagepro.ai` | Lax | yes | yes |
-| `__Host-lp_refresh` | 30 days | `/auth/v1/refresh` | `.languagepro.ai` | Strict | yes | yes |
-| `__Host-lp_csrf` | session | `/` | `.languagepro.ai` | Lax | yes | no (read by JS for double-submit) |
+| `__Host-lp_access` | 15 min | `/` | `.aiexam.uz` | Lax | yes | yes |
+| `__Host-lp_refresh` | 30 days | `/auth/v1/refresh` | `.aiexam.uz` | Strict | yes | yes |
+| `__Host-lp_csrf` | session | `/` | `.aiexam.uz` | Lax | yes | no (read by JS for double-submit) |
 
-> **Note on `__Host-` prefix**: This RFC 6265bis convention requires `Secure`, `Path=/`, no explicit `Domain` attribute in the Set-Cookie header. To use it across subdomains, we set `Domain=.languagepro.ai` and accept that we are technically using a custom prefix `lp_*` rather than strict `__Host-`. We retain the `__Host-` prefix as a defense-in-depth signal, but the canonical apex-domain cookie has `Domain` set. For production, evaluate `__Secure-` prefix instead, which is compatible with explicit `Domain`.
+> **Note on `__Host-` prefix**: This RFC 6265bis convention requires `Secure`, `Path=/`, no explicit `Domain` attribute in the Set-Cookie header. To use it across subdomains, we set `Domain=.aiexam.uz` and accept that we are technically using a custom prefix `lp_*` rather than strict `__Host-`. We retain the `__Host-` prefix as a defense-in-depth signal, but the canonical apex-domain cookie has `Domain` set. For production, evaluate `__Secure-` prefix instead, which is compatible with explicit `Domain`.
 
 ### Token payloads
 
@@ -48,8 +48,8 @@ Access JWT (HS256):
   "locale": "uz",
   "iat": 1714060800,
   "exp": 1714061700,
-  "iss": "auth.languagepro.ai",
-  "aud": "languagepro.ai"
+  "iss": "auth.aiexam.uz",
+  "aud": "aiexam.uz"
 }
 ```
 

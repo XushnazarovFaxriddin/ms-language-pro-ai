@@ -25,7 +25,7 @@ PostgreSQL `auth` schema. Jadvallar:
 - `api_keys` (name, hash, scopes jsonb, ...)
 
 ## Subdomain
-`https://api.languagepro.ai/auth/v1/*`
+`https://api.aiexam.uz/auth/v1/*`
 
 ## Stack
 FastAPI 0.115+, SQLAlchemy 2.0 async, Pydantic v2, `argon2-cffi`, `python-jose` (JWT), `authlib` (OAuth).
@@ -34,4 +34,4 @@ FastAPI 0.115+, SQLAlchemy 2.0 async, Pydantic v2, `argon2-cffi`, `python-jose` 
 - `__Host-lp_access` — 15 min, HS256 JWT
 - `__Host-lp_refresh` — 30 days, opaque, in DB
 - `__Host-lp_csrf` — session, double-submit token
-- All `Domain=.languagepro.ai` (prod), `Domain=.localhost` (dev)
+- All `Domain=.aiexam.uz` (prod), `Domain=.localhost` (dev)

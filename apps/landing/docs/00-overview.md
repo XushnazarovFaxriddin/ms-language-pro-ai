@@ -2,7 +2,7 @@
 
 ## Maqsad
 - LanguagePro AI haqida birinchi kirish nuqtasi
-- 2 ta mahsulotni reklama qilish: imtihon (`app.languagepro.ai`) + content studio (`data-engine.languagepro.ai`)
+- 2 ta mahsulotni reklama qilish: imtihon (`app.aiexam.uz`) + content studio (`admin.aiexam.uz`)
 - Demo video, narxlash, FAQ
 - Privacy Policy + Terms of Service (pilot uchun shart)
 
@@ -11,7 +11,7 @@
 |---|---|
 | `/[locale]` | Hero, value props, demo CTA |
 | `/[locale]/about` | Loyiha, mualliflar, BSU dissertatsiya |
-| `/[locale]/exams` | Test turlari (IELTS, CEFR placement) — link to app.languagepro.ai |
+| `/[locale]/exams` | Test turlari (IELTS, CEFR placement) — link to app.aiexam.uz |
 | `/[locale]/for-teachers` | Content studio sotuv sahifasi |
 | `/[locale]/pricing` | Free / Pro plans (kelajakda) |
 | `/[locale]/faq` | Tez-tez beriladigan savollar |

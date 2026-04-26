@@ -29,7 +29,7 @@ uv run alembic -c apps/data-engine-api/alembic.ini revision --autogenerate -m "a
 ## Production (Docker on VPS)
 - Image: `infra/docker/data-engine-api.Dockerfile` (multi-stage, ~200MB)
 - 2 containers: `api` (uvicorn, 4 workers) + `worker` (arq, 2 workers)
-- Caddy routes `data-engine.languagepro.ai` → `data-engine-web`, `api.languagepro.ai/data/*` → `data-engine-api`
+- Caddy routes `admin.aiexam.uz` → `data-engine-web`, `api.aiexam.uz/data/*` → `data-engine-api`
 - Postgres: shared cluster, search_path includes `data_engine,public`
 - Backup: nightly `pg_dump --schema=data_engine` to S3
 

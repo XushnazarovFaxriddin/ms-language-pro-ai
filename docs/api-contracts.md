@@ -13,13 +13,13 @@ This document defines the **stable** REST contracts between LanguagePro AI servi
 | Environment | Base URL | Notes |
 |---|---|---|
 | Local dev | `http://api.localhost/{service}/v1` | Caddy routes by Host |
-| Staging | `https://api.staging.languagepro.ai/{service}/v1` | TBD |
-| Production | `https://api.languagepro.ai/{service}/v1` | |
+| Staging | `https://api.staging.aiexam.uz/{service}/v1` | TBD |
+| Production | `https://api.aiexam.uz/{service}/v1` | |
 
 Service slugs: `auth`, `data`, `exam`. Examples:
-- `POST https://api.languagepro.ai/auth/v1/login`
-- `GET  https://api.languagepro.ai/data/v1/items/next`
-- `POST https://api.languagepro.ai/exam/v1/attempts`
+- `POST https://api.aiexam.uz/auth/v1/login`
+- `GET  https://api.aiexam.uz/data/v1/items/next`
+- `POST https://api.aiexam.uz/exam/v1/attempts`
 
 ---
 
@@ -34,7 +34,7 @@ Cookie-based, issued by `auth-api`:
 | `__Host-lp_access` | Short-lived JWT (15 min) | `HttpOnly; Secure; SameSite=Lax; Path=/` |
 | `__Host-lp_refresh` | Refresh token (30 days) | `HttpOnly; Secure; SameSite=Strict; Path=/auth/v1/refresh` |
 
-Cookies are scoped to `Domain=.languagepro.ai` (prod) or `Domain=.localhost` (dev) so all subdomains share session.
+Cookies are scoped to `Domain=.aiexam.uz` (prod) or `Domain=.localhost` (dev) so all subdomains share session.
 
 JWT payload (HS256):
 ```json
@@ -44,8 +44,8 @@ JWT payload (HS256):
   "locale": "uz",
   "iat": 1714060800,
   "exp": 1714061700,
-  "iss": "auth.languagepro.ai",
-  "aud": "languagepro.ai"
+  "iss": "auth.aiexam.uz",
+  "aud": "aiexam.uz"
 }
 ```
 
@@ -102,7 +102,7 @@ HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/problem+json
 
 {
-  "type": "https://api.languagepro.ai/errors/invalid-cefr-level",
+  "type": "https://api.aiexam.uz/errors/invalid-cefr-level",
   "title": "Invalid CEFR level",
   "status": 422,
   "detail": "Provided level 'D1' is not in {A1,A2,B1,B2,C1,C2}",

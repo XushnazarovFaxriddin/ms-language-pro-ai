@@ -26,7 +26,7 @@
 ### 2.1. End-user (browser)
 
 - **Mechanism**: Email + password (Argon2id hash, `time=2, memory=64MB, parallelism=1`) or Google OAuth.
-- **Cookies**: `__Host-` prefix, `HttpOnly; Secure; SameSite=Lax` (access) / `Strict` (refresh). `Domain=.languagepro.ai` apex.
+- **Cookies**: `__Host-` prefix, `HttpOnly; Secure; SameSite=Lax` (access) / `Strict` (refresh). `Domain=.aiexam.uz` apex.
 - **Tokens**:
   - Access JWT — HS256, 15 min TTL, signed with `AUTH_JWT_SECRET` (rotated quarterly via overlapping keys).
   - Refresh — opaque random 256-bit, hashed in `auth.sessions`, 30-day sliding window, single-use rotation.

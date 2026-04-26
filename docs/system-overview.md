@@ -41,9 +41,9 @@ flowchart TB
     end
 
     subgraph WebApps["📱 Web ilovalar (Next.js 15, App Router, RSC)"]
-        Landing["landing<br/>languagepro.ai"]
-        DEWeb["data-engine-web<br/>data-engine.languagepro.ai"]
-        EPWeb["exam-platform-web<br/>app.languagepro.ai"]
+        Landing["landing<br/>aiexam.uz"]
+        DEWeb["data-engine-web<br/>admin.aiexam.uz"]
+        EPWeb["exam-platform-web<br/>app.aiexam.uz"]
     end
 
     subgraph APIs["⚙️ API'lar (FastAPI 0.115+)"]
@@ -102,14 +102,14 @@ flowchart TB
 
 | URL | Servis | Egasi |
 |---|---|---|
-| `https://languagepro.ai` | landing | Joint |
-| `https://app.languagepro.ai` | exam-platform-web | Faxriddin |
-| `https://data-engine.languagepro.ai` | data-engine-web | Bobomurod |
-| `https://api.languagepro.ai/auth/v1/*` | auth-api | Joint |
-| `https://api.languagepro.ai/data/v1/*` | data-engine-api | Bobomurod |
-| `https://api.languagepro.ai/exam/v1/*` | exam-platform-api | Faxriddin |
+| `https://aiexam.uz` | landing | Joint |
+| `https://app.aiexam.uz` | exam-platform-web | Faxriddin |
+| `https://admin.aiexam.uz` | data-engine-web | Bobomurod |
+| `https://api.aiexam.uz/auth/v1/*` | auth-api | Joint |
+| `https://api.aiexam.uz/data/v1/*` | data-engine-api | Bobomurod |
+| `https://api.aiexam.uz/exam/v1/*` | exam-platform-api | Faxriddin |
 
-> Dev rejimida `*.localhost` ishlatiladi (Caddy lokal TLS). Browser'larda CORS muammosi bo'lmasligi uchun JWT cookie `Domain=.localhost`, prod'da `Domain=.languagepro.ai`.
+> Dev rejimida `*.localhost` ishlatiladi (Caddy lokal TLS). Browser'larda CORS muammosi bo'lmasligi uchun JWT cookie `Domain=.localhost`, prod'da `Domain=.aiexam.uz`.
 
 ---
 
@@ -293,7 +293,7 @@ To'liq DDL: tegishli `apps/*/docs/03-data-model.md`.
 
 ## 6. Auth & Security (qisqa)
 
-- **JWT cookie SSO**: `auth-api` HS256 JWT'larni `__Host-` cookie sifatida `.languagepro.ai` apex domenda chiqaradi. Refresh tokenlar Redis'da saqlanadi (revocation imkoniyati).
+- **JWT cookie SSO**: `auth-api` HS256 JWT'larni `__Host-` cookie sifatida `.aiexam.uz` apex domenda chiqaradi. Refresh tokenlar Redis'da saqlanadi (revocation imkoniyati).
 - **RBAC**: 5 rol — `student`, `examiner`, `content_admin`, `researcher`, `superadmin`. Endpoint dekoratorlari: `@require_role("content_admin")`.
 - **S2S**: `exam-platform-api` → `data-engine-api` chaqiruvlarida 5-min TTL'li signed JWT (`iss=exam-platform`, `aud=data-engine`).
 - **Rate limit**: `fastapi-limiter` + Redis. Per-IP va per-user limitlar.

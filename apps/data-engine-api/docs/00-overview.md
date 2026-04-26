@@ -14,8 +14,8 @@
 - **researcher** → `/v1/exports/responses.csv` (api-key auth)
 
 ## Subdomain
-- API: `https://api.languagepro.ai/data/v1/*`
-- Admin UI: `https://data-engine.languagepro.ai`
+- API: `https://api.aiexam.uz/data/v1/*`
+- Admin UI: `https://admin.aiexam.uz`
 
 ## Eng muhim chegaralar
 1. **Rasmiy IELTS/Cambridge kontentini hech qachon DB'ga import qilmaydi** (lits. cheklov — `docs/data-licensing.md`)

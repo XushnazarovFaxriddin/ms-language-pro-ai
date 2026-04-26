@@ -14,8 +14,8 @@
 - **admin** — barcha attempts'ni ko'radi
 
 ## Subdomain
-- API: `https://api.languagepro.ai/exam/v1/*`
-- Student UI: `https://app.languagepro.ai`
+- API: `https://api.aiexam.uz/exam/v1/*`
+- Student UI: `https://app.aiexam.uz`
 
 ## Eng muhim chegaralar
 1. Hech qachon to'g'ridan-to'g'ri DB'da savollarni saqlamaydi — har doim `data-engine-api` orqali oladi (S2S JWT)

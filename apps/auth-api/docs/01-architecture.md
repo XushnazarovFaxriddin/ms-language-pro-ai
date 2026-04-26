@@ -64,7 +64,7 @@ async def get_current_user(request: Request) -> User:
     token = request.cookies.get("__Host-lp_access")
     if not token: raise Unauthorized()
     payload = jwt.decode(token, settings.AUTH_JWT_SECRET, algorithms=["HS256"],
-                        audience="languagepro.ai", issuer="auth.languagepro.ai")
+                        audience="aiexam.uz", issuer="auth.aiexam.uz")
     return User(id=payload["sub"], roles=payload["roles"], locale=payload["locale"])
 ```
 

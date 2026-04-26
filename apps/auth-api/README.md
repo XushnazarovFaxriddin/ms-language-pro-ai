@@ -3,7 +3,7 @@
 > **Owner**: Joint
 > **Stack**: Python 3.12 · FastAPI · SQLAlchemy 2.0 · Argon2 · JWT · Authlib (OAuth)
 
-Shared SSO authentication service. Issues JWT cookies on `.languagepro.ai` apex domain.
+Shared SSO authentication service. Issues JWT cookies on `.aiexam.uz` apex domain.
 
 ## Run locally
 ```bash

@@ -12,7 +12,7 @@ Talaba foydalanuvchisi uchun:
 Next.js 15 App Router, TypeScript strict, Tailwind v4, shadcn/ui, next-intl (UZ default + EN), TanStack Query (lists), Zustand (ExamRunner state), TipTap (writing), MediaRecorder (speaking).
 
 ## Subdomain
-`https://app.languagepro.ai`
+`https://app.aiexam.uz`
 
 ## Kritik UX talablar
 - **Imtihon davomida** sahifani tark etish — uchqun ogohlantirish, time pauza qilinmaydi

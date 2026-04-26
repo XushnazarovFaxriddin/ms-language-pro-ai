@@ -25,7 +25,7 @@ uv run alembic -c apps/exam-platform-api/alembic.ini upgrade head
 
 ## Production (Docker on VPS)
 - 2 containers: api (uvicorn 4 workers) + worker (arq 4 workers — speaking can be slow)
-- Caddy: `app.languagepro.ai` → exam-platform-web; `api.languagepro.ai/exam/*` → exam-platform-api
+- Caddy: `app.aiexam.uz` → exam-platform-web; `api.aiexam.uz/exam/*` → exam-platform-api
 - Postgres `search_path = exam_platform, public`
 - ffmpeg installed in worker image (`apt-get install -y ffmpeg`)
 
