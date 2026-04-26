@@ -40,6 +40,13 @@ app.add_middleware(
 
 register_error_handlers(app)
 
+from data_engine.api.v1 import blueprints, generation, items, llm_usage  # noqa: E402
+
+app.include_router(items.router, prefix="/v1")
+app.include_router(blueprints.router, prefix="/v1")
+app.include_router(generation.router, prefix="/v1")
+app.include_router(llm_usage.router, prefix="/v1")
+
 
 @app.get("/healthz")
 async def healthz() -> dict:

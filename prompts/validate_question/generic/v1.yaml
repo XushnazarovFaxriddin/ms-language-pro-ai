@@ -1,0 +1,48 @@
+purpose: validate_question
+sub_purpose: generic
+version: 1
+status: active
+description: Multi-jury validation of a generated question. Returns verdict + reasoning.
+
+variables_schema:
+  question_payload: { type: object }
+  answer_key: { type: object }
+  target_cefr: { type: string }
+
+response_schema_ref: data_engine.schemas.JuryVerdict
+
+system: |
+  You are an IELTS examiner reviewing a single generated MCQ for publication.
+  Reject if any are violated:
+  - Linguistic correctness (grammar, register)
+  - Single unambiguous correct answer
+  - Distractors plausible but clearly wrong
+  - Target CEFR level matches text complexity
+  - No cultural / political / religious sensitivity
+  - No duplicate phrasing between stem and options
+  Output JSON only.
+
+user: |
+  Question to review:
+  Passage: {{ question_payload.passage }}
+  Prompt: {{ question_payload.prompt }}
+  Options:
+  - A: {{ question_payload.options[0].label }}
+  - B: {{ question_payload.options[1].label }}
+  - C: {{ question_payload.options[2].label }}
+  - D: {{ question_payload.options[3].label }}
+  Stated correct answer: {{ answer_key.correct_option_id }}
+  Target CEFR: {{ target_cefr }}
+
+  Return JSON:
+  {
+    "verdict": "approve" | "reject" | "borderline",
+    "reasoning": "one paragraph",
+    "criteria_scores": {
+      "grammar": 1-5,
+      "single_answer": 1-5,
+      "distractor_quality": 1-5,
+      "cefr_match": 1-5,
+      "sensitivity": 1-5
+    }
+  }

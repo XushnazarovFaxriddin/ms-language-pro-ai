@@ -1,0 +1,27 @@
+purpose: classify_cefr
+sub_purpose: generic
+version: 1
+status: active
+description: Classify the CEFR level of a given English text.
+
+variables_schema:
+  text: { type: string }
+
+response_schema_ref: data_engine.schemas.CefrClassification
+
+system: |
+  You are a CEFR text classifier. Assess vocabulary range, grammatical complexity,
+  cohesion, and topic abstractness. Output JSON only. Confidence is 0..1.
+
+user: |
+  Classify the CEFR level of this text.
+
+  Text:
+  {{ text }}
+
+  Return JSON:
+  {
+    "actual_level": "A1|A2|B1|B2|C1|C2",
+    "confidence": 0.0-1.0,
+    "evidence": "one sentence pointing to specific lexical/grammatical features"
+  }

@@ -7,10 +7,8 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from data_engine.settings import settings
-from languagepro_common.db import Base  # placeholder — models registered below
-
-# When models are added, import them here so Base.metadata sees them.
-# from data_engine.adapters.db import models  # noqa: F401
+from languagepro_common.db import Base
+from data_engine import models  # noqa: F401  registers tables on Base.metadata
 
 config = context.config
 if config.config_file_name is not None:
@@ -23,7 +21,7 @@ target_metadata = Base.metadata
 
 def include_object(obj, name, type_, reflected, compare_to):
     if type_ == "table":
-        return obj.schema == "data_engine"
+        return obj.schema in ("data_engine", "analytics")
     return True
 
 

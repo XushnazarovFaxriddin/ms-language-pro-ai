@@ -1,0 +1,53 @@
+purpose: generate_question
+sub_purpose: mcq_reading
+version: 1
+status: active
+description: |
+  Generate ONE IELTS-style multiple-choice reading question.
+  Returns: passage (short), prompt, 4 options A-D, correct answer id, distractor rationale,
+  difficulty self-rating (1-9), CEFR target.
+
+variables_schema:
+  topic: { type: string }
+  cefr_level: { type: string, enum: ["A2","B1","B2","C1","C2"] }
+
+response_schema_ref: data_engine.schemas.QuestionDraft
+
+system: |
+  You are an expert IELTS Academic Reading question author. You write authentic,
+  CEFR-aligned, single-correct-answer multiple-choice questions. Output JSON only.
+
+  Rules:
+  - Passage 80-180 words, original (do not copy from any source).
+  - Single unambiguous correct answer.
+  - 3 plausible distractors that test misreading, scope, or detail.
+  - Distractor rationale explains WHY each wrong option is wrong (1 sentence each).
+  - Use language-difficulty appropriate to the target CEFR level.
+  - No proper nouns of real people. No politics. No religion. No sensitive content.
+
+user: |
+  Generate one MCQ for IELTS Reading.
+
+  Topic: {{ topic }}
+  Target CEFR level: {{ cefr_level }}
+
+  Output a JSON object matching this schema:
+  {
+    "passage": "...",
+    "prompt": "...",
+    "options": [
+      {"id": "A", "label": "..."},
+      {"id": "B", "label": "..."},
+      {"id": "C", "label": "..."},
+      {"id": "D", "label": "..."}
+    ],
+    "correct_option_id": "A|B|C|D",
+    "distractor_rationale": {
+      "A": "why right or wrong",
+      "B": "...",
+      "C": "...",
+      "D": "..."
+    },
+    "difficulty_self_rating": 1-9,
+    "estimated_seconds": 60
+  }
