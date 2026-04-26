@@ -2,9 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { getCookieHeader, requireUser } from "@/lib/auth-server";
-import { AppHeader } from "@/components/AppHeader";
 import { StartAttemptButton } from "./StartAttemptButton";
-import { MoveRight, GraduationCap } from "lucide-react";
+import { MoveRight, GraduationCap, Target, Trophy, Clock } from "lucide-react";
 
 export default async function ExamsPage() {
   const user = await requireUser("/exams");
@@ -13,28 +12,78 @@ export default async function ExamsPage() {
   const t = await getTranslations("Dashboard");
 
   return (
-    <>
-      <AppHeader user={user} />
-      <main className="container mx-auto max-w-4xl px-6 py-16">
-        <header className="mb-12">
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">{t("title")}</h1>
-          <p className="mt-4 max-w-2xl text-lg text-[var(--color-muted-fg)]">
-            {t("description")}
+    <div className="mx-auto max-w-6xl space-y-8">
+      {/* Welcome Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/20 via-[var(--color-primary)]/5 to-transparent p-8 border border-[var(--color-primary)]/10">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-2">
+            {t("welcome", { name: user.display_name || user.email.split("@")[0] })}
+          </h1>
+          <p className="text-lg text-[var(--color-muted-fg)] max-w-2xl">
+            {t("welcomeSub")}
           </p>
-        </header>
+        </div>
+        {/* Abstract background decorations */}
+        <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-[var(--color-primary)]/10 blur-3xl pointer-events-none" />
+        <div className="absolute right-40 -bottom-20 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+      </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+              <Target className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.totalExams")}</p>
+              <p className="text-2xl font-bold">0</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
+              <Clock className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.avgScore")}</p>
+              <p className="text-2xl font-bold">—</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
+              <Trophy className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.certificates")}</p>
+              <p className="text-2xl font-bold">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Available Exams Section */}
+      <div>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
+          <p className="text-[var(--color-muted-fg)] mt-1">{t("description")}</p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {exams.map((e) => (
             <div
               key={e.id}
-              className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white/5 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md dark:bg-black/20"
+              className="group flex flex-col relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-white/5 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-[var(--color-primary)]/30 dark:bg-black/20"
             >
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
                 <GraduationCap className="h-6 w-6" />
               </div>
-              <h2 className="mb-2 text-xl font-bold tracking-tight">
+              <h3 className="mb-2 text-xl font-bold tracking-tight">
                 {user.locale === "uz" ? e.name_uz : e.name_en}
-              </h2>
+              </h3>
               <p className="mb-6 text-sm text-[var(--color-muted-fg)]">
                 {t("blueprint")} <span className="rounded bg-[var(--color-muted)] px-2 py-0.5 font-mono text-xs">{e.blueprint_code}</span>
               </p>
@@ -57,7 +106,7 @@ export default async function ExamsPage() {
             </div>
           )}
         </div>
-      </main>
-    </>
+      </div>
+    </div>
   );
 }

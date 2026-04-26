@@ -102,7 +102,20 @@
     "goHome": "Home",
     "blueprint": "Blueprint: ",
     "startAttempt": "Start Attempt",
-    "starting": "Starting…"
+    "starting": "Starting…",
+    "welcome": "Welcome, {name}!",
+    "welcomeSub": "Ready to test your knowledge today?",
+    "stats": {
+      "totalExams": "Exams Taken",
+      "avgScore": "Average Score",
+      "certificates": "Certificates"
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "results": "My Results",
+      "certificates": "Certificates",
+      "settings": "Settings"
+    }
   },
   "Exam": {
     "loading": "Loading…",

@@ -102,7 +102,20 @@
     "goHome": "Bosh sahifa",
     "blueprint": "Blueprint: ",
     "startAttempt": "Boshlash",
-    "starting": "Boshlanmoqda…"
+    "starting": "Boshlanmoqda…",
+    "welcome": "Xush kelibsiz, {name}!",
+    "welcomeSub": "Bugun bilimizni sinab ko'rishga tayyormisiz?",
+    "stats": {
+      "totalExams": "Topshirilgan imtihonlar",
+      "avgScore": "O'rtacha natija",
+      "certificates": "Sertifikatlar"
+    },
+    "nav": {
+      "dashboard": "Asosiy",
+      "results": "Mening natijalarim",
+      "certificates": "Sertifikatlar",
+      "settings": "Sozlamalar"
+    }
   },
   "Exam": {
     "loading": "Yuklanmoqda…",
