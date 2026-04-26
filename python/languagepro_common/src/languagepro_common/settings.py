@@ -18,7 +18,7 @@ class BaseAppSettings(BaseSettings):
 
     # Domain / cookies
     APP_DOMAIN: str = "localhost"
-    APEX_COOKIE_DOMAIN: str = ".localhost"
+    APEX_COOKIE_DOMAIN: str = "localhost"
     AUTH_REFRESH_COOKIE_PATH: str = "/v1/refresh"
 
     # Postgres
