@@ -82,6 +82,8 @@ export const api = {
       }),
     getAttempt: (id: string, cookieHeader?: string) =>
       call<AttemptOut>(`/v1/attempts/${id}`, { api: "exam", cookieHeader }),
+    listAttempts: (cookieHeader?: string) =>
+      call<AttemptListItem[]>(`/v1/attempts`, { api: "exam", cookieHeader }),
     getNextItem: (id: string) =>
       call<NextItemResponse>(`/v1/attempts/${id}/next-item`, { api: "exam" }),
     submitResponse: (
@@ -142,6 +144,18 @@ export type AttemptOut = {
   current_section_index: number;
   current_item: ItemView | null;
   theta_estimates: Record<string, number>;
+  started_at: string;
+  finished_at: string | null;
+};
+
+export type AttemptListItem = {
+  id: string;
+  exam_id: string;
+  exam_name_uz: string;
+  exam_name_en: string;
+  blueprint_code: string;
+  state: string;
+  score?: number;
   started_at: string;
   finished_at: string | null;
 };

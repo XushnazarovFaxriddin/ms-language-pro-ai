@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
-import { LayoutDashboard, History, Award, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, History, Award, TrendingUp, CreditCard, BookOpen, Settings, LogOut } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "@/i18n/routing";
 
@@ -16,6 +16,9 @@ export function DashboardSidebar() {
     { href: "/exams", icon: LayoutDashboard, label: tNav("dashboard") },
     { href: "/exams/results", icon: History, label: tNav("results") },
     { href: "/exams/certificates", icon: Award, label: tNav("certificates") },
+    { href: "/exams/analytics", icon: TrendingUp, label: tNav("analytics") },
+    { href: "/exams/study-materials", icon: BookOpen, label: tNav("studyMaterials") },
+    { href: "/exams/payments", icon: CreditCard, label: tNav("payments") },
     { href: "/exams/settings", icon: Settings, label: tNav("settings") },
   ];
 

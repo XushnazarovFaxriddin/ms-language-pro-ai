@@ -114,8 +114,13 @@
       "dashboard": "Dashboard",
       "results": "My Results",
       "certificates": "Certificates",
+      "analytics": "Analytics & Growth",
+      "studyMaterials": "Study Materials",
+      "payments": "Billing & Payments",
       "settings": "Settings"
-    }
+    },
+    "futurePlan": "Future Plan",
+    "demoDisclaimer": "This section is currently running in demo mode. Once fully launched, your actual data will be displayed here."
   },
   "Exam": {
     "loading": "Loading…",

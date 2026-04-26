@@ -64,3 +64,14 @@ class AttemptOut(BaseModel):
     theta_estimates: dict[str, float]
     started_at: datetime
     finished_at: datetime | None
+
+class AttemptListItem(BaseModel):
+    id: UUID
+    exam_id: UUID
+    exam_name_uz: str
+    exam_name_en: str
+    blueprint_code: str
+    state: str
+    score: float | None = None
+    started_at: datetime
+    finished_at: datetime | None = None

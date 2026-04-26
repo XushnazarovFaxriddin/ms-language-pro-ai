@@ -114,8 +114,13 @@
       "dashboard": "Asosiy",
       "results": "Mening natijalarim",
       "certificates": "Sertifikatlar",
+      "analytics": "Analitika va O'sish",
+      "studyMaterials": "O'quv materiallari",
+      "payments": "To'lovlar tarixi",
       "settings": "Sozlamalar"
-    }
+    },
+    "futurePlan": "Kelajakdagi imkoniyat",
+    "demoDisclaimer": "Bu bo'lim hozircha demo rejimida ishlamoqda. Haqiqiy ishga tushirilganda bu yerda sizning shaxsiy ma'lumotlaringiz aks etadi."
   },
   "Exam": {
     "loading": "Yuklanmoqda…",

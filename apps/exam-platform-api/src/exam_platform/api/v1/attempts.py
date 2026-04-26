@@ -14,8 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exam_platform.adapters.data_engine.client import DataEngineClient
 from exam_platform.api.deps import get_current_user, get_data_engine_client
 from exam_platform.db import get_session
-from exam_platform.models import ExamAttempt
+from exam_platform.models import ExamAttempt, Exam
 from exam_platform.schemas import (
+    AttemptListItem,
     AttemptOut,
     NextItemResponse,
     StartAttemptRequest,
@@ -63,6 +64,48 @@ async def get_attempt(
         started_at=row.started_at,
         finished_at=row.finished_at,
     )
+
+
+@router.get("/attempts", response_model=list[AttemptListItem])
+async def list_attempts(
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+) -> list[AttemptListItem]:
+    stmt = (
+        select(ExamAttempt, Exam)
+        .join(Exam, ExamAttempt.exam_id == Exam.id)
+        .where(ExamAttempt.user_id == user.id)
+        .order_by(ExamAttempt.started_at.desc())
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    items = []
+    for att, exam in rows:
+        # Calculate a mock final score for display based on theta, or leave None
+        score = None
+        if att.theta_estimates:
+            # Just take the average theta and convert to a 0-100 scale for demo, 
+            # or just leave it as None if state != completed.
+            if att.state == "completed":
+                avg_theta = sum(float(v) for v in att.theta_estimates.values()) / len(att.theta_estimates)
+                # Map theta (-3 to +3) roughly to 0-100%
+                score = round(max(0.0, min(100.0, (avg_theta + 3) / 6 * 100)), 1)
+
+        items.append(
+            AttemptListItem(
+                id=att.id,
+                exam_id=exam.id,
+                exam_name_uz=exam.name_uz,
+                exam_name_en=exam.name_en,
+                blueprint_code=exam.blueprint_code,
+                state=att.state,
+                score=score,
+                started_at=att.started_at,
+                finished_at=att.finished_at,
+            )
+        )
+    return items
 
 
 @router.get("/attempts/{attempt_id}/next-item", response_model=NextItemResponse)
