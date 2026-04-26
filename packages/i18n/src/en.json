@@ -13,26 +13,50 @@
       "login": "Log in",
       "logout": "Log out",
       "register": "Sign up"
+    },
+    "nav": {
+      "pricing": "Pricing",
+      "features": "Features"
     }
   },
   "Landing": {
     "hero": {
-      "title": "LanguagePro",
-      "titleHighlight": "AI",
-      "description": "Assess your foreign language proficiency online using AI. Adaptive tests in IELTS Academic and CEFR formats with automated grading and personalized feedback.",
+      "title": "Know your English level.",
+      "titleHighlight": "In 30 minutes.",
+      "description": "AI Assessment · IELTS / CEFR · Certificates",
       "startFree": "Start for free",
       "watchDemo": "Watch demo",
       "socialProof": "Over 5,000 students tested"
     },
-    "features": {
-      "exam": {
-        "title": "Take an Exam",
-        "description": "Take an IELTS or CEFR test. Get instant results and a certificate."
+    "howItWorks": {
+      "title": "How it works?",
+      "subtitle": "Get your international certificate in just 3 steps",
+      "step1": {
+        "title": "Take the Test",
+        "description": "Our adaptive system selects questions based on your proficiency level."
       },
-      "studio": {
-        "title": "Content Studio",
-        "description": "AI-powered question generation and calibration for authors."
+      "step2": {
+        "title": "AI Analysis",
+        "description": "Your Speaking and Writing tasks are analyzed within 30 seconds."
+      },
+      "step3": {
+        "title": "Certificate",
+        "description": "Get a cryptographically signed certificate instantly."
       }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "Where are the certificates recognized?",
+      "a1": "Our certificates meet international standards and are recognized by many universities and organizations.",
+      "q2": "How accurate is the AI grading?",
+      "a2": "Our AI models work with ±0.5 band score accuracy compared to real IELTS examiners.",
+      "q3": "How long does the test take?",
+      "a3": "Thanks to the adaptive system, the test takes 30-45 minutes, which is twice as fast as traditional tests."
+    },
+    "cta": {
+      "title": "Test your knowledge now",
+      "subtitle": "Get instant results and professional analysis without any waiting.",
+      "button": "Start for free"
     },
     "footer": {
       "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Bukhara State University · Software Certificate: LanguagePro AI"
@@ -54,7 +78,8 @@
         "priceUSD": "$0",
         "features": {
           "0": "1 test/month",
-          "1": "Reading/Listening only"
+          "1": "Reading/Listening only",
+          "2": "No certificate"
         },
         "cta": "Start"
       },
@@ -64,7 +89,8 @@
         "priceUSD": "$4",
         "features": {
           "0": "5 tests/month",
-          "1": "All 4 skills"
+          "1": "All 4 skills (Speaking/Writing)",
+          "2": "AI Feedback"
         },
         "cta": "Select"
       },
@@ -75,8 +101,8 @@
         "priceUSD": "$10",
         "features": {
           "0": "Unlimited tests",
-          "1": "Certificate",
-          "2": "History & Analytics",
+          "1": "Official Certificate",
+          "2": "Full Results Analysis",
           "3": "Priority support"
         },
         "cta": "Select"

@@ -13,26 +13,50 @@
       "login": "Kirish",
       "logout": "Chiqish",
       "register": "Ro'yxatdan o'tish"
+    },
+    "nav": {
+      "pricing": "Ta'riflar",
+      "features": "Imkoniyatlar"
     }
   },
   "Landing": {
     "hero": {
-      "title": "LanguagePro",
-      "titleHighlight": "AI",
-      "description": "Sun'iy intellekt yordamida xorijiy tilini bilish darajasini onlayn aniqlang. IELTS Academic va CEFR formatida adaptiv test, avtomatik baholash va shaxsiylashtirilgan fikr-mulohaza.",
+      "title": "Ingliz tilingiz darajasini biling.",
+      "titleHighlight": "30 daqiqada.",
+      "description": "AI baholash · IELTS / CEFR · Sertifikat",
       "startFree": "Bepul boshlash",
       "watchDemo": "Demo ko'rish",
       "socialProof": "5,000+ talaba sinovdan o'tdi"
     },
-    "features": {
-      "exam": {
-        "title": "Imtihon topshirish",
-        "description": "IELTS yoki CEFR testini topshiring. Tezkor natija va sertifikat."
+    "howItWorks": {
+      "title": "Qanday ishlaydi?",
+      "subtitle": "Atigi 3 qadamda xalqaro sertifikatga ega bo'ling",
+      "step1": {
+        "title": "Test topshirish",
+        "description": "Adaptiv tizimimiz sizning bilim darajangizga mos savollarni tanlaydi."
       },
-      "studio": {
-        "title": "Content Studio",
-        "description": "Mualliflar uchun AI bilan savollar generatsiyasi va kalibratsiyasi."
+      "step2": {
+        "title": "AI Tahlili",
+        "description": "Sizning Speaking va Writing ishlaringiz 30 soniya ichida tahlil qilinadi."
+      },
+      "step3": {
+        "title": "Sertifikat",
+        "description": "Rasmiy darajangizni tasdiqlovchi sertifikatni lahzada qo'lga kiting."
       }
+    },
+    "faq": {
+      "title": "Ko'p so'raladigan savollar",
+      "q1": "Sertifikatlar qayerda amal qiladi?",
+      "a1": "Bizning sertifikatlarimiz xalqaro standartlarga javob beradi va ko'plab oliygohlar hamda tashkilotlar tomonidan tan olinadi.",
+      "q2": "AI qanchalik aniq baholaydi?",
+      "a2": "Bizning AI modellarimiz real IELTS ekspertlari bilan ±0.5 band score aniqligida ishlaydi.",
+      "q3": "Test qancha vaqt davom etadi?",
+      "a3": "Adaptiv tizim tufayli test 30-45 daqiqa davom etadi, bu an'anaviy testlardan 2 barobar tezroq."
+    },
+    "cta": {
+      "title": "Bilimingizni hoziroq sinab ko'ring",
+      "subtitle": "Hech qanday kutishlarsiz, lahzalik natija va professional tahlilga ega bo'ling.",
+      "button": "Bepul boshlash"
     },
     "footer": {
       "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Buxoro Davlat Universiteti · Dastur guvohnomasi: LanguagePro AI"
@@ -54,7 +78,8 @@
         "priceUSD": "$0",
         "features": {
           "0": "1 ta test/oy",
-          "1": "Faqat Reading/Listening"
+          "1": "Faqat Reading/Listening",
+          "2": "Sertifikat mavjud emas"
         },
         "cta": "Boshlash"
       },
@@ -64,7 +89,8 @@
         "priceUSD": "$4",
         "features": {
           "0": "5 ta test/oy",
-          "1": "4 ta ko'nikma (Writing/Speaking)"
+          "1": "4 ta ko'nikma (Speaking/Writing)",
+          "2": "AI fikr-mulohaza"
         },
         "cta": "Tanlash"
       },
@@ -75,8 +101,8 @@
         "priceUSD": "$10",
         "features": {
           "0": "Cheksiz testlar",
-          "1": "Sertifikat",
-          "2": "Tarix va Tahlil",
+          "1": "Rasmiy sertifikat",
+          "2": "To'liq natijalar tahlili",
           "3": "Priority support"
         },
         "cta": "Tanlash"

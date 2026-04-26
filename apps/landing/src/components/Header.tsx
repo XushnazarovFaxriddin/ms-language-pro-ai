@@ -1,9 +1,26 @@
-import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
-import { Globe, User, Sparkles } from "lucide-react";
+"use client";
+
+import { Link, useRouter, usePathname } from "@/i18n/routing";
+import { useTranslations, useLocale } from "next-intl";
+import { Globe, User, Sparkles, Menu, Moon, Sun, Laptop } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
 
 export function Header() {
   const t = useTranslations("Common");
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const toggleLocale = (newLocale: "uz" | "en") => {
+    router.replace(pathname, { locale: newLocale });
+  };
 
   return (
     <header className="fixed top-0 z-50 w-full px-6 py-4">
@@ -20,22 +37,40 @@ export function Header() {
           
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
             <Link href="/pricing" className="hover:text-white transition-colors relative group">
-              Ta'riflar
+              {t("nav.pricing") || "Ta'riflar"}
               <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-blue-500 transition-all group-hover:w-full" />
             </Link>
             <Link href="#" className="hover:text-white transition-colors relative group">
-              Imkoniyatlar
+              {t("nav.features") || "Imkoniyatlar"}
               <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-blue-500 transition-all group-hover:w-full" />
             </Link>
           </nav>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-3 rounded-full bg-white/5 px-3 py-1.5 border border-white/10 text-xs font-bold text-slate-400">
-            <Globe className="h-3.5 w-3.5" />
-            <Link href="/uz" className="hover:text-blue-400 transition-colors uppercase">UZ</Link>
-            <span className="text-white/20">|</span>
-            <Link href="/en" className="hover:text-blue-400 transition-colors uppercase">EN</Link>
+        <div className="flex items-center gap-4 sm:gap-6">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-400 hover:text-white transition-all"
+          >
+            {mounted && theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+
+          {/* Locale Switcher */}
+          <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-1.5 border border-white/10 text-[10px] font-black text-slate-500">
+            <button 
+              onClick={() => toggleLocale("uz")}
+              className={`hover:text-blue-400 transition-colors uppercase ${locale === "uz" ? "text-blue-400" : ""}`}
+            >
+              UZ
+            </button>
+            <span className="text-white/10">|</span>
+            <button 
+              onClick={() => toggleLocale("en")}
+              className={`hover:text-blue-400 transition-colors uppercase ${locale === "en" ? "text-blue-400" : ""}`}
+            >
+              EN
+            </button>
           </div>
           
           <div className="flex items-center gap-3">
@@ -52,9 +87,42 @@ export function Header() {
             >
               <span className="relative z-10">{t("actions.register")}</span>
             </a>
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute left-6 right-6 top-24 z-50 rounded-3xl border border-white/10 bg-black/90 p-8 backdrop-blur-3xl md:hidden shadow-2xl"
+        >
+          <nav className="flex flex-col gap-6 text-xl font-bold">
+            <Link href="/pricing" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-blue-400 transition-colors">
+              {t("nav.pricing") || "Ta'riflar"}
+            </Link>
+            <Link href="#" onClick={() => setIsMenuOpen(false)} className="text-white hover:text-blue-400 transition-colors">
+              {t("nav.features") || "Imkoniyatlar"}
+            </Link>
+            <hr className="border-white/10" />
+            <a href="http://app.localhost/login" className="flex items-center gap-3 text-slate-300">
+              <User className="h-5 w-5" />
+              {t("actions.login")}
+            </a>
+            <a href="http://app.localhost/login" className="rounded-2xl bg-blue-600 py-4 text-center text-white">
+              {t("actions.register")}
+            </a>
+          </nav>
+        </motion.div>
+      )}
     </header>
   );
 }
+

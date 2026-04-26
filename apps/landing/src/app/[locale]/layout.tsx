@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://aiexam.uz"),
 };
 
+import { ThemeProvider } from "@/components/ThemeProvider";
+
 export default async function RootLayout({
   children,
   params,
@@ -22,10 +24,12 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-[var(--color-bg)] text-[var(--color-fg)] antialiased" suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+      <body className="bg-white dark:bg-[#050505] text-slate-900 dark:text-slate-200 antialiased transition-colors duration-300" suppressHydrationWarning>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
