@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ApiError, api, type AttemptOut, type ItemView } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";

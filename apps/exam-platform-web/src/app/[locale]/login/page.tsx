@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/routing";
 import { tryGetUser } from "@/lib/auth-server";
 import { LoginForm } from "./LoginForm";
 
