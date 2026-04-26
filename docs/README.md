@@ -23,6 +23,14 @@
 | 10 | [`10-engineering-conventions.md`](10-engineering-conventions.md) | Coding standards, testing, CI | Writing any code |
 | 11 | [`11-deployment-and-ops.md`](11-deployment-and-ops.md) | Docker, infra, monitoring, runbooks | Deploying / on-call |
 | 12 | [`12-roadmap-and-phases.md`](12-roadmap-and-phases.md) | Phase 0–5 milestones | Planning sprints |
+| 13 | [`13-skills-deep.md`](13-skills-deep.md) | Full IELTS Reading / Listening / Writing / Speaking implementation | Building any skill flow |
+| 14 | [`14-feedback-engine.md`](14-feedback-engine.md) | Multi-level AI feedback (band → criterion → sentence → word → phoneme) | Wiring grading + feedback |
+| 15 | [`15-learning-roadmap.md`](15-learning-roadmap.md) | Personalised study plans, spaced repetition, target-band prediction | Building roadmap & retention |
+| 16 | [`16-practice-mode.md`](16-practice-mode.md) | Drills, flashcards, AI conversation partner, pronunciation lab | Practice surfaces |
+| 17 | [`17-analytics-and-insights.md`](17-analytics-and-insights.md) | Student dashboards: heatmaps, error trends, growth charts | Student analytics |
+| 18 | [`18-research-and-psychometrics.md`](18-research-and-psychometrics.md) | Advanced IRT, DIF, validity, IRR — scientific contribution (data-engine thesis) | Research / data-engine work |
+| 19 | [`19-audio-analysis-pipeline.md`](19-audio-analysis-pipeline.md) | Phoneme-level GOP, fluency metrics, acoustic features (speaking) | Speaking pipeline |
+| 20 | [`20-text-analysis-pipeline.md`](20-text-analysis-pipeline.md) | Linguistic features, error taxonomy, semantic analysis (writing) | Writing pipeline |
 | · | [`prompts/`](prompts/) | LLM prompt templates (YAML) | Editing prompts |
 
 ---
@@ -63,6 +71,21 @@ When writing code based on this spec:
 4. **Match the data model column-for-column** — don't rename, don't omit.
 5. **Use the prompt templates verbatim** — don't paraphrase prompts in inline strings.
 6. **Stop at the spec boundary**: if a feature is marked "Phase 4 — payments" and you're in Phase 2, leave the Stripe code out.
+
+---
+
+## Dissertation-grade scope
+
+The platform is **two production products doubling as two master's dissertations**:
+
+- **`exam-platform`** (Faxriddin) — production-grade IELTS / CEFR test taker with **full Reading / Listening / Writing / Speaking** support, deep multi-level AI feedback, personalised learning roadmaps, practice mode (drills + flashcards + AI conversation partner + pronunciation lab), and rich student analytics. Specs: 13–17.
+- **`data-engine`** (Bobomurod) — scientific question-bank platform with multi-jury LLM validation, multi-dimensional IRT calibration, Differential Item Functioning detection, RAG over the bank, and inter-rater reliability studies as research artefacts. Specs: 06, 18.
+
+Cross-cutting AI work (Gemini-only, OpenAI SDK):
+- **Audio** (speaking + listening): phoneme GOP, fluency metrics, acoustic features, multimodal grading. Spec: 19.
+- **Text** (writing): linguistic complexity, error taxonomy, sentence/word/clause-level annotation, semantic coherence. Spec: 20.
+
+> If a feature isn't in 13–20, it isn't in scope. Don't invent.
 
 ---
 

@@ -55,7 +55,14 @@ The runtime YAML files are the source of truth at boot. The Markdown docs in thi
 | Doc | Runtime path | Purpose |
 |---|---|---|
 | [`generate-question-mcq-reading.md`](generate-question-mcq-reading.md) | `prompts/generate_question/mcq_reading/v1.yaml` | Generate one MCQ reading question |
+| [`listening-passage-tts.md`](listening-passage-tts.md) | `prompts/generate_question/listening_passage/v1.yaml` | Generate listening transcript + TTS synthesis |
+| [`drill-generate.md`](drill-generate.md) | `prompts/drill/generate/v1.yaml` | Generate a practice drill |
 | [`validate-question.md`](validate-question.md) | `prompts/validate_question/generic/v1.yaml` | Multi-jury verdict |
 | [`classify-cefr.md`](classify-cefr.md) | `prompts/classify_cefr/generic/v1.yaml` | Classify text CEFR level |
 | [`score-writing.md`](score-writing.md) | `prompts/score_writing/ielts/v1.yaml` | Grade writing essay (4 criteria) |
 | [`score-speaking.md`](score-speaking.md) | `prompts/score_speaking/ielts/v1.yaml` | Grade speaking audio (multimodal) |
+| [`sentence-annotate.md`](sentence-annotate.md) | `prompts/feedback/sentence-annotate/v1.yaml` | Per-sentence grammar/lexis annotations |
+| [`word-upgrade.md`](word-upgrade.md) | `prompts/feedback/word-upgrade/v1.yaml` | Word-level CEFR upgrade suggestions |
+| [`feedback-overview.md`](feedback-overview.md) | `prompts/feedback/overview/v1.yaml` | Bilingual narrative summary |
+| [`roadmap-generate.md`](roadmap-generate.md) | `prompts/roadmap/generate/v1.yaml` | Multi-week personalised study plan |
+| [`conversation-turn.md`](conversation-turn.md) | `prompts/conversation/turn/v1.yaml` | One AI Conversation Partner turn |

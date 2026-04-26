@@ -187,7 +187,101 @@
 
 ---
 
-## Phase 5 — Pilot, polish, mobile (weeks 13+)
+## Phase 4.5 — Feedback Engine + Roadmap + Practice (weeks 13–18)
+
+> **The dissertation-grade content depth.** Reading + Listening + Writing + Speaking are functional in Phase 1–3 — but only at L1 (band) and L2 (criterion). This phase delivers L3–L5 plus the engagement loop: practice + roadmaps + analytics. This is what differentiates LangPro from "another AI grader" and makes the product **research-defensible**.
+
+### Week 13 — Feedback L3–L4 (writing)
+
+| Deliverable | Doc reference |
+|---|---|
+| spaCy + LanguageTool integration | [`20-text-analysis-pipeline.md`](20-text-analysis-pipeline.md) §2–§3 |
+| Error taxonomy seed (200 codes) + LanguageTool mapper | [`14-feedback-engine.md`](14-feedback-engine.md) §2 |
+| Sentence-level annotation pipeline | [`14-`](14-feedback-engine.md) §3.3 |
+| Vocabulary CEFR + AWL analysis | [`20-`](20-text-analysis-pipeline.md) §4 |
+| Word-upgrade prompt + UI | [`14-`](14-feedback-engine.md) §3.4 |
+| `feedback_artifacts` table + API endpoints | [`04-api-contracts.md`](04-api-contracts.md) §4.3 |
+
+### Week 14 — Feedback L5 (speaking)
+
+| Deliverable |
+|---|
+| ffmpeg normalisation + webrtcvad + librosa pipeline ([`19-`](19-audio-analysis-pipeline.md)) |
+| wav2vec2 phoneme alignment ([`19-`](19-audio-analysis-pipeline.md) §5.2) |
+| GOP computation + Uzbek-L1 phoneme clustering ([`19-`](19-audio-analysis-pipeline.md) §6, §8) |
+| Phoneme-level annotation UI |
+
+### Week 15 — Roadmap engine
+
+| Deliverable |
+|---|
+| `roadmaps` + `srs_cards` + `user_mastery` tables ([`03-data-model.md`](03-data-model.md) §6) |
+| `generate_roadmap` arq job + Gemini prompt ([`15-learning-roadmap.md`](15-learning-roadmap.md) §3) |
+| FSRS-4 scheduler ([`15-`](15-learning-roadmap.md) §5) |
+| Cohort-similarity + Monte-Carlo prediction ([`15-`](15-learning-roadmap.md) §4) |
+| `/[locale]/roadmap` student UI ([`09-screens-and-flows.md`](09-screens-and-flows.md)) |
+
+### Week 16 — Practice Mode
+
+| Deliverable |
+|---|
+| `drills` catalogue + admin CRUD ([`16-practice-mode.md`](16-practice-mode.md) §2) |
+| Drill runner UI + 12 drill types ([`16-`](16-practice-mode.md) §2.1) |
+| FSRS flashcard surface ([`16-`](16-practice-mode.md) §3) |
+| Pronunciation Lab UI ([`16-`](16-practice-mode.md) §5) |
+| Mastery score updates from drills |
+
+### Week 17 — AI Conversation Partner
+
+| Deliverable |
+|---|
+| `conversation_sessions/turns` tables + Gemini multimodal per-turn pipeline ([`16-`](16-practice-mode.md) §4) |
+| Topic catalogue (200+ cue cards seeded) |
+| Per-turn structured feedback persisted |
+| Conversation UI with transcript + annotations |
+
+### Week 18 — Analytics dashboards
+
+| Deliverable |
+|---|
+| 4 materialised views (mastery, band history, errors, time-spent) ([`17-`](17-analytics-and-insights.md) §3) |
+| 6 student dashboard surfaces ([`17-`](17-analytics-and-insights.md) §2) |
+| Gating by entitlement ([`07-payments-and-billing.md`](07-payments-and-billing.md) §2) |
+
+**Done gate**:
+- [ ] An essay graded at 7.0 produces ≥ 1 sentence annotation per paragraph and ≥ 5 word-upgrade suggestions.
+- [ ] A speaking response produces phoneme-level GOP for every word.
+- [ ] First-time user with target band 7.0 in 8 weeks gets a full roadmap within 30s.
+- [ ] FSRS queue produces non-empty results after 5 graded cards.
+- [ ] All 6 analytics dashboards load under 1s.
+
+---
+
+## Phase 4.7 — Research artifacts (weeks 19–22)
+
+> **For Bobomurod's dissertation chapter on data-engine science.** This phase produces measurable scientific output that the dissertation cites.
+
+| Week | Deliverable | Doc |
+|---|---|---|
+| 19 | Multi-jury κ time series + dashboard | [`18-`](18-research-and-psychometrics.md) §2 |
+| 19 | Cold-start `b` validation + scatter plot | [`18-`](18-research-and-psychometrics.md) §3.3 |
+| 20 | DIF detection (Mantel-Haenszel) + flagging | [`18-`](18-research-and-psychometrics.md) §4 |
+| 20 | Multi-dimensional 2PL extension | [`18-`](18-research-and-psychometrics.md) §3.1 |
+| 21 | IRR study (n=30 essays + speaking) with 2 BSU instructors | [`18-`](18-research-and-psychometrics.md) §5 |
+| 21 | Experiment harness + first A/B (`generate_question` v1 vs v2) | [`18-`](18-research-and-psychometrics.md) §6 |
+| 22 | Reproducible notebooks `docs/research/*.ipynb` | [`18-`](18-research-and-psychometrics.md) §10 |
+| 22 | Parquet exports + `RESEARCH-LICENSE.md` | [`18-`](18-research-and-psychometrics.md) §9 |
+
+**Done gate**:
+- [ ] Pairwise Cohen's κ ≥ 0.6 on 200-question gold set.
+- [ ] Pearson r(b_cold, b_empirical) ≥ 0.5 after ≥ 30 responses per item.
+- [ ] LLM ↔ human Pearson r ≥ 0.75 on writing IRR study.
+- [ ] All 6 research notebooks run end-to-end on the latest dataset export.
+- [ ] At least 1 prompt A/B experiment shipped with bootstrapped CI.
+
+---
+
+## Phase 5 — Pilot, polish, mobile (weeks 23+)
 
 **Goal**: real users, monetised, polished, expanding.
 
