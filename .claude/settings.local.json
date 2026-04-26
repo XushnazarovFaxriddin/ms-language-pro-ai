@@ -41,7 +41,9 @@
       "Bash(docker exec *)",
       "Bash(lsof -ti:8001)",
       "Bash(lsof -ti:8000)",
-      "Bash(lsof -ti:8002)"
+      "Bash(lsof -ti:8002)",
+      "Bash(curl -sS -i -X POST http://localhost:8002/v1/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@aiexam.uz\",\"password\":\"admin12345\"}')",
+      "Bash(python3 -m json.tool)"
     ]
   }
 }
