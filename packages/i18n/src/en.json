@@ -119,8 +119,65 @@
       "payments": "Billing & Payments",
       "settings": "Settings"
     },
-    "futurePlan": "Future Plan",
-    "demoDisclaimer": "This section is currently running in demo mode. Once fully launched, your actual data will be displayed here."
+    "demoDisclaimer": "This section is currently running in demo mode. Once fully launched, your actual data will be displayed here.",
+    "resultsPage": {
+      "title": "My Results",
+      "description": "History of all your exams and their results.",
+      "emptyTitle": "You haven't taken any exams yet",
+      "emptyDesc": "Start your first exam now to test your knowledge.",
+      "startExam": "View Exams",
+      "tableExam": "Exam",
+      "tableDate": "Date",
+      "tableStatus": "Status",
+      "tableScore": "Score",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "overall": "Overall"
+    },
+    "analyticsPage": {
+      "title": "Analytics & Growth",
+      "description": "Analysis of your growth dynamics and weak points.",
+      "growthTitle": "Score Growth Dynamics",
+      "growthDesc": "Over the month, your Writing and Speaking skills improved by <growth>15%</growth>. Consistent practice yields results.",
+      "strengthTitle": "Strengths & Weaknesses",
+      "strengthDesc": "Your Grammar Range is at <level>B1</level> level, while your Lexical Resource is at an excellent <level>B2</level> level."
+    },
+    "certificatesPage": {
+      "title": "Certificates",
+      "description": "Your official digital certificates and achievements.",
+      "issued": "Date issued: {date}",
+      "verified": "Verified",
+      "downloadPdf": "Download PDF"
+    },
+    "paymentsPage": {
+      "title": "Billing & Payments",
+      "description": "Plans, payment history, and receipts.",
+      "activePlan": "PRO Plan (Active)",
+      "planDesc": "You have unlimited exams. Next billing date: May 12, 2026",
+      "historyTitle": "Payment History",
+      "tableDate": "Date",
+      "tableAmount": "Amount",
+      "tableStatus": "Status",
+      "paid": "Paid"
+    },
+    "studyMaterialsPage": {
+      "title": "Study Materials",
+      "description": "Special materials to help you strengthen your weak points.",
+      "card1Title": "IELTS Speaking Task 2",
+      "card1Desc": "15-minute masterclass. Strategies for Band 7.0+.",
+      "card2Title": "Grammar Focus: B2",
+      "card2Desc": "PDF guide and rulebook. Interactive exercises.",
+      "card3Title": "Vocabulary: Academic",
+      "card3Desc": "Top 100 essential academic words list."
+    },
+    "settingsPage": {
+      "title": "Settings",
+      "description": "Manage your personal profile and system settings.",
+      "nameLabel": "Full Name",
+      "emailLabel": "Email",
+      "langLabel": "System Language",
+      "save": "Save"
+    }
   },
   "Exam": {
     "loading": "Loading…",

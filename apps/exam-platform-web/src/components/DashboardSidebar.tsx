@@ -23,10 +23,13 @@ export function DashboardSidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-[var(--color-border)] bg-[var(--color-bg)] transition-transform sm:flex">
-      <div className="flex h-16 items-center px-6 border-b border-[var(--color-border)]">
-        <Link href="/" className="font-bold tracking-tight text-xl">
-          LanguagePro <span className="text-[var(--color-primary)]">AI</span>
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-[var(--color-border)]/50 bg-[var(--color-bg)] transition-transform sm:flex">
+      <div className="flex h-16 items-center px-6 border-b border-[var(--color-border)]/50">
+        <Link href="/" className="font-extrabold tracking-tight text-xl flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--color-primary)] to-blue-500 text-white shadow-lg shadow-[var(--color-primary)]/20">
+            L
+          </div>
+          <span>LanguagePro<span className="text-[var(--color-primary)] ml-0.5">AI</span></span>
         </Link>
       </div>
 
@@ -38,14 +41,20 @@ export function DashboardSidebar() {
               <Link
                 key={item.href}
                 href={item.href as any}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+                className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                    : "text-[var(--color-muted-fg)] hover:bg-white/5 hover:text-[var(--color-fg)]"
+                    ? "text-[var(--color-primary)]"
+                    : "text-[var(--color-muted-fg)] hover:text-[var(--color-fg)]"
                 }`}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-[var(--color-primary)]" : ""}`} />
-                {item.label}
+                {isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/20" />
+                )}
+                {!isActive && (
+                  <div className="absolute inset-0 rounded-xl bg-transparent transition-colors group-hover:bg-[var(--color-muted)]/50" />
+                )}
+                <item.icon className={`relative z-10 h-5 w-5 transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
+                <span className="relative z-10">{item.label}</span>
               </Link>
             );
           })}

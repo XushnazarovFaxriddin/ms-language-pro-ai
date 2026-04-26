@@ -119,8 +119,65 @@
       "payments": "To'lovlar tarixi",
       "settings": "Sozlamalar"
     },
-    "futurePlan": "Kelajakdagi imkoniyat",
-    "demoDisclaimer": "Bu bo'lim hozircha demo rejimida ishlamoqda. Haqiqiy ishga tushirilganda bu yerda sizning shaxsiy ma'lumotlaringiz aks etadi."
+    "demoDisclaimer": "Bu bo'lim hozircha demo rejimida ishlamoqda. Haqiqiy ishga tushirilganda bu yerda sizning shaxsiy ma'lumotlaringiz aks etadi.",
+    "resultsPage": {
+      "title": "Mening natijalarim",
+      "description": "Barcha topshirgan imtihonlaringiz va ularning natijalari tarixi.",
+      "emptyTitle": "Siz hali imtihon topshirmadingiz",
+      "emptyDesc": "Bilimingizni sinash uchun birinchi imtihonni hoziroq boshlang.",
+      "startExam": "Imtihonlarni ko'rish",
+      "tableExam": "Imtihon",
+      "tableDate": "Sana",
+      "tableStatus": "Holati",
+      "tableScore": "Natija",
+      "completed": "Tugallangan",
+      "inProgress": "Jarayonda",
+      "overall": "Umumiy"
+    },
+    "analyticsPage": {
+      "title": "Analitika va O'sish",
+      "description": "Sizning o'sish dinamikangiz va kuchsiz tomonlaringiz tahlili.",
+      "growthTitle": "Baho o'sish dinamikasi",
+      "growthDesc": "Oy davomida Writing va Speaking ko'nikmalari <growth>15%</growth> ga yaxshilangan. Muntazam mashg'ulotlar o'z natijasini bermoqda.",
+      "strengthTitle": "Kuchli va kuchsiz tomonlar",
+      "strengthDesc": "Grammar Range ko'rsatkichi <level>B1</level> darajada, Lexical Resource esa ajoyib <level>B2</level> darajada."
+    },
+    "certificatesPage": {
+      "title": "Sertifikatlar",
+      "description": "Sizning rasmiy elektron sertifikatlaringiz va yutuqlaringiz.",
+      "issued": "Berilgan sana: {date}",
+      "verified": "Tasdiqlangan",
+      "downloadPdf": "PDF yuklab olish"
+    },
+    "paymentsPage": {
+      "title": "To'lovlar tarixi",
+      "description": "Ta'riflar, to'lovlar tarixi va kvitansiyalar.",
+      "activePlan": "PRO Ta'rifi (Aktiv)",
+      "planDesc": "Sizda cheksiz imtihonlar mavjud. Keyingi to'lov: 12 May 2026",
+      "historyTitle": "To'lovlar tarixi",
+      "tableDate": "Sana",
+      "tableAmount": "Summa",
+      "tableStatus": "Holati",
+      "paid": "To'langan"
+    },
+    "studyMaterialsPage": {
+      "title": "O'quv materiallari",
+      "description": "Kuchsiz tomonlaringizni kuchaytirish uchun maxsus materiallar.",
+      "card1Title": "IELTS Speaking Task 2",
+      "card1Desc": "15 daqiqalik masterklass. Band 7.0+ uchun strategiyalar.",
+      "card2Title": "Grammar Focus: B2",
+      "card2Desc": "PDF qo'llanma va qoidalar toplami. Interfaol mashqlar.",
+      "card3Title": "Vocabulary: Academic",
+      "card3Desc": "100 ta eng kerakli akademik so'zlar ro'yxati."
+    },
+    "settingsPage": {
+      "title": "Sozlamalar",
+      "description": "Shaxsiy profilingiz va tizim sozlamalarini boshqaring.",
+      "nameLabel": "Ism va Familiya",
+      "emailLabel": "Email",
+      "langLabel": "Tizim Tili",
+      "save": "Saqlash"
+    }
   },
   "Exam": {
     "loading": "Yuklanmoqda…",

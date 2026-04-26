@@ -12,54 +12,60 @@ export default async function ExamsPage() {
   const t = await getTranslations("Dashboard");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-10">
       {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/20 via-[var(--color-primary)]/5 to-transparent p-8 border border-[var(--color-primary)]/10">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 p-10 shadow-2xl shadow-indigo-500/20 text-white">
         <div className="relative z-10">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl mb-2">
+          <h1 className="text-4xl font-black tracking-tight sm:text-5xl mb-3 drop-shadow-sm">
             {t("welcome", { name: user.display_name || user.email.split("@")[0] })}
           </h1>
-          <p className="text-lg text-[var(--color-muted-fg)] max-w-2xl">
+          <p className="text-lg text-white/80 max-w-2xl font-medium">
             {t("welcomeSub")}
           </p>
         </div>
         {/* Abstract background decorations */}
-        <div className="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-[var(--color-primary)]/10 blur-3xl pointer-events-none" />
-        <div className="absolute right-40 -bottom-20 h-48 w-48 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-white/10 blur-3xl pointer-events-none mix-blend-overlay" />
+        <div className="absolute right-40 -bottom-32 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl pointer-events-none mix-blend-overlay" />
+        <div className="absolute left-20 -bottom-20 h-48 w-48 rounded-full bg-purple-400/20 blur-2xl pointer-events-none mix-blend-overlay" />
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
-              <Target className="h-6 w-6" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)]/50 bg-white/5 dark:bg-black/20 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/30">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="relative z-10 flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 text-blue-500 shadow-inner">
+              <Target className="h-7 w-7" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.totalExams")}</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-sm font-semibold text-[var(--color-muted-fg)] uppercase tracking-wider">{t("stats.totalExams")}</p>
+              <p className="text-3xl font-black mt-0.5">0</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
-              <Clock className="h-6 w-6" />
+        
+        <div className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)]/50 bg-white/5 dark:bg-black/20 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-green-500/30">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="relative z-10 flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-600/20 text-green-500 shadow-inner">
+              <Clock className="h-7 w-7" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.avgScore")}</p>
-              <p className="text-2xl font-bold">—</p>
+              <p className="text-sm font-semibold text-[var(--color-muted-fg)] uppercase tracking-wider">{t("stats.avgScore")}</p>
+              <p className="text-3xl font-black mt-0.5">—</p>
             </div>
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500">
-              <Trophy className="h-6 w-6" />
+
+        <div className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)]/50 bg-white/5 dark:bg-black/20 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-purple-500/30">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="relative z-10 flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500/20 to-fuchsia-600/20 text-purple-500 shadow-inner">
+              <Trophy className="h-7 w-7" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("stats.certificates")}</p>
-              <p className="text-2xl font-bold">0</p>
+              <p className="text-sm font-semibold text-[var(--color-muted-fg)] uppercase tracking-wider">{t("stats.certificates")}</p>
+              <p className="text-3xl font-black mt-0.5">0</p>
             </div>
           </div>
         </div>
