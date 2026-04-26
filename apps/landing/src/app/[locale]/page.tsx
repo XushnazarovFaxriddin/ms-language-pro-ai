@@ -74,110 +74,135 @@ export default function HomePage() {
       <Header />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-          {/* 3D Background */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
-            <motion.div 
-              style={{ opacity: heroOpacity, scale: heroScale }}
-              className="h-full w-full"
-            >
-              <Hero3D />
-            </motion.div>
-          </div>
-
+        {/* Hero Section - Optimized for Responsiveness */}
+        <section className="relative min-h-[80vh] lg:min-h-screen flex items-center pt-24 lg:pt-32 pb-12 overflow-hidden">
+          {/* Subtle Background Glows */}
+          <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+          
           <div className="container relative z-10 mx-auto max-w-7xl px-6">
-            <motion.div 
-              className="text-center"
-              initial="initial" animate="animate" variants={staggerContainer}
-              style={{ y: titleY }}
-            >
-              <motion.div 
-                variants={fadeUp}
-                className="mb-10 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-2 text-sm font-black tracking-widest text-blue-400 backdrop-blur-3xl uppercase"
-              >
-                <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]" />
-                LanguagePro 2.0 Next-Gen AI
-              </motion.div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
-              <motion.h1 
-                variants={fadeUp} 
-                className="text-7xl font-black tracking-tighter sm:text-[10rem] lg:text-[13rem] leading-[0.8] mb-12"
-              >
-                <span className="block bg-clip-text text-transparent bg-gradient-to-b from-white to-white/20">
-                  {t("hero.title")}
-                </span>
-                <span className="block text-white">
-                  {t("hero.titleHighlight")}
-                </span>
-              </motion.h1>
-              
-              <motion.p 
-                variants={fadeUp} 
-                className="mx-auto mt-12 max-w-3xl text-2xl font-medium leading-relaxed text-slate-400"
-              >
-                {t("hero.description")}
-              </motion.p>
-              
-              <motion.div 
-                variants={fadeUp} 
-                className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8"
-              >
-                <a href="http://app.localhost/login" className="group relative flex w-full sm:w-auto items-center justify-center gap-4 overflow-hidden rounded-[2rem] bg-white px-12 py-5 text-xl font-black text-black transition-all hover:scale-110 active:scale-95 shadow-[0_20px_50px_rgba(255,255,255,0.1)]">
-                  <Play className="h-6 w-6 fill-current" />
-                  {t("hero.startFree")}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-500/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                </a>
-                <a href="#features" className="flex w-full sm:w-auto items-center justify-center gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-12 py-5 text-xl font-bold text-white backdrop-blur-3xl transition-all hover:bg-white/10 hover:border-white/30">
-                  <MousePointer2 className="h-6 w-6" />
-                  Explore Features
-                </a>
-              </motion.div>
-            </motion.div>
-          </div>
+              {/* Left Side: Content Hierarchy */}
+              <div className="lg:col-span-7 text-left order-2 lg:order-1">
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="mb-6 lg:mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs lg:text-sm font-black tracking-widest text-blue-400 backdrop-blur-3xl uppercase"
+                >
+                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,1)]" />
+                  {t("hero.socialProof")}
+                </motion.div>
+                
+                <motion.h1 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1, duration: 0.8 }}
+                  className="text-5xl sm:text-7xl lg:text-8xl xl:text-9xl font-black tracking-tighter leading-[0.9] mb-6 lg:mb-8"
+                >
+                  <span className="block text-white">
+                    {t("hero.title")}
+                  </span>
+                  <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 italic">
+                    {t("hero.titleHighlight")}
+                  </span>
+                </motion.h1>
+                
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.8 }}
+                  className="max-w-xl text-lg lg:text-xl xl:text-2xl font-medium leading-relaxed text-slate-400 mb-8 lg:mb-12"
+                >
+                  {t("hero.description")}
+                </motion.p>
+                
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="flex flex-col sm:flex-row items-center gap-4 lg:gap-6"
+                >
+                  <a href="http://app.localhost/login" className="group relative flex w-full sm:w-auto items-center justify-center gap-4 overflow-hidden rounded-2xl lg:rounded-3xl bg-blue-600 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-black text-white transition-all hover:bg-blue-500 hover:shadow-[0_20px_50px_rgba(37,99,235,0.4)]">
+                    {t("hero.startFree")}
+                    <ArrowRight className="h-5 w-5 lg:h-6 lg:w-6 transition-transform group-hover:translate-x-1" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  </a>
+                  <button className="flex w-full sm:w-auto items-center justify-center gap-4 rounded-2xl lg:rounded-3xl border border-white/10 bg-white/5 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-bold text-white backdrop-blur-3xl transition-all hover:bg-white/10 hover:border-white/30">
+                    <Play className="h-5 w-5 lg:h-6 lg:w-6 fill-current text-blue-500" />
+                    {t("hero.watchDemo")}
+                  </button>
+                </motion.div>
+              </div>
 
-          {/* Floating Motivation Quote */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            className="absolute right-12 bottom-32 hidden 2xl:block"
-          >
-            <motion.div
-              animate={{ y: [0, -20, 0], rotate: [0, 2, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="group relative max-w-sm rounded-[3rem] border border-white/10 bg-black/40 p-8 backdrop-blur-3xl shadow-[0_50px_100px_rgba(0,0,0,0.5)]"
-            >
-              <div className="absolute -left-4 -top-4 flex h-14 w-14 items-center justify-center rounded-[2rem] bg-blue-600 text-white shadow-2xl">
-                <GraduationCap className="h-8 w-8" />
+              {/* Right Side: 3D Visual + Status Cards */}
+              <div className="lg:col-span-5 relative order-1 lg:order-2 h-[350px] sm:h-[450px] lg:h-[600px] flex items-center justify-center">
+                <div className="absolute inset-0 z-0">
+                   <Hero3D />
+                </div>
+                
+                {/* Expert UI Overlays - Floating Cards (Scaled for responsiveness) */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="absolute top-4 right-0 lg:-right-4 z-20 w-44 lg:w-56 rounded-2xl lg:rounded-3xl border border-white/10 bg-black/40 p-4 lg:p-6 backdrop-blur-2xl shadow-2xl"
+                >
+                  <div className="flex items-center gap-2 lg:gap-3 mb-2 lg:mb-3">
+                    <div className="h-6 w-6 lg:h-8 lg:w-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                      <ShieldCheck className="size-4 lg:size-5" />
+                    </div>
+                    <span className="text-[10px] lg:text-xs font-black text-slate-300">Accuracy</span>
+                  </div>
+                  <div className="text-xl lg:text-2xl font-black text-white">±0.5 Band</div>
+                  <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: "98%" }}
+                      transition={{ delay: 1.2, duration: 2 }}
+                      className="h-full bg-emerald-500" 
+                    />
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, x: -20 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  transition={{ delay: 1 }}
+                  className="absolute bottom-10 left-0 lg:-left-4 z-20 w-56 lg:w-64 rounded-[2rem] lg:rounded-[2.5rem] border border-white/10 bg-white/5 p-6 lg:p-8 backdrop-blur-3xl shadow-2xl"
+                >
+                  <div className="absolute -left-3 -top-3 lg:-left-4 lg:-top-4 flex h-10 w-10 lg:h-12 lg:w-12 items-center justify-center rounded-xl lg:rounded-2xl bg-blue-600 text-white shadow-xl">
+                    <GraduationCap className="h-5 w-5 lg:h-6 lg:w-6" />
+                  </div>
+                  <p className="text-base lg:text-lg font-bold italic leading-tight text-white/90">
+                    &ldquo;Bilim — bu kuch, AI — bu imkoniyat.&rdquo;
+                  </p>
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="h-1 flex-1 bg-blue-500/20 rounded-full" />
+                    <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-widest text-blue-400">Mission</span>
+                  </div>
+                </motion.div>
               </div>
-              <p className="text-2xl font-black italic leading-tight text-white/90">
-                &ldquo;Bilim — bu kuch, AI — bu imkoniyat. O&apos;z kelajagingizni biz bilan bugundan yarating.&rdquo;
-              </p>
-              <div className="mt-6 flex items-center gap-4">
-                <div className="h-[2px] flex-1 bg-gradient-to-r from-blue-500 to-transparent" />
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">Mission</span>
-              </div>
-            </motion.div>
-          </motion.div>
+
+            </div>
+          </div>
         </section>
 
         {/* Feature Bento Grid */}
-        <section id="features" className="relative py-48 px-6">
+        <section id="features" className="relative py-24 lg:py-48 px-6">
           <div className="container mx-auto max-w-7xl">
             <motion.div 
               initial="initial" whileInView="whileInView" variants={staggerContainer}
-              className="mb-32 text-center"
+              className="mb-16 lg:mb-32 text-center"
             >
-              <motion.h2 variants={fadeUp} className="text-6xl font-black tracking-tight sm:text-9xl text-white">
+              <motion.h2 variants={fadeUp} className="text-5xl font-black tracking-tight sm:text-7xl lg:text-9xl text-white">
                 Next-Gen <span className="text-blue-500">Intelligence</span>
               </motion.h2>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-6 h-auto md:h-[900px]">
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 lg:gap-6 h-auto">
               {/* Large Bento Card */}
               <BentoCard 
-                className="md:col-span-4 md:row-span-2"
+                className="md:col-span-4 md:row-span-2 min-h-[300px] lg:min-h-[600px]"
                 icon={LayoutDashboard}
                 title="Adaptive Assessment"
                 desc="Item Response Theory (IRT) modelimiz orqali darajangizni soniyalar ichida aniqlaymiz."
@@ -186,34 +211,38 @@ export default function HomePage() {
               />
               
               <BentoCard 
-                className="md:col-span-2 md:row-span-1"
+                className="md:col-span-2 md:row-span-1 min-h-[250px] lg:min-h-0"
                 icon={BrainCircuit}
                 title="AI Studio"
-                desc="Ekspertlar uchun savol generatsiyasi."
+                desc="Ekspertlar uchun savol generatsiyasi va avtomatik kalibratsiya."
+                image="/images/ai-studio.png"
                 href="http://admin.localhost"
               />
 
               <BentoCard 
-                className="md:col-span-2 md:row-span-2"
+                className="md:col-span-2 md:row-span-2 min-h-[300px] lg:min-h-0"
                 icon={ShieldCheck}
                 title="Verified"
-                desc="Blockchain asosidagi sertifikatlar."
+                desc="Kriptografik imzolangan va tekshiriluvchi rasmiy sertifikatlar."
+                image="/images/verified.png"
                 href="#"
               />
 
               <BentoCard 
-                className="md:col-span-2 md:row-span-1"
+                className="md:col-span-2 md:row-span-1 min-h-[250px] lg:min-h-0"
                 icon={Cpu}
-                title="Real-time"
-                desc="Speaking tahlili 0.2s ichida."
+                title="AI Assessor"
+                desc="±0.5 band score aniqligidagi Speaking va Writing baholash."
+                image="/images/assessor.png"
                 href="#"
               />
               
               <BentoCard 
-                className="md:col-span-2 md:row-span-1"
+                className="md:col-span-2 md:row-span-1 min-h-[250px] lg:min-h-0"
                 icon={Trophy}
-                title="Gamified"
-                desc="Leaderboard va yutuqlar."
+                title="Local Focus"
+                desc="Uzbek tilidagi tahlil va Click/Payme to'lov tizimlari."
+                image="/images/local.png"
                 href="#"
               />
             </div>
@@ -221,14 +250,14 @@ export default function HomePage() {
         </section>
 
         {/* How it Works Section */}
-        <section className="relative py-32 px-6 overflow-hidden">
+        <section className="relative py-24 lg:py-32 px-6 overflow-hidden">
           <div className="container mx-auto max-w-7xl">
             <motion.div 
               initial="initial" whileInView="whileInView" variants={fadeUp}
-              className="mb-20 text-center"
+              className="mb-16 lg:mb-20 text-center"
             >
-              <h2 className="text-4xl font-black tracking-tight sm:text-6xl text-white">Qanday ishlaydi?</h2>
-              <p className="mt-4 text-xl text-slate-400">Atigi 3 qadamda xalqaro sertifikatga ega bo'ling</p>
+              <h2 className="text-4xl lg:text-6xl font-black tracking-tight text-white">{t("howItWorks.title")}</h2>
+              <p className="mt-4 text-lg lg:text-xl text-slate-400">{t("howItWorks.subtitle")}</p>
             </motion.div>
 
             <div className="grid gap-12 lg:grid-cols-3 relative">
@@ -236,20 +265,20 @@ export default function HomePage() {
               
               <StepItem 
                 number="01"
-                title="Test topshirish"
-                desc="Adaptiv tizimimiz sizning bilim darajangizga mos savollarni tanlaydi."
+                title={t("howItWorks.step1.title")}
+                desc={t("howItWorks.step1.description")}
                 icon={Monitor}
               />
               <StepItem 
                 number="02"
-                title="AI Tahlili"
-                desc="Sizning Speaking va Writing ishlaringiz ilg'or AI modellarimiz tomonidan tahlil qilinadi."
+                title={t("howItWorks.step2.title")}
+                desc={t("howItWorks.step2.description")}
                 icon={BrainCircuit}
               />
               <StepItem 
                 number="03"
-                title="Sertifikat"
-                desc="QR-kodli va rasmiy tasdiqlangan sertifikatni lahzada qo'lga kiriting."
+                title={t("howItWorks.step3.title")}
+                desc={t("howItWorks.step3.description")}
                 icon={GraduationCap}
               />
             </div>
@@ -257,17 +286,17 @@ export default function HomePage() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-32 bg-blue-600">
+        <section className="py-24 lg:py-32 bg-blue-600">
           <div className="container mx-auto max-w-7xl px-6">
-            <div className="grid gap-16 md:grid-cols-3 text-center">
+            <div className="grid gap-12 lg:grid-gap-16 md:grid-cols-3 text-center">
               {[
-                { label: "Muvaffaqiyatli testlar", value: "50,000+" },
-                { label: "Aniq daraja aniqlash", value: "99.8%" },
-                { label: "Xalqaro hamkorlar", value: "120+" },
+                { label: t("stats.exams"), value: "50,000+" },
+                { label: t("stats.accuracy"), value: "±0.5 Band" },
+                { label: t("stats.partners"), value: "10+" },
               ].map((s) => (
                 <motion.div key={s.label} initial={{ scale: 0.5, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }}>
-                  <p className="text-6xl font-black text-white mb-2">{s.value}</p>
-                  <p className="text-lg font-bold text-blue-100 uppercase tracking-widest">{s.label}</p>
+                  <p className="text-5xl lg:text-6xl font-black text-white mb-2">{s.value}</p>
+                  <p className="text-base lg:text-lg font-bold text-blue-100 uppercase tracking-widest">{s.label}</p>
                 </motion.div>
               ))}
             </div>
@@ -275,21 +304,21 @@ export default function HomePage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-48 px-6">
+        <section className="py-24 lg:py-48 px-6">
           <div className="container mx-auto max-w-3xl">
-            <motion.h2 initial="initial" whileInView="whileInView" variants={fadeUp} className="text-4xl font-black text-center mb-16">Ko'p so'raladigan savollar</motion.h2>
+            <motion.h2 initial="initial" whileInView="whileInView" variants={fadeUp} className="text-3xl lg:text-4xl font-black text-center mb-12 lg:mb-16 dark:text-white">{t("faq.title")}</motion.h2>
             <div className="space-y-6">
               <FaqItem 
-                q="Sertifikatlar qayerda amal qiladi?" 
-                a="Bizning sertifikatlarimiz xalqaro standartlarga javob beradi va ko'plab oliygohlar hamda tashkilotlar tomonidan tan olinadi."
+                q={t("faq.q1")} 
+                a={t("faq.a1")}
               />
               <FaqItem 
-                q="AI qanchalik aniq baholaydi?" 
-                a="Bizning AI modellarimiz real IELTS ekspertlari bilan 98% muvofiqlikda ishlaydi."
+                q={t("faq.q2")} 
+                a={t("faq.a2")}
               />
               <FaqItem 
-                q="Test qancha vaqt davom etadi?" 
-                a="Adaptiv tizim tufayli test 30-45 daqiqa davom etadi, bu an'anaviy testlardan 2 barobar tezroq."
+                q={t("faq.q3")} 
+                a={t("faq.a3")}
               />
             </div>
           </div>
@@ -304,11 +333,11 @@ export default function HomePage() {
               className="relative overflow-hidden rounded-[4rem] bg-gradient-to-br from-blue-600 to-indigo-900 px-10 py-24 text-center shadow-2xl"
             >
               <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10" />
-              <h2 className="relative z-10 text-5xl font-black text-white sm:text-8xl">Bilimingizni <br /> hoziroq sinab ko'ring</h2>
-              <p className="relative z-10 mt-8 text-xl text-blue-100 max-w-2xl mx-auto">Hech qanday kutishlarsiz, lahzalik natija va professional tahlilga ega bo'ling.</p>
+              <h2 className="relative z-10 text-5xl font-black text-white sm:text-8xl">{t("cta.title")}</h2>
+              <p className="relative z-10 mt-8 text-xl text-blue-100 max-w-2xl mx-auto">{t("cta.subtitle")}</p>
               <div className="relative z-10 mt-12 flex justify-center">
                 <a href="http://app.localhost/login" className="rounded-full bg-white px-12 py-5 text-xl font-black text-blue-600 hover:scale-105 transition-transform shadow-xl">
-                  Bepul boshlash
+                  {t("cta.button")}
                 </a>
               </div>
             </motion.div>
@@ -328,20 +357,20 @@ function BentoCard({ className, icon: Icon, title, desc, image, href }: { classN
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`group relative overflow-hidden rounded-[3rem] border border-white/10 bg-white/5 p-10 transition-all duration-700 hover:border-blue-500/50 hover:shadow-2xl ${className}`}
+      className={`group relative overflow-hidden rounded-[3rem] border border-white/10 bg-white/5 p-10 transition-all duration-700 hover:border-blue-500/50 hover:shadow-[0_0_80px_-20px_rgba(37,99,235,0.3)] ${className}`}
     >
       {image && (
         <div className="absolute inset-0 z-0">
-          <img src={image} className="h-full w-full object-cover opacity-20 grayscale transition-all group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-40" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+          <img src={image} className="h-full w-full object-cover opacity-20 grayscale transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0 group-hover:opacity-50" alt="" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
         </div>
       )}
       
       <div className="relative z-10 h-full flex flex-col justify-end">
-        <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-black/40 text-blue-400 border border-white/10 shadow-2xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500">
+        <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 text-blue-400 border border-white/10 shadow-2xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-400 transition-all duration-500">
           <Icon className="size-8" />
         </div>
-        <h3 className="text-3xl font-black text-white mb-4 tracking-tighter">{title}</h3>
+        <h3 className="text-3xl font-black text-white mb-4 tracking-tighter group-hover:text-blue-400 transition-colors">{title}</h3>
         <p className="text-lg text-slate-400 group-hover:text-slate-200 transition-colors line-clamp-2">
           {desc}
         </p>

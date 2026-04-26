@@ -32,8 +32,8 @@
       "title": "How it works?",
       "subtitle": "Get your international certificate in just 3 steps",
       "step1": {
-        "title": "Take the Test",
-        "description": "Our adaptive system selects questions based on your proficiency level."
+        "title": "Take the Exam",
+        "description": "Experience a real-like IELTS/CEFR environment with our adaptive testing system."
       },
       "step2": {
         "title": "AI Analysis",
@@ -54,9 +54,14 @@
       "a3": "Thanks to the adaptive system, the test takes 30-45 minutes, which is twice as fast as traditional tests."
     },
     "cta": {
-      "title": "Test your knowledge now",
-      "subtitle": "Get instant results and professional analysis without any waiting.",
-      "button": "Start for free"
+      "title": "Try your knowledge now",
+      "subtitle": "Get instant results and professional analysis without any delays.",
+      "button": "Start for Free"
+    },
+    "stats": {
+      "exams": "Successful exams",
+      "accuracy": "Accurate level detection",
+      "partners": "Partner learning centers"
     },
     "footer": {
       "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Bukhara State University · Software Certificate: LanguagePro AI"

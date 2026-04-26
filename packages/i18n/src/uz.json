@@ -32,8 +32,8 @@
       "title": "Qanday ishlaydi?",
       "subtitle": "Atigi 3 qadamda xalqaro sertifikatga ega bo'ling",
       "step1": {
-        "title": "Test topshirish",
-        "description": "Adaptiv tizimimiz sizning bilim darajangizga mos savollarni tanlaydi."
+        "title": "Imtihon topshirish",
+        "description": "Haqiqiy IELTS/CEFR muhitida, adaptiv savollar orqali bilimingizni sinang."
       },
       "step2": {
         "title": "AI Tahlili",
@@ -57,6 +57,11 @@
       "title": "Bilimingizni hoziroq sinab ko'ring",
       "subtitle": "Hech qanday kutishlarsiz, lahzalik natija va professional tahlilga ega bo'ling.",
       "button": "Bepul boshlash"
+    },
+    "stats": {
+      "exams": "Muvaffaqiyatli imtihonlar",
+      "accuracy": "Aniq daraja aniqlash",
+      "partners": "Hamkor o'quv markazlari"
     },
     "footer": {
       "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Buxoro Davlat Universiteti · Dastur guvohnomasi: LanguagePro AI"
