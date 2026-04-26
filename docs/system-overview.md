@@ -200,7 +200,7 @@ sequenceDiagram
         L-->>Q: parsed result
 
         Q->>L: complete(purpose=embed)
-        L-->>Q: vector(768)  # text-embedding-004
+        L-->>Q: vector(768)  # gemini-embedding-001
         Q->>V: similarity search (cosine > 0.92?)
         alt Duplicate
             Q->>DB: insert with status=rejected_duplicate
@@ -261,7 +261,7 @@ Bu — **2 dissertatsiyani ilmiy jihatdan bog'laydigan** mexanizm: Faxriddinning
 | **Object storage** | MinIO (dev) / S3 (prod) | latest | presigned URLs |
 | **LLM client** | `openai` SDK (Python + JS) | latest | Single SDK, points at Gemini's OpenAI-compat endpoint |
 | **LLM models** | Google Gemini 2.5 Pro / 2.5 Flash / 2.0 Pro / 2.0 Flash | latest | **No ChatGPT** — Gemini only via `OPENAI_BASE_URL` override |
-| **Embeddings** | Gemini `text-embedding-004` | — | Same SDK, dimension 768 (pgvector compatible) |
+| **Embeddings** | Gemini `gemini-embedding-001` | — | Same SDK, dimension 768 (pgvector compatible) |
 | **STT** | Gemini 2.5 Flash multimodal (audio input) | — | No separate Whisper — single provider |
 | **IRT** | py-irt (Pyro), custom selector | latest | 2PL model |
 | **Reverse proxy** | Caddy | 2 | auto TLS, simple Caddyfile |

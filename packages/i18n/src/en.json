@@ -1,0 +1,18 @@
+{
+  "Common": {
+    "appName": "LanguagePro AI",
+    "tagline": "AI-powered IELTS & CEFR online assessment",
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "next": "Next",
+      "previous": "Previous",
+      "finish": "Finish",
+      "start": "Start",
+      "login": "Log in",
+      "logout": "Log out",
+      "register": "Sign up"
+    }
+  }
+}

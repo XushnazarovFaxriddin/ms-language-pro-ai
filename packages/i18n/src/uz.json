@@ -1,0 +1,18 @@
+{
+  "Common": {
+    "appName": "LanguagePro AI",
+    "tagline": "Sun'iy intellekt yordamida IELTS va CEFR onlayn baholash",
+    "actions": {
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "submit": "Yuborish",
+      "next": "Keyingi",
+      "previous": "Oldingi",
+      "finish": "Yakunlash",
+      "start": "Boshlash",
+      "login": "Kirish",
+      "logout": "Chiqish",
+      "register": "Ro'yxatdan o'tish"
+    }
+  }
+}

@@ -35,4 +35,4 @@ Threshold for duplicate: `similarity > 0.92` (i.e., cosine_distance < 0.08).
 - Benchmark in week 4 with 500 embeddings: target recall@5 > 0.95
 
 ## Embedding model
-`text-embedding-004` (Gemini, 768-dim). One row per question. Re-embedding triggered if model upgrades (`embedding_model` column tracks).
+`gemini-embedding-001` (Gemini, 768-dim). One row per question. Re-embedding triggered if model upgrades (`embedding_model` column tracks).

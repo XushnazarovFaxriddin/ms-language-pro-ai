@@ -15,11 +15,12 @@ build/
 out/
 *.egg-info/
 
-# Environment
-.env
+# Environment — `.env` IS committed for local dev convenience.
+# Production secrets MUST come from a KMS / Docker secrets, never from this file.
 .env.local
 .env.*.local
 !.env.example
+.env
 
 # IDEs
 .vscode/

@@ -68,7 +68,7 @@ response = await client.chat.completions.create(
 | Classify CEFR | `gemini-2.5-flash` | Cheap; classification is easy |
 | Score writing | `gemini-2.5-pro` | Quality matters for thesis IRR study |
 | Score speaking | `gemini-2.5-flash` (multimodal) | Audio support; cheaper than 2.5-pro for STT-quality |
-| Embed | `text-embedding-004` | Native Gemini embeddings, 768-dim |
+| Embed | `gemini-embedding-001` | Native Gemini embeddings, 768-dim |
 | Feedback (UZ/EN) | `gemini-2.5-pro` | Multilingual quality crucial |
 
 ## Why exclude ChatGPT (OpenAI's GPT-4o family)?

@@ -93,7 +93,7 @@
 | attempt_id | uuid nullable | for exam-platform calls |
 | question_id | uuid nullable | for data-engine calls |
 | provider | text | `gemini` |
-| model | text | `gemini-2.5-pro`, `text-embedding-004`, ... |
+| model | text | `gemini-2.5-pro`, `gemini-embedding-001`, ... |
 | prompt_version_id | uuid nullable FK | |
 | tokens_in | int | |
 | tokens_out | int | |

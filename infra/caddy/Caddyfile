@@ -1,0 +1,64 @@
+# Caddyfile — local dev (HTTP only on .localhost; prod TLS in separate file)
+# Routes:
+#   localhost              → landing (host:3000)
+#   app.localhost          → exam-platform-web (host:3001)
+#   admin.localhost        → data-engine-web (host:3002)
+#   api.localhost/auth/*   → auth-api
+#   api.localhost/data/*   → data-engine-api
+#   api.localhost/exam/*   → exam-platform-api
+#   minio.localhost        → MinIO console
+#
+# Web apps run on host (pnpm dev) for fast HMR; APIs run in compose.
+
+{
+	auto_https off
+	admin off
+}
+
+# Landing
+localhost:80 {
+	reverse_proxy host.docker.internal:3000
+}
+
+# Exam platform (Faxriddin)
+app.localhost:80 {
+	reverse_proxy host.docker.internal:3001
+}
+
+# Admin / data-engine (Bobomurod)
+admin.localhost:80 {
+	reverse_proxy host.docker.internal:3002
+}
+
+# All APIs share api.localhost; routed by /service/v1/* prefix
+api.localhost:80 {
+	# CORS for dev (browsers from app.localhost / admin.localhost)
+	@cors {
+		header Origin *
+	}
+	header @cors Access-Control-Allow-Origin "{http.request.header.Origin}"
+	header @cors Access-Control-Allow-Credentials "true"
+	header @cors Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Request-Id, Idempotency-Key"
+	header @cors Access-Control-Allow-Methods "GET, POST, PATCH, DELETE, OPTIONS"
+	header @cors Vary "Origin"
+
+	# Strip /<service>/ prefix; FastAPI already mounts /v1/*
+	handle_path /auth/* {
+		reverse_proxy auth-api:8000
+	}
+	handle_path /data/* {
+		reverse_proxy data-engine-api:8000
+	}
+	handle_path /exam/* {
+		reverse_proxy exam-platform-api:8000
+	}
+
+	# OPTIONS preflight
+	@options method OPTIONS
+	respond @options 204
+}
+
+# MinIO console (S3-compatible storage UI)
+minio.localhost:80 {
+	reverse_proxy minio:9001
+}

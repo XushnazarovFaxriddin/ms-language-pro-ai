@@ -3,6 +3,14 @@ name = "languagepro-monorepo"
 version = "0.1.0"
 description = "LanguagePro AI — IELTS/CEFR AI assessment platform monorepo (Python workspace root)"
 requires-python = ">=3.12"
+dependencies = [
+    "auth-api",
+    "data-engine-api",
+    "exam-platform-api",
+    "languagepro-common",
+    "languagepro-llm",
+    "languagepro-irt",
+]
 
 [tool.uv.workspace]
 members = [
@@ -15,6 +23,9 @@ members = [
 ]
 
 [tool.uv.sources]
+auth-api = { workspace = true }
+data-engine-api = { workspace = true }
+exam-platform-api = { workspace = true }
 languagepro-llm = { workspace = true }
 languagepro-irt = { workspace = true }
 languagepro-common = { workspace = true }

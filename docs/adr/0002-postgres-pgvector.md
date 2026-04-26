@@ -11,7 +11,7 @@ We need vector storage for:
 2. **Semantic search** for content admins: find questions by meaning, not keywords.
 3. **(Future)** AI memory for adaptive feedback: retrieve a student's past errors.
 
-Embeddings: Gemini `text-embedding-004` → 768-dim vectors.
+Embeddings: Gemini `gemini-embedding-001` → 768-dim vectors.
 
 Expected scale by end of Year 1: ~10k–50k questions × 1 embedding each. With student responses included, possibly 200k vectors.
 
@@ -34,7 +34,7 @@ Rationale:
 - Single DB → single backup → single migration tool → single auth model. Reduces ops surface area dramatically.
 - Joins: "find questions with embedding similar to X AND CEFR level=B2 AND skill=reading AND status=approved" is one SQL query. With separate vector DB it's 2 round-trips + app-side join.
 - pgvector 0.7+ supports HNSW with `vector_cosine_ops`, recall > 0.95 at our scale.
-- Gemini `text-embedding-004` returns 768-dim vectors → fits well within pgvector's 2000-dim limit.
+- Gemini `gemini-embedding-001` returns 768-dim vectors → fits well within pgvector's 2000-dim limit.
 
 ## Consequences
 
@@ -50,7 +50,7 @@ Rationale:
 - DDL: `CREATE EXTENSION IF NOT EXISTS vector;` in initial migration.
 - Index: `CREATE INDEX ON data_engine.question_embeddings USING hnsw (embedding vector_cosine_ops);`
 - Distance: cosine (`<=>`). Threshold: `1 - cosine_distance > 0.92` for duplicate match.
-- Embedding dimensions: 768 (Gemini `text-embedding-004`).
+- Embedding dimensions: 768 (Gemini `gemini-embedding-001`).
 
 ## References
 

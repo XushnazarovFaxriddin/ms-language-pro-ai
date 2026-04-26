@@ -1,0 +1,11 @@
+{
+  "name": "@languagepro/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./en": "./src/en.json",
+    "./uz": "./src/uz.json"
+  },
+  "files": ["src"]
+}
