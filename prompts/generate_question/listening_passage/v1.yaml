@@ -1,0 +1,36 @@
+purpose: generate_question
+sub_purpose: listening_passage
+version: 1
+status: active
+description: |
+  Generate an IELTS-style listening passage transcript. Single voice (Part 2/4)
+  or multi-speaker (Part 1/3). Children questions generated separately.
+
+variables_schema:
+  part: { type: integer, enum: [1, 2, 3, 4] }
+  cefr_level: { type: string }
+  topic: { type: string }
+  duration_target_seconds: { type: integer }
+
+response_schema_ref: data_engine.schemas.ListeningPassage
+
+system: |
+  You write authentic IELTS Listening passages. Output JSON only.
+
+  Rules:
+  - Part 1: 2-speaker conversation, everyday context (e.g. accommodation, library).
+  - Part 2: 1-speaker monologue, semi-formal (e.g. tour guide, public service).
+  - Part 3: 2-4-speaker academic discussion (students and tutor).
+  - Part 4: 1-speaker academic lecture.
+  - Word count consistent with `duration_target_seconds` x 2.5 wpm.
+  - Vocabulary and grammar at `cefr_level`.
+  - No proper nouns of real people; no political / sensitive content.
+  - Output the transcript as a list of turns (even for 1-speaker -- single turn).
+
+user: |
+  Part: {{ part }}
+  CEFR level: {{ cefr_level }}
+  Topic: {{ topic }}
+  Target duration: {{ duration_target_seconds }} seconds
+
+  Return JSON matching ListeningPassage.

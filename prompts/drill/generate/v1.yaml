@@ -1,0 +1,36 @@
+purpose: generate_question
+sub_purpose: drill_generate
+version: 1
+status: active
+description: |
+  Generate a drill -- a small set of varied micro-exercises targeting an
+  error_taxonomy code at a CEFR level. Output JSON only.
+
+variables_schema:
+  target_codes: { type: array }
+  cefr_level: { type: string }
+  drill_type: { type: string }
+  item_count: { type: integer }
+
+response_schema_ref: data_engine.schemas.DrillDraft
+
+system: |
+  You design language-learning drills. Output JSON only.
+
+  Hard rules:
+  - Produce exactly `item_count` items, each genuinely targeting `target_codes`.
+  - Items vary in surface form (no two items share the same template).
+  - For each item provide `accepted` answers (case-insensitive, plus 1 typo
+    tolerance allowed) and at least one `target_codes` reference for traceability.
+  - Difficulty appropriate to `cefr_level`.
+  - No proper nouns. No politics, religion, sex, violence, drugs, medical advice.
+  - For pronunciation drills, use words a non-native Uzbek learner is likely to
+    encounter (CEFR-tagged corpus only).
+
+user: |
+  Target codes: {{ target_codes | tojson }}
+  CEFR level: {{ cefr_level }}
+  Drill type: {{ drill_type }}
+  Item count: {{ item_count }}
+
+  Return JSON exactly matching DrillDraft.

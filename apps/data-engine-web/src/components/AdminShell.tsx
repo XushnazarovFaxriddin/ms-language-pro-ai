@@ -1,3 +1,5 @@
+"use client";
+
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon } from "lucide-react";

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 from uuid import UUID
 
+from arq.connections import ArqRedis, RedisSettings, create_pool
 from fastapi import APIRouter, Depends
 from languagepro_common.auth import CurrentUser
 from languagepro_common.errors import NotFoundError
@@ -14,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exam_platform.adapters.data_engine.client import DataEngineClient
 from exam_platform.api.deps import get_current_user, get_data_engine_client
 from exam_platform.db import get_session
-from exam_platform.models import ExamAttempt, Exam
+from exam_platform.models import Exam, ExamAttempt
 from exam_platform.schemas import (
     AttemptListItem,
     AttemptOut,
@@ -25,8 +26,18 @@ from exam_platform.schemas import (
     SubmitResponseOut,
 )
 from exam_platform.services import attempt as attempt_svc
+from exam_platform.settings import settings
 
 router = APIRouter(tags=["attempts"])
+
+_arq_pool: ArqRedis | None = None
+
+
+async def _get_arq() -> ArqRedis:
+    global _arq_pool
+    if _arq_pool is None:
+        _arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
+    return _arq_pool
 
 
 @router.post("/attempts", response_model=StartAttemptResponse, status_code=201)
@@ -85,10 +96,12 @@ async def list_attempts(
         # Calculate a mock final score for display based on theta, or leave None
         score = None
         if att.theta_estimates:
-            # Just take the average theta and convert to a 0-100 scale for demo, 
+            # Just take the average theta and convert to a 0-100 scale for demo,
             # or just leave it as None if state != completed.
             if att.state == "completed":
-                avg_theta = sum(float(v) for v in att.theta_estimates.values()) / len(att.theta_estimates)
+                avg_theta = sum(float(v) for v in att.theta_estimates.values()) / len(
+                    att.theta_estimates
+                )
                 # Map theta (-3 to +3) roughly to 0-100%
                 score = round(max(0.0, min(100.0, (avg_theta + 3) / 6 * 100)), 1)
 
@@ -131,7 +144,7 @@ async def submit(
     user: Annotated[CurrentUser, Depends(get_current_user)],
     de: Annotated[DataEngineClient, Depends(get_data_engine_client)],
 ) -> SubmitResponseOut:
-    return await attempt_svc.submit_response(
+    out = await attempt_svc.submit_response(
         db,
         de,
         user_id=user.id,
@@ -143,3 +156,12 @@ async def submit(
         audio_s3_key=body.audio_s3_key,
         time_ms=body.time_ms,
     )
+    if body.text_answer and body.type.startswith("writing_"):
+        arq = await _get_arq()
+        await arq.enqueue_job(
+            "analyse_writing",
+            str(out.response_id),
+            str(user.id),
+            _queue_name="arq:exam-platform",
+        )
+    return out

@@ -2,11 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from data_engine.settings import settings
 from languagepro_common.errors import register_error_handlers
 from languagepro_common.logging import configure_logging, get_logger
 from languagepro_common.middleware import RequestIdMiddleware
+
+from data_engine.settings import settings
 
 configure_logging(settings.LOG_LEVEL, settings.LOG_FORMAT)
 log = get_logger(__name__)
@@ -40,12 +40,21 @@ app.add_middleware(
 
 register_error_handlers(app)
 
-from data_engine.api.v1 import blueprints, generation, items, llm_usage  # noqa: E402
+from data_engine.api.v1 import (  # noqa: E402
+    blueprints,
+    generation,
+    items,
+    llm_usage,
+    practice_catalogue,
+    practice_content,
+)
 
 app.include_router(items.router, prefix="/v1")
 app.include_router(blueprints.router, prefix="/v1")
 app.include_router(generation.router, prefix="/v1")
 app.include_router(llm_usage.router, prefix="/v1")
+app.include_router(practice_content.router, prefix="/v1")
+app.include_router(practice_catalogue.router, prefix="/v1")
 
 
 @app.get("/healthz")

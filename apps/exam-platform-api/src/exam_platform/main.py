@@ -2,11 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from exam_platform.settings import settings
 from languagepro_common.errors import register_error_handlers
 from languagepro_common.logging import configure_logging, get_logger
 from languagepro_common.middleware import RequestIdMiddleware
+
+from exam_platform.settings import settings
 
 configure_logging(settings.LOG_LEVEL, settings.LOG_FORMAT)
 log = get_logger(__name__)
@@ -40,10 +40,21 @@ app.add_middleware(
 
 register_error_handlers(app)
 
-from exam_platform.api.v1 import attempts, exams  # noqa: E402
+from exam_platform.api.v1 import (  # noqa: E402
+    attempts,
+    conversation,
+    exams,
+    feedback,
+    practice,
+    roadmap,
+)
 
 app.include_router(exams.router, prefix="/v1")
 app.include_router(attempts.router, prefix="/v1")
+app.include_router(feedback.router, prefix="/v1")
+app.include_router(roadmap.router, prefix="/v1")
+app.include_router(practice.router, prefix="/v1")
+app.include_router(conversation.router, prefix="/v1")
 
 
 @app.get("/healthz")
