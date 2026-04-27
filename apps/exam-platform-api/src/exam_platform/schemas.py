@@ -53,6 +53,8 @@ class SubmitResponseOut(BaseModel):
     next_item: ItemView | None = None
     section_complete: bool = False
     attempt_complete: bool = False
+    next_section_index: int | None = None
+    next_skill: str | None = None
 
 
 class AttemptOut(BaseModel):

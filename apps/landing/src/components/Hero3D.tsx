@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MeshDistortMaterial, Float, PerspectiveCamera, Environment } from "@react-three/drei";
 import * as THREE from "three";
@@ -38,7 +38,9 @@ function Scene() {
         </mesh>
       </Float>
       
-      <Environment preset="city" />
+      <Suspense fallback={null}>
+        <Environment preset="city" />
+      </Suspense>
     </>
   );
 }

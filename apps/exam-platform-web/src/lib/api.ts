@@ -162,6 +162,16 @@ export type ItemView = {
     prompt?: string;
     options?: { id: string; label: string }[];
     audio_url?: string;
+    transcript?: string;
+    // Writing
+    task_type?: "task1_academic" | "task1_general" | "task2";
+    word_limit_min?: number;
+    word_limit_max?: number;
+    time_limit_minutes?: number;
+    // Speaking
+    part?: 1 | 2 | 3;
+    preparation_seconds?: number;
+    speaking_seconds?: number;
   };
   estimated_seconds: number;
 };
@@ -217,6 +227,8 @@ export type SubmitResponseOut = {
   next_item: ItemView | null;
   section_complete: boolean;
   attempt_complete: boolean;
+  next_section_index: number | null;
+  next_skill: string | null;
 };
 
 // ----- New DTOs -----

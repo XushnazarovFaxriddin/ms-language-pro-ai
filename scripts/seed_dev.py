@@ -66,13 +66,37 @@ IELTS_FULL_BLUEPRINT = {
     "name_en": "IELTS Academic Full Test",
     "sections": [
         {
+            "skill": "listening",
+            "name_uz": "Tinglash",
+            "name_en": "Listening",
+            "item_count": 2,
+            "time_limit_seconds": 1800,
+            "stop_rule": {"type": "budget", "max_items": 2},
+        },
+        {
             "skill": "reading",
-            "name_uz": "O'qish bo'limi",
-            "name_en": "Reading Section",
-            "item_count": 5,  # Demo uchun 5 ta qo'yildi
+            "name_uz": "O'qish",
+            "name_en": "Reading",
+            "item_count": 3,
             "time_limit_seconds": 3600,
-            "stop_rule": {"type": "budget", "max_items": 5},
-        }
+            "stop_rule": {"type": "budget", "max_items": 3},
+        },
+        {
+            "skill": "writing",
+            "name_uz": "Yozish",
+            "name_en": "Writing",
+            "item_count": 1,
+            "time_limit_seconds": 2400,
+            "stop_rule": {"type": "budget", "max_items": 1},
+        },
+        {
+            "skill": "speaking",
+            "name_uz": "Gapirish",
+            "name_en": "Speaking",
+            "item_count": 1,
+            "time_limit_seconds": 840,
+            "stop_rule": {"type": "budget", "max_items": 1},
+        },
     ],
 }
 
@@ -82,15 +106,130 @@ CEFR_FULL_BLUEPRINT = {
     "name_en": "CEFR Multilevel Full Test",
     "sections": [
         {
+            "skill": "listening",
+            "name_uz": "Tinglash",
+            "name_en": "Listening",
+            "item_count": 2,
+            "time_limit_seconds": 1500,
+            "stop_rule": {"type": "budget", "max_items": 2},
+        },
+        {
             "skill": "reading",
-            "name_uz": "O'qish bo'limi",
-            "name_en": "Reading Section",
-            "item_count": 5, # Demo uchun 5 ta qo'yildi
-            "time_limit_seconds": 3600,
-            "stop_rule": {"type": "budget", "max_items": 5},
-        }
+            "name_uz": "O'qish",
+            "name_en": "Reading",
+            "item_count": 3,
+            "time_limit_seconds": 2400,
+            "stop_rule": {"type": "budget", "max_items": 3},
+        },
+        {
+            "skill": "writing",
+            "name_uz": "Yozish",
+            "name_en": "Writing",
+            "item_count": 1,
+            "time_limit_seconds": 1800,
+            "stop_rule": {"type": "budget", "max_items": 1},
+        },
+        {
+            "skill": "speaking",
+            "name_uz": "Gapirish",
+            "name_en": "Speaking",
+            "item_count": 1,
+            "time_limit_seconds": 600,
+            "stop_rule": {"type": "budget", "max_items": 1},
+        },
     ],
 }
+
+# ── Listening / Writing / Speaking demo items ──
+# Listening: same MCQ structure as reading, but with `audio_url` in payload (the
+# student listens to a clip and answers an MCQ). For dev, we point at a publicly
+# hosted ielts-style sample WAV; production uses gemini-2.5-flash-preview-tts.
+LISTENING_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000002{i:02d}") for i in range(1, 3)]
+LISTENING_QUESTIONS = [
+    {
+        "id": LISTENING_Q_IDS[0],
+        "audio_url": "https://demo.aiexam.uz/audio/listening/library_dialog.mp3",
+        "transcript": (
+            "Hello, I'd like to register for a library card. — Of course. Could you tell me "
+            "your name and current address? — My name is Aziza Karimova, and I live at "
+            "12 Mustaqillik Street, Bukhara. — Great. The card costs 5,000 so'm and gives "
+            "you access to all branches for one year."
+        ),
+        "prompt": "How much does the library card cost per year?",
+        "options": [
+            {"id": "A", "label": "2,000 so'm"},
+            {"id": "B", "label": "5,000 so'm"},
+            {"id": "C", "label": "10,000 so'm"},
+            {"id": "D", "label": "Free"},
+        ],
+        "correct_option_id": "B",
+        "distractor_rationale": "The dialogue states 5,000 so'm explicitly.",
+        "difficulty_b": -0.3,
+        "cefr": "B1",
+    },
+    {
+        "id": LISTENING_Q_IDS[1],
+        "audio_url": "https://demo.aiexam.uz/audio/listening/lecture_climate.mp3",
+        "transcript": (
+            "In today's lecture we will examine three drivers of urban heat: dense building "
+            "materials that absorb solar radiation, the lack of vegetation in city centres, "
+            "and emissions from vehicles. Of these, the absence of green space contributes "
+            "the most measurable temperature increase, often raising readings by two to three "
+            "degrees Celsius compared to surrounding suburbs."
+        ),
+        "prompt": "According to the lecturer, which factor most increases urban temperatures?",
+        "options": [
+            {"id": "A", "label": "Dense building materials"},
+            {"id": "B", "label": "Lack of vegetation"},
+            {"id": "C", "label": "Vehicle emissions"},
+            {"id": "D", "label": "Industrial activity"},
+        ],
+        "correct_option_id": "B",
+        "distractor_rationale": "The lecture explicitly states the absence of green space contributes the most.",
+        "difficulty_b": 0.3,
+        "cefr": "B2",
+    },
+]
+
+# Writing: Task 2 essay prompt
+WRITING_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000003{i:02d}") for i in range(1, 2)]
+WRITING_QUESTIONS = [
+    {
+        "id": WRITING_Q_IDS[0],
+        "task_type": "task2",
+        "prompt": (
+            "Some people believe that universities should only accept students with the "
+            "highest grades, while others think that universities should be open to all "
+            "students regardless of academic performance.\n\n"
+            "Discuss both views and give your own opinion. Write at least 250 words."
+        ),
+        "word_limit_min": 250,
+        "word_limit_max": 400,
+        "time_limit_minutes": 40,
+        "difficulty_b": 0.5,
+        "cefr": "B2",
+    },
+]
+
+# Speaking: Part 2 cue card
+SPEAKING_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000004{i:02d}") for i in range(1, 2)]
+SPEAKING_QUESTIONS = [
+    {
+        "id": SPEAKING_Q_IDS[0],
+        "part": 2,
+        "prompt": (
+            "Describe a memorable trip you took. You should say:\n"
+            "  • where you went\n"
+            "  • who you went with\n"
+            "  • what you did there\n"
+            "and explain why this trip was memorable for you."
+        ),
+        "preparation_seconds": 60,
+        "speaking_seconds": 120,
+        "difficulty_b": 0.0,
+        "cefr": "B1",
+    },
+]
 
 # 5 AI-generated (not real IELTS!) MCQ reading questions — open-licensed
 SAMPLE_QUESTIONS = [
@@ -266,62 +405,149 @@ async def main() -> None:
 
         # ── 3. Seed sample questions ──
         # Look up skill and cefr IDs
-        reading_skill_id = (
-            await db.execute(
-                text("SELECT id FROM data_engine.skills WHERE code = 'reading'")
-            )
-        ).scalar_one()
+        skill_ids: dict[str, int] = {}
+        for row in (
+            await db.execute(text("SELECT code, id FROM data_engine.skills"))
+        ).all():
+            skill_ids[row[0]] = row[1]
 
-        cefr_ids = {}
+        cefr_ids: dict[str, int] = {}
         for row in (await db.execute(text("SELECT code, id FROM data_engine.cefr_levels"))).all():
             cefr_ids[row[0]] = row[1]
 
-        q_count = 0
-        for q in SAMPLE_QUESTIONS:
+        async def _ensure_question(q_id, *, skill_code, type_, payload, answer_key, cefr, b, est_seconds):
             existing = (
-                await db.execute(
-                    select(Question.id).where(Question.id == q["id"])
-                )
+                await db.execute(select(Question.id).where(Question.id == q_id))
             ).scalar_one_or_none()
             if existing is not None:
-                continue
+                return False
             await db.execute(
                 insert(Question).values(
-                    id=q["id"],
+                    id=q_id,
                     bank_id=BANK_ID,
-                    type="mcq_single",
+                    type=type_,
                     status="approved",
-                    skill_id=reading_skill_id,
-                    cefr_level_id=cefr_ids[q["cefr"]],
-                    payload={
-                        "passage": q["passage"],
-                        "prompt": q["prompt"],
-                        "options": q["options"],
-                    },
-                    answer_key={
-                        "correct_option_id": q["correct_option_id"],
-                        "distractor_rationale": q["distractor_rationale"],
-                    },
-                    difficulty_b=q["difficulty_b"],
+                    skill_id=skill_ids[skill_code],
+                    cefr_level_id=cefr_ids[cefr],
+                    payload=payload,
+                    answer_key=answer_key,
+                    difficulty_b=b,
                     discrimination_a=1.0,
-                    guessing_c=0.25,
+                    guessing_c=0.25 if type_ == "mcq_single" else 0.0,
                     source_license="ai_generated",
-                    estimated_seconds=90,
+                    estimated_seconds=est_seconds,
                 )
             )
-            q_count += 1
-        print(f"   ✅ {q_count} questions seeded (of {len(SAMPLE_QUESTIONS)} total)")
+            return True
 
-        # ── 4. Seed blueprint ──
+        # Reading
+        r_count = 0
+        for q in SAMPLE_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="reading",
+                type_="mcq_single",
+                payload={
+                    "passage": q["passage"],
+                    "prompt": q["prompt"],
+                    "options": q["options"],
+                },
+                answer_key={
+                    "correct_option_id": q["correct_option_id"],
+                    "distractor_rationale": q["distractor_rationale"],
+                },
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=90,
+            )
+            if inserted:
+                r_count += 1
+        print(f"   ✅ {r_count} reading questions seeded (of {len(SAMPLE_QUESTIONS)} total)")
+
+        # Listening
+        l_count = 0
+        for q in LISTENING_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="listening",
+                type_="mcq_single",
+                payload={
+                    "prompt": q["prompt"],
+                    "options": q["options"],
+                    "audio_url": q["audio_url"],
+                    "transcript": q["transcript"],  # admin-only; UI hides in exam
+                },
+                answer_key={
+                    "correct_option_id": q["correct_option_id"],
+                    "distractor_rationale": q["distractor_rationale"],
+                },
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=120,
+            )
+            if inserted:
+                l_count += 1
+        print(f"   ✅ {l_count} listening questions seeded (of {len(LISTENING_QUESTIONS)} total)")
+
+        # Writing
+        w_count = 0
+        for q in WRITING_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="writing",
+                type_="writing_task2",
+                payload={
+                    "prompt": q["prompt"],
+                    "task_type": q["task_type"],
+                    "word_limit_min": q["word_limit_min"],
+                    "word_limit_max": q["word_limit_max"],
+                    "time_limit_minutes": q["time_limit_minutes"],
+                },
+                answer_key={
+                    "rubric_ref": "ielts_writing_task2_v1",
+                },
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=q["time_limit_minutes"] * 60,
+            )
+            if inserted:
+                w_count += 1
+        print(f"   ✅ {w_count} writing questions seeded (of {len(WRITING_QUESTIONS)} total)")
+
+        # Speaking
+        s_count = 0
+        for q in SPEAKING_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="speaking",
+                type_="speaking_part2_cue_card",
+                payload={
+                    "prompt": q["prompt"],
+                    "part": q["part"],
+                    "preparation_seconds": q["preparation_seconds"],
+                    "speaking_seconds": q["speaking_seconds"],
+                },
+                answer_key={
+                    "rubric_ref": "ielts_speaking_part2_v1",
+                },
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=q["preparation_seconds"] + q["speaking_seconds"],
+            )
+            if inserted:
+                s_count += 1
+        print(f"   ✅ {s_count} speaking questions seeded (of {len(SPEAKING_QUESTIONS)} total)")
+
+        # ── 4. Seed/update blueprints (UPSERT so section structure stays fresh) ──
+        from sqlalchemy import update as sa_update
+
         for bp_id, bp_data in [
             (BLUEPRINT_ID, IELTS_READING_BLUEPRINT),
             (BLUEPRINT_ID_IELTS, IELTS_FULL_BLUEPRINT),
             (BLUEPRINT_ID_CEFR, CEFR_FULL_BLUEPRINT),
         ]:
             existing_bp = (
-                await db.execute(
-                    select(ExamBlueprint.id).where(ExamBlueprint.id == bp_id)
-                )
+                await db.execute(select(ExamBlueprint.id).where(ExamBlueprint.id == bp_id))
             ).scalar_one_or_none()
 
             if existing_bp is None:
@@ -334,9 +560,19 @@ async def main() -> None:
                         sections=bp_data["sections"],
                     )
                 )
-                print(f"   ✅ Blueprint {bp_data['code']} created")
+                print(f"   ✅ Blueprint {bp_data['code']} created ({len(bp_data['sections'])} sections)")
             else:
-                print(f"   ⏭️  Blueprint {bp_data['code']} already exists")
+                await db.execute(
+                    sa_update(ExamBlueprint)
+                    .where(ExamBlueprint.id == bp_id)
+                    .values(
+                        code=bp_data["code"],
+                        name_uz=bp_data["name_uz"],
+                        name_en=bp_data["name_en"],
+                        sections=bp_data["sections"],
+                    )
+                )
+                print(f"   🔄 Blueprint {bp_data['code']} updated ({len(bp_data['sections'])} sections)")
 
         # ── 5. Seed exam in exam_platform schema ──
         for ex_id, bp_data in [

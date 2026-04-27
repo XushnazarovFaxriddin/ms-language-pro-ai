@@ -3,15 +3,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { ApiError, api, type AttemptOut, type ItemView } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle } from "lucide-react";
+import { ApiError, api, type AttemptOut, type ItemView, type SubmitResponseIn } from "@/lib/api";
+import { MCQItem } from "./items/MCQItem";
+import { ListeningItem } from "./items/ListeningItem";
+import { WritingItem } from "./items/WritingItem";
+import { SpeakingItem } from "./items/SpeakingItem";
+import { SectionTransition } from "./items/SectionTransition";
 
-type Result = {
-  itemId: string;
-  isCorrect: boolean | null;
-  thetaAfter: number | null;
+type Skill = "listening" | "reading" | "writing" | "speaking";
+
+type Section = {
+  skill: Skill;
+  name_uz?: string;
+  name_en?: string;
+  item_count?: number;
+  time_limit_seconds: number;
+  stop_rule?: { type?: string; max_items?: number };
 };
+
+function isSkill(v: string | undefined | null): v is Skill {
+  return v === "listening" || v === "reading" || v === "writing" || v === "speaking";
+}
 
 export function ExamRunner({
   attemptId,
@@ -22,56 +36,66 @@ export function ExamRunner({
 }) {
   const router = useRouter();
   const t = useTranslations("Exam");
-  
-  // If attempt is already completed, redirect immediately
+
+  // Redirect if attempt is already completed
   useEffect(() => {
     if (initialAttempt.state === "completed") {
       router.replace(`/results/${attemptId}`);
     }
   }, [initialAttempt.state, attemptId, router]);
 
-  const section = initialAttempt.blueprint_snapshot.sections[0];
-  const totalItems = section?.item_count ?? 5;
-  const sectionTimeLimit = section?.time_limit_seconds ?? 600;
+  const sections = (initialAttempt.blueprint_snapshot.sections ?? []) as Section[];
 
-  const [item, setItem] = useState<ItemView | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [choice, setChoice] = useState<string | null>(null);
-  const [results, setResults] = useState<Result[]>([]);
-  const [theta, setTheta] = useState<number>(initialAttempt.theta_estimates[section?.skill ?? "reading"] ?? 0);
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [sectionStartedAt] = useState<number>(Date.now());
-  const [sectionRemaining, setSectionRemaining] = useState<number>(sectionTimeLimit);
-  const [feedback, setFeedback] = useState<{ ok: boolean; msg: string } | null>(null);
-  const [done, setDone] = useState(false);
+  // Section + item state
+  const [sectionIndex, setSectionIndex] = useState<number>(initialAttempt.current_section_index);
+  const currentSection: Section | undefined = sections[sectionIndex];
+  const totalItemsInSection = currentSection?.stop_rule?.max_items ?? currentSection?.item_count ?? 5;
+  const sectionTimeLimit = currentSection?.time_limit_seconds ?? 600;
+
+  const [item, setItem] = useState<ItemView | null>(initialAttempt.current_item);
+  const [loading, setLoading] = useState<boolean>(initialAttempt.current_item === null);
   const [error, setError] = useState<string | null>(null);
 
-  // Load current item from the server snapshot; sessionStorage is only a fast path
-  // for the first client-side navigation after starting an attempt.
+  // Per-skill answer state
+  const [mcqChoice, setMcqChoice] = useState<string | null>(null);
+  const [writingText, setWritingText] = useState<string>("");
+  const [audioKey, setAudioKey] = useState<string | null>(null);
+  const [audioDurationMs, setAudioDurationMs] = useState<number>(0);
+
+  // Progress tracking (per current section)
+  const [itemsAnsweredInSection, setItemsAnsweredInSection] = useState<number>(0);
+  const [feedback, setFeedback] = useState<{ ok: boolean | null; msg: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Section transition gating
+  const [showSectionIntro, setShowSectionIntro] = useState<boolean>(true);
+  const [previousSkill, setPreviousSkill] = useState<Skill | null>(null);
+
+  // Timer
+  const [sectionStartedAt, setSectionStartedAt] = useState<number>(Date.now());
+  const [sectionRemaining, setSectionRemaining] = useState<number>(sectionTimeLimit);
+  const [itemStartTime, setItemStartTime] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      const elapsed = Math.floor((Date.now() - sectionStartedAt) / 1000);
+      setSectionRemaining(Math.max(0, sectionTimeLimit - elapsed));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [sectionStartedAt, sectionTimeLimit]);
+
+  // Bootstrap: if we don't yet have an item (e.g. user reloaded mid-section), fetch it.
   useEffect(() => {
     let cancelled = false;
     async function bootstrap() {
+      if (item) return;
       try {
-        const cached = typeof window !== "undefined" ? sessionStorage.getItem(`first-item:${attemptId}`) : null;
-        const current = initialAttempt.current_item ?? (cached ? JSON.parse(cached) as ItemView : null);
-        if (current) {
-          if (!cancelled) {
-            setItem(current);
-            setLoading(false);
-            setStartTime(Date.now());
-          }
-          return;
-        }
-
         const next = await api.exam.getNextItem(attemptId);
-        if (!cancelled) {
-          setItem(next.current_item);
-          if (!next.current_item) {
-            setError("Keyingi savol topilmadi.");
-          }
-          setLoading(false);
-          setStartTime(Date.now());
-        }
+        if (cancelled) return;
+        setSectionIndex(next.current_section_index);
+        setItem(next.current_item);
+        setLoading(false);
+        setItemStartTime(Date.now());
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof ApiError ? e.detail : String(e));
@@ -79,62 +103,111 @@ export function ExamRunner({
         }
       }
     }
-    bootstrap();
+    void bootstrap();
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attemptId]);
 
-  // Timer
+  // Reset per-item state when a new item arrives
   useEffect(() => {
-    const t = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - sectionStartedAt) / 1000);
-      setSectionRemaining(Math.max(0, sectionTimeLimit - elapsed));
-    }, 1000);
-    return () => clearInterval(t);
-  }, [sectionStartedAt, sectionTimeLimit]);
+    setMcqChoice(null);
+    setWritingText("");
+    setAudioKey(null);
+    setAudioDurationMs(0);
+    setFeedback(null);
+    setItemStartTime(Date.now());
+  }, [item?.id]);
 
-  const progress = useMemo(() => results.length / Math.max(1, totalItems), [results.length, totalItems]);
+  const progress = useMemo(
+    () => itemsAnsweredInSection / Math.max(1, totalItemsInSection),
+    [itemsAnsweredInSection, totalItemsInSection],
+  );
+
+  function buildBody(): SubmitResponseIn | null {
+    if (!item) return null;
+    const time_ms = Date.now() - itemStartTime;
+    if (item.skill === "writing") {
+      return { item_id: item.id, type: item.type, text_answer: writingText.trim(), time_ms };
+    }
+    if (item.skill === "speaking") {
+      return audioKey
+        ? { item_id: item.id, type: item.type, audio_s3_key: audioKey, time_ms: audioDurationMs || time_ms }
+        : null;
+    }
+    // listening + reading → MCQ
+    if (!mcqChoice) return null;
+    return { item_id: item.id, type: item.type, mcq_choice_id: mcqChoice, time_ms };
+  }
+
+  const submitDisabled = useMemo(() => {
+    if (!item || submitting) return true;
+    if (item.skill === "writing") {
+      return writingText.trim().length === 0;
+    }
+    if (item.skill === "speaking") return audioKey === null;
+    return mcqChoice === null;
+  }, [item, submitting, writingText, audioKey, mcqChoice]);
 
   async function submit() {
-    if (!item || !choice) return;
-    setFeedback(null);
+    const body = buildBody();
+    if (!body || !item) return;
+    setSubmitting(true);
+    setError(null);
     try {
-      const r = await api.exam.submitResponse(attemptId, {
-        item_id: item.id,
-        type: item.type,
-        mcq_choice_id: choice,
-        time_ms: Date.now() - startTime,
-      });
-      setResults((prev) => [
-        ...prev,
-        { itemId: item.id, isCorrect: r.is_correct, thetaAfter: null },
-      ]);
+      const r = await api.exam.submitResponse(attemptId, body);
+      const wasObjective = r.graded_synchronously && r.is_correct !== null;
+      setItemsAnsweredInSection((n) => n + 1);
       setFeedback({
-        ok: !!r.is_correct,
-        msg: r.is_correct ? "✓ To'g'ri" : r.is_correct === false ? "✗ Noto'g'ri" : "Yuborildi",
+        ok: wasObjective ? r.is_correct : null,
+        msg: wasObjective
+          ? r.is_correct
+            ? t("correct")
+            : t("incorrect")
+          : t("submitted"),
       });
-      // brief feedback flash, then advance
-      setTimeout(() => {
+
+      window.setTimeout(() => {
         setFeedback(null);
-        setChoice(null);
+        if (r.attempt_complete) {
+          router.replace(`/results/${attemptId}`);
+          return;
+        }
+        if (r.section_complete && r.next_item) {
+          // Show transition screen for the next section
+          setPreviousSkill(item.skill as Skill);
+          setSectionIndex(r.next_section_index ?? sectionIndex + 1);
+          setItemsAnsweredInSection(0);
+          setItem(r.next_item);
+          setShowSectionIntro(true);
+          return;
+        }
         if (r.next_item) {
           setItem(r.next_item);
-          sessionStorage.setItem(`first-item:${attemptId}`, JSON.stringify(r.next_item));
-          setStartTime(Date.now());
-        } else if (r.attempt_complete) {
-          sessionStorage.removeItem(`first-item:${attemptId}`);
-          router.replace(`/results/${attemptId}`);
-        } else {
-          sessionStorage.removeItem(`first-item:${attemptId}`);
-          setItem(null);
-          setError(t("errorNotFound"));
+          return;
         }
-      }, 800);
+        // No next item but not complete? Fetch one.
+        api.exam
+          .getNextItem(attemptId)
+          .then((nx) => {
+            if (nx.current_item) {
+              setSectionIndex(nx.current_section_index);
+              setItem(nx.current_item);
+            } else {
+              router.replace(`/results/${attemptId}`);
+            }
+          })
+          .catch((e) => setError(e instanceof ApiError ? e.detail : String(e)));
+      }, 700);
     } catch (e) {
       setError(e instanceof ApiError ? e.detail : String(e));
+    } finally {
+      setSubmitting(false);
     }
   }
+
+  // ── Render ──
 
   if (loading) {
     return <main className="container mx-auto max-w-3xl px-6 py-12 text-center">{t("loading")}</main>;
@@ -155,23 +228,38 @@ export function ExamRunner({
       </main>
     );
   }
-  if (done) {
-    // This is a fallback in case the redirect takes a moment
-    return <main className="container mx-auto max-w-2xl px-6 py-16 text-center">{t("loading")}</main>;
-  }
-  if (!item) return null;
+  if (!item || !currentSection) return null;
 
-  const opts = item.payload.options ?? [];
+  // Section transition intro screen
+  if (showSectionIntro && isSkill(currentSection.skill)) {
+    return (
+      <SectionTransition
+        fromSkill={previousSkill}
+        toSkill={currentSection.skill}
+        sectionIndex={sectionIndex}
+        totalSections={sections.length}
+        onContinue={() => {
+          setShowSectionIntro(false);
+          setSectionStartedAt(Date.now());
+          setSectionRemaining(sectionTimeLimit);
+          setItemStartTime(Date.now());
+        }}
+      />
+    );
+  }
 
   return (
     <main className="container mx-auto max-w-3xl px-6 py-8">
       {/* Status bar */}
       <div className="mb-6 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2 text-[var(--color-muted-fg)] font-medium">
+        <div className="flex flex-wrap items-center gap-2 text-[var(--color-muted-fg)] font-medium">
           <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-[var(--color-primary)]">
-            {t("question")} {results.length + 1} / {totalItems}
+            {currentSection.name_uz ?? item.skill} · {sectionIndex + 1}/{sections.length}
           </span>
-          <span className="hidden sm:inline">· {t("skill")}: {item.skill} · {item.cefr_level}</span>
+          <span>
+            {t("question")} {itemsAnsweredInSection + 1} / {totalItemsInSection}
+          </span>
+          <span className="hidden sm:inline">· {item.cefr_level}</span>
         </div>
         <div
           className={`flex items-center gap-1.5 rounded-full px-3 py-1 font-mono font-medium shadow-sm ${
@@ -185,7 +273,7 @@ export function ExamRunner({
         </div>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress */}
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-muted)]">
         <motion.div
           initial={{ width: 0 }}
@@ -203,79 +291,57 @@ export function ExamRunner({
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Passage */}
-          {item.payload.passage && (
-            <article className="mt-8 rounded-2xl border border-[var(--color-border)] bg-white/5 p-6 md:p-8 shadow-sm backdrop-blur-md leading-relaxed dark:bg-black/20 text-lg">
-              {item.payload.passage}
-            </article>
+          {item.skill === "reading" && (
+            <MCQItem item={item} choice={mcqChoice} onChange={setMcqChoice} disabled={submitting} />
+          )}
+          {item.skill === "listening" && (
+            <ListeningItem item={item} choice={mcqChoice} onChange={setMcqChoice} disabled={submitting} />
+          )}
+          {item.skill === "writing" && (
+            <WritingItem item={item} text={writingText} onChange={setWritingText} disabled={submitting} />
+          )}
+          {item.skill === "speaking" && (
+            <SpeakingItem
+              item={item}
+              audioReady={audioKey !== null}
+              onAudioReady={(k, ms) => {
+                setAudioKey(k);
+                setAudioDurationMs(ms);
+              }}
+              disabled={submitting}
+            />
           )}
 
-          {/* Prompt */}
-          <p className="mt-8 text-xl font-bold tracking-tight">{item.payload.prompt}</p>
-
-          {/* Options */}
-          <fieldset className="mt-6 grid gap-3">
-            {opts.map((o) => (
-              <label
-                key={o.id}
-                className={`group relative flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition-all ${
-                  choice === o.id
-                    ? "border-[var(--color-primary)] bg-[var(--color-primary)]/5 shadow-[0_0_0_1px_var(--color-primary)]"
-                    : "border-[var(--color-border)] bg-white/5 hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-primary)]/5 dark:bg-black/10"
-                }`}
-              >
-                <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${
-                  choice === o.id ? "border-[var(--color-primary)]" : "border-[var(--color-muted-fg)]"
-                }`}>
-                  {choice === o.id && <div className="h-2.5 w-2.5 rounded-full bg-[var(--color-primary)]" />}
-                </div>
-                <input
-                  type="radio"
-                  name="mcq"
-                  value={o.id}
-                  checked={choice === o.id}
-                  onChange={() => setChoice(o.id)}
-                  className="hidden"
-                />
-                <span className="font-semibold text-[var(--color-muted-fg)]">{o.id}.</span>
-                <span className="text-lg">{o.label}</span>
-              </label>
-            ))}
-          </fieldset>
-
-          {/* Submit / feedback */}
           <div className="mt-10 flex items-center gap-6 border-t border-[var(--color-border)] pt-6">
             <button
               type="button"
-              disabled={!choice || feedback !== null}
+              disabled={submitDisabled}
               onClick={submit}
-              className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 hover:shadow-md disabled:opacity-50"
+              className="rounded-full bg-[var(--color-primary)] px-8 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {t("submit")}
+              {submitting ? t("submitted") : t("submit")}
             </button>
             {feedback && (
               <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 className={`flex items-center gap-2 font-medium ${
-                  feedback.ok ? "text-green-600" : "text-red-600"
+                  feedback.ok === true
+                    ? "text-green-600"
+                    : feedback.ok === false
+                    ? "text-red-600"
+                    : "text-[var(--color-muted-fg)]"
                 }`}
               >
-                {feedback.ok ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
-                {feedback.ok ? t("correct") : t("incorrect")}
+                {feedback.ok === true && <CheckCircle2 className="h-5 w-5" />}
+                {feedback.ok === false && <XCircle className="h-5 w-5" />}
+                {feedback.msg}
               </motion.div>
             )}
             {error && <span className="text-red-600 font-medium">{error}</span>}
           </div>
         </motion.div>
       </AnimatePresence>
-
-      {/* Theta debug (only visible in dev) */}
-      {process.env.NODE_ENV !== "production" && (
-        <p className="mt-8 text-xs text-[var(--color-muted-fg)]">
-          θ ({item.skill}) ≈ {theta.toFixed(2)}
-        </p>
-      )}
     </main>
   );
 }
