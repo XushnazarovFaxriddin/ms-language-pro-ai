@@ -149,8 +149,13 @@
       "analytics": "Analitika va O'sish",
       "studyMaterials": "O'quv materiallari",
       "payments": "To'lovlar tarixi",
-      "settings": "Sozlamalar"
+      "settings": "Sozlamalar",
+      "roadmap": "Shaxsiy reja",
+      "practice": "Amaliyot",
+      "conversation": "Suhbat",
+      "feedback": "Fikr-mulohaza"
     },
+    "futurePlan": "Kelajakdagi rejalar",
     "demoDisclaimer": "Bu bo'lim hozircha demo rejimida ishlamoqda. Haqiqiy ishga tushirilganda bu yerda sizning shaxsiy ma'lumotlaringiz aks etadi.",
     "resultsPage": {
       "title": "Mening natijalarim",

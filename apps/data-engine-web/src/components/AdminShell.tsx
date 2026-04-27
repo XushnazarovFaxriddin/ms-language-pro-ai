@@ -2,12 +2,18 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { User } from "@/lib/api";
+import { LogoutButton } from "./LogoutButton";
+import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon, BookOpen, FlaskConical } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", label: "Bosh sahifa", icon: LayoutDashboard },
   { href: "/generation", label: "Savol generatsiyasi", icon: BrainCircuit },
+  { href: "/generation/practice", label: "Practice generatsiya", icon: FlaskConical },
   { href: "/items", label: "Savollar banki", icon: Database },
+  { href: "/practice-catalogue", label: "Amaliyot katalogi", icon: BookOpen },
   { href: "/review", label: "Tasdiqlash navbati", icon: ClipboardCheck },
   { href: "/llm-usage", label: "LLM xarajat", icon: Activity },
   { href: "/settings", label: "Sozlamalar", icon: Settings },
@@ -78,7 +84,7 @@ export function AdminShell({
         <div className="p-4 border-t border-slate-200 dark:border-slate-800/60 bg-slate-100 dark:bg-black/20">
           <div className="flex items-center gap-3 px-2 py-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 text-sm font-bold text-slate-700 dark:text-white shadow-sm ring-1 ring-slate-400/30 dark:ring-slate-500/30">
-              {(user.display_name || user.email)[0].toUpperCase()}
+              {((user.display_name || user.email) ?? "?")[0]?.toUpperCase() ?? "?"}
             </div>
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-semibold truncate text-slate-900 dark:text-slate-200">{user.display_name || user.email.split("@")[0]}</span>

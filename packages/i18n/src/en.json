@@ -149,8 +149,13 @@
       "analytics": "Analytics & Growth",
       "studyMaterials": "Study Materials",
       "payments": "Billing & Payments",
-      "settings": "Settings"
+      "settings": "Settings",
+      "roadmap": "Roadmap",
+      "practice": "Practice",
+      "conversation": "Conversation",
+      "feedback": "Feedback"
     },
+    "futurePlan": "Future Plans",
     "demoDisclaimer": "This section is currently running in demo mode. Once fully launched, your actual data will be displayed here.",
     "resultsPage": {
       "title": "My Results",

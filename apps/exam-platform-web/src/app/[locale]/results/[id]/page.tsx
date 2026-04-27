@@ -5,6 +5,7 @@ import { getCookieHeader, requireUser } from "@/lib/auth-server";
 import { AppHeader } from "@/components/AppHeader";
 import { CheckCircle2, XCircle, Clock, Trophy, ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
+import { FeedbackSection } from "./FeedbackSection";
 
 export default async function ResultsPage({
   params,
@@ -17,10 +18,17 @@ export default async function ResultsPage({
   const t = await getTranslations("Results");
   
   let attempt;
+  let feedback = null;
   try {
     attempt = await api.exam.getAttempt(id, ck);
   } catch {
     notFound();
+  }
+
+  try {
+    feedback = await api.feedback.getAttemptFeedback(id, ck);
+  } catch (err) {
+    // 404 or other errors mean no feedback exists yet
   }
 
   // Calculate stats
@@ -82,6 +90,10 @@ export default async function ResultsPage({
               <p className="mt-3 text-3xl font-bold tracking-tight">{timeStr}</p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-12">
+          <FeedbackSection attemptId={id} initialFeedback={feedback} />
         </div>
 
       </main>

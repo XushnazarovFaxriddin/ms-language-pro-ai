@@ -23,6 +23,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.20.0
         version: 8.21.3(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      lucide-react:
+        specifier: ^1.11.0
+        version: 1.11.0(react@19.2.5)
       next:
         specifier: 15.1.0
         version: 15.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -90,6 +93,12 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.62.0
         version: 5.100.5(react@19.2.5)
+      framer-motion:
+        specifier: ^12.38.0
+        version: 12.38.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      lucide-react:
+        specifier: ^1.11.0
+        version: 1.11.0(react@19.2.5)
       next:
         specifier: 15.1.0
         version: 15.1.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

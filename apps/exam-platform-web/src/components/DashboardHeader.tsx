@@ -64,7 +64,7 @@ export function DashboardHeader({ user, onMenuClick }: { user: User | null; onMe
               <span className="text-xs text-[var(--color-muted-fg)] font-medium">{user.email}</span>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-blue-400 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary)]/20 ring-2 ring-[var(--color-bg)] transition-transform hover:scale-105 cursor-pointer">
-              {(user.display_name || user.email)[0].toUpperCase()}
+              {((user.display_name || user.email) ?? "?")[0]?.toUpperCase() ?? "?"}
             </div>
           </div>
         )}

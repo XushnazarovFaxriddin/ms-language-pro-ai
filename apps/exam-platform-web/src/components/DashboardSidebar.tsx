@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
-import { LayoutDashboard, History, Award, TrendingUp, CreditCard, BookOpen, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, History, Award, TrendingUp, CreditCard, BookOpen, Settings, LogOut, Map, Dumbbell, MessageSquare } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "@/i18n/routing";
 
@@ -14,6 +14,9 @@ export function DashboardSidebar() {
 
   const navItems = [
     { href: "/exams", icon: LayoutDashboard, label: tNav("dashboard") },
+    { href: "/exams/roadmap", icon: Map, label: tNav("roadmap") },
+    { href: "/exams/practice", icon: Dumbbell, label: tNav("practice") },
+    { href: "/exams/conversation", icon: MessageSquare, label: tNav("conversation") },
     { href: "/exams/results", icon: History, label: tNav("results") },
     { href: "/exams/certificates", icon: Award, label: tNav("certificates") },
     { href: "/exams/analytics", icon: TrendingUp, label: tNav("analytics") },

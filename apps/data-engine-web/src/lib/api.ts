@@ -133,6 +133,55 @@ export type Item = {
   estimated_seconds: number;
 };
 
+export type ErrorTaxonomy = {
+  code: string;
+  skill: string;
+  layer: string;
+  severity: "info" | "minor" | "major";
+  explanation_uz: string;
+  explanation_en: string;
+  example_correct?: string | null;
+  example_wrong?: string | null;
+  recommended_drill_ids: string[];
+};
+
+export type Drill = {
+  id: string;
+  code: string;
+  skill: string;
+  target_codes: string[];
+  cefr_level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  duration_minutes: number;
+  payload: Record<string, unknown>;
+  variant_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ConversationTopic = {
+  id: string;
+  code: string;
+  title_uz: string;
+  title_en: string;
+  prompt: string;
+  cefr_level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  kind: string;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type DrillGenerateOut = {
+  draft: any;
+  model: string;
+  prompt_version_id?: string | null;
+};
+
+export type ListeningPassageGenerateOut = {
+  passage: any;
+  model: string;
+  prompt_version_id?: string | null;
+};
+
 // ---------------------------------------------------------------- API
 export const api = {
   auth: {
@@ -146,6 +195,31 @@ export const api = {
       call<GenerationJob>("/v1/generation/jobs", { api: "data", method: "POST", body }),
     get: (id: string, cookieHeader?: string) =>
       call<GenerationJob>(`/v1/generation/jobs/${id}`, { api: "data", cookieHeader }),
+    drills: {
+      generate: (body: { target_codes: string[]; cefr_level: string; drill_type: string; item_count: number }) =>
+        call<DrillGenerateOut>("/v1/drills/generate", { api: "data", method: "POST", body }),
+    },
+    listeningPassages: {
+      generate: (body: { part: number; cefr_level: string; topic: string; duration_target_seconds: number }) =>
+        call<ListeningPassageGenerateOut>("/v1/listening-passages/generate", { api: "data", method: "POST", body }),
+    },
+  },
+  practiceCatalogue: {
+    errorTaxonomy: {
+      list: (cookieHeader?: string) => call<ErrorTaxonomy[]>("/v1/error-taxonomy", { api: "data", cookieHeader }),
+      create: (body: ErrorTaxonomy) => call<ErrorTaxonomy>("/v1/error-taxonomy", { api: "data", method: "POST", body }),
+      update: (code: string, body: Partial<ErrorTaxonomy>) => call<ErrorTaxonomy>(`/v1/error-taxonomy/${code}`, { api: "data", method: "PATCH", body }),
+    },
+    drills: {
+      list: (cookieHeader?: string) => call<Drill[]>("/v1/drills", { api: "data", cookieHeader }),
+      create: (body: Omit<Drill, "id" | "created_at" | "updated_at">) => call<Drill>("/v1/drills", { api: "data", method: "POST", body }),
+      update: (id: string, body: Partial<Drill>) => call<Drill>(`/v1/drills/${id}`, { api: "data", method: "PATCH", body }),
+    },
+    conversationTopics: {
+      list: (cookieHeader?: string) => call<ConversationTopic[]>("/v1/conversation-topics", { api: "data", cookieHeader }),
+      create: (body: Omit<ConversationTopic, "id" | "created_at">) => call<ConversationTopic>("/v1/conversation-topics", { api: "data", method: "POST", body }),
+      update: (id: string, body: Partial<ConversationTopic>) => call<ConversationTopic>(`/v1/conversation-topics/${id}`, { api: "data", method: "PATCH", body }),
+    },
   },
   items: {
     list: (params: { status?: string; skill?: string; cefr?: string; limit?: number; offset?: number } = {}, cookieHeader?: string) => {

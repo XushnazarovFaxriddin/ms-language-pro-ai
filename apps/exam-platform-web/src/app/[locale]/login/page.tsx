@@ -1,15 +1,18 @@
-import { redirect } from "@/i18n/routing";
+import { redirect } from "next/navigation";
 import { tryGetUser } from "@/lib/auth-server";
 import { LoginForm } from "./LoginForm";
 
 export default async function LoginPage({
   searchParams,
+  params,
 }: {
   searchParams: Promise<{ returnTo?: string }>;
+  params: Promise<{ locale: string }>;
 }) {
   const sp = await searchParams;
+  const p = await params;
   const user = await tryGetUser();
-  if (user) redirect(sp.returnTo ?? "/exams");
+  if (user) redirect(`/${p.locale}${sp.returnTo ?? "/exams"}`);
   return (
     <main className="container mx-auto flex max-w-md flex-col gap-8 px-6 py-24">
       <div>
