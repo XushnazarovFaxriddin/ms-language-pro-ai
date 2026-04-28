@@ -309,7 +309,14 @@
     "emptyTitle": "Fikr-mulohaza (Feedback)",
     "emptyDesc": "Ushbu imtihon uchun AI tomonidan to'liq tahlil va fikr-mulohazalar hozircha mavjud emas. Uni hoziroq generatsiya qilishingiz mumkin.",
     "actions": {
-      "generate": "Tahlilni boshlash"
+      "generate": "Tahlilni boshlash",
+      "regenerateAi": "Real AI tahlil yaratish"
+    },
+    "source": {
+      "ai": "AI overview: {model}",
+      "fallback": "Bu hozircha tizim fallback xulosasi. Aniq kamchiliklar va rivojlanish tavsiyalari uchun real AI tahlilni yarating.",
+      "partial": "Overview AI tomonidan yozildi, lekin quyidagi skill baholari hali fallback scoringda: {skills}. To'liq AI speaking scoring uchun yangi WAV yozuvli attempt topshiring.",
+      "unknownModel": "AI model"
     },
     "sections": {
       "overview": "Umumiy xulosa (Overview)",

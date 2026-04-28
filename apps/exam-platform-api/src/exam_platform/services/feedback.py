@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import base64
 import re
 from collections import Counter, defaultdict
 from decimal import Decimal
+from math import floor
 from typing import Any
 from uuid import UUID
 
@@ -14,14 +16,22 @@ from languagepro_llm import LLMRequest, LLMRouter
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exam_platform.models import AttemptResponse, ExamAttempt, FeedbackArtifact, ScoringResult
+from exam_platform.models import (
+    AttemptResponse,
+    ExamAttempt,
+    FeedbackArtifact,
+    LLMScoringRun,
+    ScoringResult,
+)
 from exam_platform.schemas import (
     AnalyseWritingRequest,
     AttemptOverview,
     FeedbackArtifactOut,
     FeedbackOverviewRequest,
     SentenceAnnotations,
+    SpeakingScore,
     WordUpgrades,
+    WritingScore,
 )
 
 DEFAULT_ERROR_CODES = [
@@ -64,7 +74,17 @@ async def get_attempt_artifacts(
     if layer:
         stmt = stmt.where(FeedbackArtifact.layer == layer)
     stmt = stmt.order_by(FeedbackArtifact.created_at.asc())
-    return [_artifact_out(row) for row in (await db.execute(stmt)).scalars().all()]
+    rows = (await db.execute(stmt)).scalars().all()
+    if layer in (None, "overview") and any(row.layer == "overview" for row in rows):
+        rows = await _normalise_overview_rows(db, attempt, rows)
+    return [_artifact_out(row) for row in rows]
+
+
+async def compute_attempt_bands(
+    db: AsyncSession,
+    attempt_id: UUID,
+) -> dict[str, float | None]:
+    return await _attempt_bands(db, attempt_id)
 
 
 async def get_response_artifacts(
@@ -102,16 +122,16 @@ async def get_recent_attempt_feedback(
     )
     results: list[tuple[UUID, list[FeedbackArtifactOut]]] = []
     for attempt_id in attempt_ids:
-        stmt = (
-            select(FeedbackArtifact)
-            .where(
-                FeedbackArtifact.attempt_id == attempt_id,
-                FeedbackArtifact.layer.in_(["band", "criterion", "overview"]),
-            )
-            .order_by(FeedbackArtifact.created_at.asc())
-        )
+        artifacts = await get_attempt_artifacts(db, user_id=user_id, attempt_id=attempt_id)
         results.append(
-            (attempt_id, [_artifact_out(row) for row in (await db.execute(stmt)).scalars().all()])
+            (
+                attempt_id,
+                [
+                    artifact
+                    for artifact in artifacts
+                    if artifact.layer in {"band", "criterion", "overview"}
+                ],
+            )
         )
     return results
 
@@ -160,6 +180,7 @@ async def ensure_attempt_completion_feedback(
 
     bands = await _attempt_bands(db, attempt.id)
     overview_payload = _build_completion_overview(attempt, responses, bands)
+    overview_payload["scoring_sources"] = await _scoring_source_summary(db, attempt.id)
 
     await db.execute(
         delete(FeedbackArtifact).where(
@@ -194,10 +215,6 @@ async def generate_attempt_overview(
     body: FeedbackOverviewRequest,
 ) -> FeedbackArtifactOut:
     attempt = await _get_attempt_for_user(db, user_id=user_id, attempt_id=attempt_id)
-    bands = await _attempt_bands(db, attempt.id)
-    top_error_codes = await _top_error_codes(db, attempt.id)
-    vocabulary_metrics = await _vocabulary_metrics(db, attempt.id)
-
     responses = (
         (
             await db.execute(
@@ -209,6 +226,20 @@ async def generate_attempt_overview(
         .scalars()
         .all()
     )
+    await _ensure_llm_scoring_for_attempt(
+        db,
+        router,
+        user_id,
+        attempt,
+        list(responses),
+        target_band=body.target_band,
+    )
+
+    bands = await _attempt_bands(db, attempt.id)
+    top_error_codes = await _top_error_codes(db, attempt.id)
+    vocabulary_metrics = await _vocabulary_metrics(db, attempt.id)
+    base_payload = _build_completion_overview(attempt, list(responses), bands)
+    base_payload["scoring_sources"] = await _scoring_source_summary(db, attempt.id)
     source = "llm"
     model = None
     prompt_version_id = None
@@ -221,6 +252,7 @@ async def generate_attempt_overview(
                     "bands": bands,
                     "top_error_codes": top_error_codes,
                     "vocabulary_metrics": vocabulary_metrics,
+                    "response_summary": _attempt_response_summary(list(responses)),
                     "target_band": body.target_band,
                     "user_locale": attempt.locale,
                 },
@@ -230,9 +262,10 @@ async def generate_attempt_overview(
         )
         if overview_resp.parsed is None:
             raise ValidationError("Feedback overview response did not match schema")
-        overview_payload = AttemptOverview.model_validate(overview_resp.parsed).model_dump(
+        llm_payload = AttemptOverview.model_validate(overview_resp.parsed).model_dump(
             mode="json"
         )
+        overview_payload = _merge_overview_payload(base_payload, llm_payload, source="llm")
         model = overview_resp.model
         prompt_version_id = overview_resp.prompt_version_id
     except Exception as exc:
@@ -241,7 +274,7 @@ async def generate_attempt_overview(
             attempt_id=str(attempt.id),
             error=str(exc),
         )
-        overview_payload = _build_completion_overview(attempt, list(responses), bands)
+        overview_payload = base_payload
         source = "system"
 
     await db.execute(
@@ -369,6 +402,306 @@ async def analyse_writing_response(
     return await get_response_artifacts(db, user_id=user_id, response_id=response.id)
 
 
+async def _ensure_llm_scoring_for_attempt(
+    db: AsyncSession,
+    router: LLMRouter,
+    user_id: UUID,
+    attempt: ExamAttempt,
+    responses: list[AttemptResponse],
+    *,
+    target_band: float | None = None,
+) -> None:
+    """Upgrade writing/speaking fallback scores to LLM scores when possible."""
+    scored_any = False
+    for response in responses:
+        if not _needs_llm_scoring(response):
+            continue
+        if await _has_final_llm_score(db, response.id):
+            continue
+
+        try:
+            if response.skill == "writing" or response.type.startswith("writing_"):
+                await _score_writing_with_llm(
+                    db,
+                    router,
+                    user_id=user_id,
+                    attempt=attempt,
+                    response=response,
+                    target_band=target_band,
+                )
+                scored_any = True
+            elif response.skill == "speaking" or response.type.startswith("speaking_"):
+                await _score_speaking_with_llm(
+                    db,
+                    router,
+                    user_id=user_id,
+                    attempt=attempt,
+                    response=response,
+                    target_band=target_band,
+                )
+                scored_any = True
+        except Exception as exc:
+            log.warning(
+                "llm_response_scoring_failed",
+                attempt_id=str(attempt.id),
+                response_id=str(response.id),
+                skill=response.skill,
+                error=str(exc),
+            )
+
+    if scored_any:
+        await db.commit()
+
+
+def _needs_llm_scoring(response: AttemptResponse) -> bool:
+    return (
+        response.skill in {"writing", "speaking"}
+        or response.type.startswith("writing_")
+        or response.type.startswith("speaking_")
+    )
+
+
+async def _has_final_llm_score(db: AsyncSession, response_id: UUID) -> bool:
+    row = (
+        await db.execute(
+            select(ScoringResult.source, ScoringResult.band).where(
+                ScoringResult.response_id == response_id
+            )
+        )
+    ).one_or_none()
+    if row is None:
+        return False
+    source, band = row
+    return source == "llm" and band is not None
+
+
+async def _score_writing_with_llm(
+    db: AsyncSession,
+    router: LLMRouter,
+    *,
+    user_id: UUID,
+    attempt: ExamAttempt,
+    response: AttemptResponse,
+    target_band: float | None,
+) -> None:
+    raw_answer = response.raw_answer or {}
+    essay = raw_answer.get("text_answer")
+    if not isinstance(essay, str) or not essay.strip():
+        raise ValidationError("Writing response does not contain text")
+
+    item_payload = _response_payload(response)
+    llm_response = await router.complete(
+        LLMRequest(
+            purpose="score_writing",
+            prompt_id="score_writing/ielts",
+            variables={
+                "task_type": _writing_task_type(response),
+                "task_prompt": item_payload.get("prompt") or response.type,
+                "essay": essay,
+                "rubric": _writing_rubric_summary(),
+                "target_band": target_band or 7.0,
+            },
+            user_id=user_id,
+            attempt_id=attempt.id,
+        )
+    )
+    if llm_response.parsed is None:
+        raise ValidationError("Writing score response did not match schema")
+    score = WritingScore.model_validate(llm_response.parsed)
+    criteria = {
+        "task_response": _round_band(score.task_response),
+        "coherence_cohesion": _round_band(score.coherence_cohesion),
+        "lexical_resource": _round_band(score.lexical_resource),
+        "grammatical_range_accuracy": _round_band(score.grammatical_range_accuracy),
+        "evidence_quotes": score.evidence_quotes,
+        "confidence": score.confidence,
+        "method": "llm_ielts_writing",
+    }
+    await _upsert_scoring_result(
+        db,
+        response_id=response.id,
+        band=_round_band(score.overall_band),
+        criteria=criteria,
+        feedback_uz=score.feedback_uz,
+        feedback_en=score.feedback_en,
+        source="llm",
+    )
+    await _insert_llm_scoring_run(
+        db,
+        response_id=response.id,
+        rubric_ref="ielts_writing_v1",
+        model=llm_response.model,
+        prompt_version_id=llm_response.prompt_version_id,
+        raw_response=score.model_dump(mode="json"),
+        criteria_scores=criteria,
+        overall_band=_round_band(score.overall_band),
+        confidence=score.confidence,
+        cost_usd=llm_response.cost_usd,
+        latency_ms=llm_response.latency_ms,
+    )
+
+
+async def _score_speaking_with_llm(
+    db: AsyncSession,
+    router: LLMRouter,
+    *,
+    user_id: UUID,
+    attempt: ExamAttempt,
+    response: AttemptResponse,
+    target_band: float | None,
+) -> None:
+    raw_answer = response.raw_answer or {}
+    audio_b64 = raw_answer.get("audio_base64")
+    if not isinstance(audio_b64, str) or not audio_b64.strip():
+        raise ValidationError("Speaking response does not contain audio")
+    audio_bytes = base64.b64decode(audio_b64, validate=True)
+    audio_format = _audio_format_for_llm(str(raw_answer.get("audio_format") or "webm"))
+    if audio_format is None:
+        raise ValidationError("Speaking audio must be wav or mp3 for LLM scoring")
+    item_payload = _response_payload(response)
+
+    llm_response = await router.complete(
+        LLMRequest(
+            purpose="score_speaking",
+            prompt_id="score_speaking/ielts",
+            variables={
+                "speaking_part": _speaking_part(response),
+                "task_prompt": item_payload.get("prompt") or response.type,
+                "rubric": _speaking_rubric_summary(),
+                "target_band": target_band or 7.0,
+                "audio_metadata": {
+                    "duration_seconds": round(float(response.time_ms or 0) / 1000.0, 1),
+                    "sample_rate": 0,
+                    "bytes": len(audio_bytes),
+                },
+            },
+            audio_input=audio_bytes,
+            audio_format=audio_format,
+            user_id=user_id,
+            attempt_id=attempt.id,
+        )
+    )
+    if llm_response.parsed is None:
+        raise ValidationError("Speaking score response did not match schema")
+    score = SpeakingScore.model_validate(llm_response.parsed)
+    criteria = {
+        "fluency_coherence": _round_band(score.fluency_coherence),
+        "lexical_resource": _round_band(score.lexical_resource),
+        "grammatical_range_accuracy": _round_band(score.grammatical_range_accuracy),
+        "pronunciation": _round_band(score.pronunciation),
+        "transcript": score.transcript,
+        "audio_metadata": score.audio_metadata.model_dump(mode="json"),
+        "confidence": score.confidence,
+        "method": "llm_ielts_speaking",
+    }
+    await _upsert_scoring_result(
+        db,
+        response_id=response.id,
+        band=_round_band(score.overall_band),
+        criteria=criteria,
+        feedback_uz=score.feedback_uz,
+        feedback_en=score.feedback_en,
+        source="llm",
+    )
+    await _insert_llm_scoring_run(
+        db,
+        response_id=response.id,
+        rubric_ref="ielts_speaking_v1",
+        model=llm_response.model,
+        prompt_version_id=llm_response.prompt_version_id,
+        raw_response=score.model_dump(mode="json"),
+        criteria_scores=criteria,
+        overall_band=_round_band(score.overall_band),
+        confidence=score.confidence,
+        cost_usd=llm_response.cost_usd,
+        latency_ms=llm_response.latency_ms,
+    )
+
+
+async def _insert_llm_scoring_run(
+    db: AsyncSession,
+    *,
+    response_id: UUID,
+    rubric_ref: str,
+    model: str,
+    prompt_version_id: str | None,
+    raw_response: dict[str, Any],
+    criteria_scores: dict[str, Any],
+    overall_band: float,
+    confidence: float,
+    cost_usd: Decimal,
+    latency_ms: int,
+) -> None:
+    await db.execute(
+        insert(LLMScoringRun).values(
+            response_id=response_id,
+            rubric_ref=rubric_ref,
+            model=model,
+            prompt_version_id=prompt_version_id,
+            raw_response=raw_response,
+            criteria_scores=criteria_scores,
+            overall_band=Decimal(str(overall_band)),
+            confidence=Decimal(str(confidence)),
+            cost_cents=int(cost_usd * Decimal("100")),
+            latency_ms=latency_ms,
+        )
+    )
+
+
+def _writing_task_type(response: AttemptResponse) -> str:
+    task_type = _response_payload(response).get("task_type")
+    if task_type in {"task1_academic", "task1_general", "task2"}:
+        return str(task_type)
+    if "task1_general" in response.type:
+        return "task1_general"
+    if "task1" in response.type:
+        return "task1_academic"
+    return "task2"
+
+
+def _speaking_part(response: AttemptResponse) -> int:
+    part = _response_payload(response).get("part")
+    if part in {1, 2, 3}:
+        return int(part)
+    match = re.search(r"part[_-]?([123])", response.type)
+    return int(match.group(1)) if match else 2
+
+
+def _audio_format_for_llm(raw_format: str) -> str | None:
+    value = raw_format.split(";")[0].split("/")[-1].lower()
+    if value in {"mpeg", "mpga"}:
+        return "mp3"
+    if value in {"wav", "mp3"}:
+        return value
+    return None
+
+
+def _writing_rubric_summary() -> dict[str, Any]:
+    return {
+        "criteria": [
+            "task_response_or_achievement",
+            "coherence_and_cohesion",
+            "lexical_resource",
+            "grammatical_range_and_accuracy",
+        ],
+        "scale": "IELTS public band scale from 0 to 9 in 0.5 increments",
+        "instruction": "Use official IELTS Writing band-descriptor logic, summarized.",
+    }
+
+
+def _speaking_rubric_summary() -> dict[str, Any]:
+    return {
+        "criteria": [
+            "fluency_and_coherence",
+            "lexical_resource",
+            "grammatical_range_and_accuracy",
+            "pronunciation",
+        ],
+        "scale": "IELTS public band scale from 0 to 9 in 0.5 increments",
+        "instruction": "Use official IELTS Speaking band-descriptor logic, summarized.",
+    }
+
+
 async def _upsert_scoring_result(
     db: AsyncSession,
     *,
@@ -377,12 +710,13 @@ async def _upsert_scoring_result(
     criteria: dict[str, Any],
     feedback_uz: str,
     feedback_en: str,
+    source: str = "hybrid",
 ) -> None:
     existing_id = (
         await db.execute(select(ScoringResult.id).where(ScoringResult.response_id == response_id))
     ).scalar_one_or_none()
     values = {
-        "source": "hybrid",
+        "source": source,
         "band": Decimal(str(band)),
         "criteria": criteria,
         "feedback_uz": feedback_uz,
@@ -553,8 +887,104 @@ def _build_completion_overview(
         ),
         "biggest_opportunity_code": f"{weakest_skill}.foundation",
         "next_step_ref": f"roadmap:{weakest_skill}:7-day-focus",
-        "source_note": "Deterministic fallback feedback; LLM scoring can enrich it later.",
+        "source_note": "System fallback based on stored responses; LLM overview can enrich it.",
     }
+
+
+def _merge_overview_payload(
+    base_payload: dict[str, Any],
+    llm_payload: dict[str, Any],
+    *,
+    source: str,
+) -> dict[str, Any]:
+    payload = {**base_payload, **llm_payload}
+    payload["bands"] = base_payload["bands"]
+    payload["sections"] = base_payload["sections"]
+    payload["scoring_sources"] = base_payload.get("scoring_sources", {})
+    if source == "llm":
+        payload["source_note"] = (
+            "LLM-generated narrative and recommendations based on stored scores, "
+            "response summaries, and feedback artifacts."
+        )
+    else:
+        payload["source_note"] = base_payload["source_note"]
+    return payload
+
+
+def _attempt_response_summary(responses: list[AttemptResponse]) -> list[dict[str, Any]]:
+    summary: list[dict[str, Any]] = []
+    for response in responses:
+        item_payload = _response_payload(response)
+        raw_answer = response.raw_answer or {}
+        text_answer = raw_answer.get("text_answer")
+        summary.append(
+            {
+                "skill": response.skill,
+                "type": response.type,
+                "is_correct": response.is_correct,
+                "time_ms": response.time_ms,
+                "prompt": item_payload.get("prompt"),
+                "text_excerpt": text_answer[:700] if isinstance(text_answer, str) else None,
+                "audio_duration_seconds": (
+                    round(float(response.time_ms or 0) / 1000.0, 1)
+                    if response.skill == "speaking"
+                    else None
+                ),
+            }
+        )
+    return summary
+
+
+async def _normalise_overview_rows(
+    db: AsyncSession,
+    attempt: ExamAttempt,
+    rows: list[FeedbackArtifact],
+) -> list[FeedbackArtifact]:
+    overview_rows = [row for row in rows if row.layer == "overview"]
+    if not overview_rows:
+        return rows
+
+    responses = (
+        (
+            await db.execute(
+                select(AttemptResponse)
+                .where(AttemptResponse.attempt_id == attempt.id)
+                .order_by(AttemptResponse.section_index.asc(), AttemptResponse.answered_at.asc())
+            )
+        )
+        .scalars()
+        .all()
+    )
+    bands = await _attempt_bands(db, attempt.id)
+    base_payload = _build_completion_overview(attempt, list(responses), bands)
+    base_payload["scoring_sources"] = await _scoring_source_summary(db, attempt.id)
+    changed = False
+
+    for row in overview_rows:
+        payload = dict(row.payload or {})
+        merged = _merge_overview_payload(base_payload, payload, source=row.source)
+        if merged != payload:
+            row.payload = merged
+            await db.execute(
+                update(FeedbackArtifact)
+                .where(FeedbackArtifact.id == row.id)
+                .values(payload=merged)
+            )
+            changed = True
+
+    if not changed:
+        return rows
+
+    await db.commit()
+    wanted_ids = {row.id for row in rows}
+    refreshed = (
+        await db.execute(
+            select(FeedbackArtifact)
+            .where(FeedbackArtifact.id.in_(wanted_ids))
+            .order_by(FeedbackArtifact.created_at.asc())
+        )
+    ).scalars().all()
+    return refreshed
 
 
 def _response_payload(response: AttemptResponse) -> dict[str, Any]:
@@ -564,7 +994,8 @@ def _response_payload(response: AttemptResponse) -> dict[str, Any]:
 
 
 def _round_band(value: float) -> float:
-    return max(0.0, min(9.0, round(value * 2) / 2))
+    rounded = floor((value * 2.0) + 0.5) / 2.0
+    return max(0.0, min(9.0, rounded))
 
 
 def target_cefr_for_band(target_band: float) -> str:
@@ -644,12 +1075,52 @@ async def _attempt_bands(db: AsyncSession, attempt_id: UUID) -> dict[str, float 
         if band is not None:
             by_skill[str(skill)].append(float(band))
     bands: dict[str, float | None] = {
-        skill: round(sum(values) / len(values), 1) if values else None
-        for skill, values in by_skill.items()
+        skill: _round_band(sum(by_skill[skill]) / len(by_skill[skill]))
+        if by_skill.get(skill)
+        else None
+        for skill in IELTS_SKILLS
     }
-    all_bands = [band for band in bands.values() if band is not None]
-    bands["overall"] = round(sum(all_bands) / len(all_bands), 1) if all_bands else None
+    all_bands = [
+        band for skill, band in bands.items() if skill in IELTS_SKILLS and band is not None
+    ]
+    bands["overall"] = _round_band(sum(all_bands) / len(all_bands)) if all_bands else None
     return bands
+
+
+async def _scoring_source_summary(db: AsyncSession, attempt_id: UUID) -> dict[str, Any]:
+    rows = (
+        await db.execute(
+            select(AttemptResponse.skill, ScoringResult.source, ScoringResult.criteria)
+            .join(ScoringResult, ScoringResult.response_id == AttemptResponse.id)
+            .where(AttemptResponse.attempt_id == attempt_id)
+        )
+    ).all()
+    summary: dict[str, Any] = {
+        skill: {"llm": 0, "objective": 0, "fallback": 0, "other": 0, "methods": []}
+        for skill in IELTS_SKILLS
+    }
+    for skill, source, criteria in rows:
+        key = str(skill)
+        entry = summary.setdefault(
+            key,
+            {"llm": 0, "objective": 0, "fallback": 0, "other": 0, "methods": []},
+        )
+        method = criteria.get("method") if isinstance(criteria, dict) else None
+        bucket = _scoring_source_bucket(str(source), method)
+        entry[bucket] += 1
+        if isinstance(method, str) and method not in entry["methods"]:
+            entry["methods"].append(method)
+    return summary
+
+
+def _scoring_source_bucket(source: str, method: Any) -> str:
+    if source == "llm":
+        return "llm"
+    if method == "objective_sync":
+        return "objective"
+    if isinstance(method, str) and "fallback" in method:
+        return "fallback"
+    return "other"
 
 
 async def _top_error_codes(db: AsyncSession, attempt_id: UUID) -> list[dict[str, Any]]:

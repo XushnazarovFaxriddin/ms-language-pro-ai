@@ -309,7 +309,14 @@
     "emptyTitle": "Feedback",
     "emptyDesc": "Full AI analysis and feedback are not available for this exam yet. You can generate them now.",
     "actions": {
-      "generate": "Start analysis"
+      "generate": "Start analysis",
+      "regenerateAi": "Generate real AI analysis"
+    },
+    "source": {
+      "ai": "AI overview: {model}",
+      "fallback": "This is still the deterministic system fallback. Generate real AI analysis for specific weaknesses and improvement recommendations.",
+      "partial": "The overview was written by AI, but these skill scores still use fallback scoring: {skills}. Submit a new attempt with WAV speaking audio for full AI speaking scoring.",
+      "unknownModel": "AI model"
     },
     "sections": {
       "overview": "Overview",

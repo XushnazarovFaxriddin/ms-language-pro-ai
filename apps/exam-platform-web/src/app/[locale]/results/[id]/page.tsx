@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
-import { api } from "@/lib/api";
+import { api, type AttemptFeedbackOut } from "@/lib/api";
 import { getCookieHeader, requireUser } from "@/lib/auth-server";
 import { AppHeader } from "@/components/AppHeader";
 import { CheckCircle2, Clock, Trophy, ArrowLeft } from "lucide-react";
@@ -18,7 +18,7 @@ export default async function ResultsPage({
   const t = await getTranslations("Results");
   
   let attempt;
-  let feedback = null;
+  let feedback: AttemptFeedbackOut | null = null;
   try {
     attempt = await api.exam.getAttempt(id, ck);
   } catch {
@@ -31,7 +31,17 @@ export default async function ResultsPage({
     // 404 or other errors mean no feedback exists yet
   }
 
-  const overview = feedback?.artifacts.find((artifact) => artifact.layer === "overview");
+  let overview = latestOverview(feedback);
+  if (attempt.state === "completed" && overview?.source !== "llm") {
+    try {
+      await api.feedback.generateOverview(id, {}, ck);
+      feedback = await api.feedback.getAttemptFeedback(id, ck);
+      overview = latestOverview(feedback);
+    } catch (err) {
+      // Keep deterministic feedback visible when the LLM provider is unavailable.
+    }
+  }
+
   const overallBand = overview?.payload.bands?.overall;
   const scoreLabel = typeof overallBand === "number" ? overallBand.toFixed(1) : "—";
 
@@ -92,4 +102,9 @@ export default async function ResultsPage({
       </main>
     </>
   );
+}
+
+function latestOverview(feedback: AttemptFeedbackOut | null) {
+  const overviews = feedback?.artifacts.filter((artifact) => artifact.layer === "overview") ?? [];
+  return overviews[overviews.length - 1];
 }

@@ -10,6 +10,7 @@ variables_schema:
   bands: { type: object }
   top_error_codes: { type: array }
   vocabulary_metrics: { type: object }
+  response_summary: { type: array }
   target_band: { type: number }
   user_locale: { type: string }
 
@@ -26,6 +27,10 @@ system: |
     pattern (taken from `top_error_codes`).
   - Sentence 5: tie to a concrete next step the user can take in Practice Mode
     (drills, flashcards, pronunciation lab, conversation).
+  - Ground weaknesses and recommendations only in the provided `bands`,
+    `top_error_codes`, `vocabulary_metrics`, and `response_summary`.
+  - If evidence is thin for a skill, say the next step should collect stronger
+    evidence through more practice instead of inventing unsupported details.
   - Use formal Uzbek (siz form). Plain English second-person.
   - No exclamation points. No emojis.
 
@@ -33,6 +38,7 @@ user: |
   Bands: {{ bands | tojson }}
   Top error codes (last attempt): {{ top_error_codes | tojson }}
   Vocabulary metrics: {{ vocabulary_metrics | tojson }}
+  Response summary: {{ response_summary | tojson }}
   Target band: {{ target_band }}
   User locale: {{ user_locale }}
 

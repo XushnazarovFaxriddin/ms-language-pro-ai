@@ -62,7 +62,8 @@ export function FeedbackSection({
   }
 
   // Group artifacts by layer
-  const overview = feedback.artifacts.find(a => a.layer === "overview");
+  const overview = latestOverview(feedback);
+  const fallbackScored = fallbackScoredSkills(overview?.payload.scoring_sources);
   const sentenceArtifacts = feedback.artifacts.filter(a => a.layer === "sentence");
   const wordArtifacts = feedback.artifacts.filter(a => a.layer === "word");
   const phonemeArtifacts = feedback.artifacts.filter(a => a.layer === "phoneme");
@@ -80,6 +81,11 @@ export function FeedbackSection({
         <MessageCircle className="h-6 w-6 text-[var(--color-primary)]" />
         {t("title")}
       </h2>
+      {error && (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-medium text-red-600">
+          {error}
+        </div>
+      )}
 
       {/* Overview Accordion */}
       {overview && (
@@ -96,6 +102,35 @@ export function FeedbackSection({
           
           {openLayer === "overview" && (
             <div className="p-6 border-t border-[var(--color-border)]/50">
+              {overview.source === "llm" ? (
+                <div className="mb-5 space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    {t("source.ai", { model: overview.model ?? t("source.unknownModel") })}
+                  </div>
+                  {fallbackScored.length > 0 && (
+                    <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-medium text-amber-700 dark:text-amber-300">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                      <p>{t("source.partial", { skills: fallbackScored.map((skill) => t(`skills.${skill}`)).join(", ") })}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-5 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="flex items-start gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                    {t("source.fallback")}
+                  </p>
+                  <button
+                    onClick={generateFeedback}
+                    disabled={loading}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    {t("actions.regenerateAi")}
+                  </button>
+                </div>
+              )}
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 <p className="text-base leading-relaxed">{selectLocalized(overview.payload, "narrative", locale)}</p>
                 {overview.payload.bands && (
@@ -275,6 +310,18 @@ function flattenPhonemeItems(artifacts: FeedbackArtifactOut[]): PhonemeItem[] {
     if (Array.isArray(items)) return items as PhonemeItem[];
     return [artifact.payload as PhonemeItem];
   });
+}
+
+function latestOverview(feedback: AttemptFeedbackOut | null): FeedbackArtifactOut | undefined {
+  const overviews = feedback?.artifacts.filter((artifact) => artifact.layer === "overview") ?? [];
+  return overviews[overviews.length - 1];
+}
+
+function fallbackScoredSkills(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+  return Object.entries(value as Record<string, { fallback?: number }>).flatMap(
+    ([skill, source]) => (source?.fallback ? [skill] : []),
+  );
 }
 
 function formatBand(value: unknown): string {

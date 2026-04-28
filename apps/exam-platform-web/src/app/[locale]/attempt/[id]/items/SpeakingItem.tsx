@@ -16,7 +16,8 @@ type Phase = "idle" | "preparing" | "recording" | "processing" | "done" | "denie
 /**
  * Speaking item: cue card → preparation timer → record → upload.
  *
- * MVP capture path: send the recorded blob as base64 in SubmitResponseRequest.
+ * Capture path: send a mono PCM WAV as base64 in SubmitResponseRequest.
+ * Gemini audio scoring accepts wav/mp3, so we avoid browser-default webm here.
  * The backend validates and stores the audio payload; a later S3 presigned PUT
  * path can replace this without changing the item-level UI contract.
  */
@@ -25,9 +26,15 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
   const speak = item.payload.speaking_seconds ?? 120;
   const [phase, setPhase] = useState<Phase>("idle");
   const [secondsLeft, setSecondsLeft] = useState<number>(prep);
-  const mediaRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const samplesRef = useRef<Float32Array[]>([]);
+  const sampleRateRef = useRef<number>(44100);
   const startedAtRef = useRef<number>(0);
+  const recordingRef = useRef<boolean>(false);
   const tickRef = useRef<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +42,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
   useEffect(() => {
     return () => {
       if (tickRef.current) window.clearInterval(tickRef.current);
-      mediaRef.current?.stream.getTracks().forEach((t) => t.stop());
+      cleanupAudioGraph();
     };
   }, [item.id]);
 
@@ -54,68 +61,98 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
     }, 1000);
   }
 
+  function cleanupAudioGraph() {
+    processorRef.current?.disconnect();
+    sourceRef.current?.disconnect();
+    gainRef.current?.disconnect();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    void audioContextRef.current?.close().catch(() => undefined);
+
+    processorRef.current = null;
+    sourceRef.current = null;
+    gainRef.current = null;
+    streamRef.current = null;
+    audioContextRef.current = null;
+  }
+
   async function startRecording() {
     try {
       setError(null);
-      if (typeof MediaRecorder === "undefined") {
+      const AudioContextCtor = getAudioContextCtor();
+      if (!AudioContextCtor || !navigator.mediaDevices?.getUserMedia) {
         setError("Brauzeringiz audio yozishni qo'llab-quvvatlamaydi. Chrome ishlating.");
         setPhase("error");
         return;
       }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mime = "audio/webm;codecs=opus";
-      const supported = MediaRecorder.isTypeSupported?.(mime) ? mime : undefined;
-      const mr = new MediaRecorder(stream, supported ? { mimeType: supported } : undefined);
-      const recordingType = mr.mimeType || supported || "audio/webm";
-      chunksRef.current = [];
-      mr.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      const audioContext = new AudioContextCtor();
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      const gain = audioContext.createGain();
+      gain.gain.value = 0;
+
+      samplesRef.current = [];
+      sampleRateRef.current = audioContext.sampleRate;
+      processor.onaudioprocess = (event) => {
+        if (!recordingRef.current) return;
+        const input = event.inputBuffer.getChannelData(0);
+        samplesRef.current.push(new Float32Array(input));
       };
-      mr.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
-        const durationMs = Date.now() - startedAtRef.current;
-        const blob = new Blob(chunksRef.current, { type: recordingType });
-        setPhase("processing");
-        try {
-          if (blob.size === 0) {
-            throw new Error("empty recording");
-          }
-          if (blob.size > 15 * 1024 * 1024) {
-            throw new Error("recording is too large");
-          }
-          const reader = new FileReader();
-          const dataUrl = await new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(blob);
-          });
-          const [, encoded] = dataUrl.split(",", 2);
-          const base64 = encoded ?? dataUrl;
-          onAudioReady(base64, durationMs, recordingType);
-          setPhase("done");
-        } catch (err) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Audio yozuvni tayyorlashda xatolik yuz berdi.",
-          );
-          setPhase("error");
-        }
-      };
-      mediaRef.current = mr;
-      mr.start();
+
+      source.connect(processor);
+      processor.connect(gain);
+      gain.connect(audioContext.destination);
+
+      streamRef.current = stream;
+      audioContextRef.current = audioContext;
+      sourceRef.current = source;
+      processorRef.current = processor;
+      gainRef.current = gain;
+      recordingRef.current = true;
       startedAtRef.current = Date.now();
       setPhase("recording");
-      startCountdown(speak, stopRecording);
+      startCountdown(speak, () => void stopRecording());
     } catch {
       setPhase("denied");
     }
   }
 
-  function stopRecording() {
+  async function stopRecording() {
     if (tickRef.current) window.clearInterval(tickRef.current);
-    if (mediaRef.current && mediaRef.current.state !== "inactive") {
-      mediaRef.current.stop();
+    if (!recordingRef.current) {
+      return;
+    }
+    recordingRef.current = false;
+    const durationMs = Date.now() - startedAtRef.current;
+    const chunks = samplesRef.current;
+    const sampleRate = sampleRateRef.current;
+    cleanupAudioGraph();
+    setPhase("processing");
+    try {
+      const blob = encodeWav(chunks, sampleRate);
+      if (blob.size === 0) {
+        throw new Error("empty recording");
+      }
+      if (blob.size > 15 * 1024 * 1024) {
+        throw new Error("recording is too large");
+      }
+      const reader = new FileReader();
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+      const [, encoded] = dataUrl.split(",", 2);
+      const base64 = encoded ?? dataUrl;
+      onAudioReady(base64, durationMs, "wav");
+      setPhase("done");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Audio yozuvni tayyorlashda xatolik yuz berdi.",
+      );
+      setPhase("error");
     }
   }
 
@@ -180,7 +217,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
             </span>
             <button
               type="button"
-              onClick={stopRecording}
+              onClick={() => void stopRecording()}
               className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-fg)]"
             >
               <Square className="h-4 w-4" />
@@ -222,4 +259,51 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
       </div>
     </div>
   );
+}
+
+type AudioContextConstructor = typeof AudioContext;
+
+function getAudioContextCtor(): AudioContextConstructor | undefined {
+  return (
+    window.AudioContext ??
+    (window as Window & { webkitAudioContext?: AudioContextConstructor }).webkitAudioContext
+  );
+}
+
+function encodeWav(chunks: Float32Array[], sampleRate: number): Blob {
+  const sampleCount = chunks.reduce((total, chunk) => total + chunk.length, 0);
+  const dataSize = sampleCount * 2;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  writeAscii(view, 0, "RIFF");
+  view.setUint32(4, 36 + dataSize, true);
+  writeAscii(view, 8, "WAVE");
+  writeAscii(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeAscii(view, 36, "data");
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for (const chunk of chunks) {
+    for (let i = 0; i < chunk.length; i += 1) {
+      const sample = Math.max(-1, Math.min(1, chunk[i] ?? 0));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+      offset += 2;
+    }
+  }
+
+  return new Blob([buffer], { type: "audio/wav" });
+}
+
+function writeAscii(view: DataView, offset: number, value: string) {
+  for (let i = 0; i < value.length; i += 1) {
+    view.setUint8(offset + i, value.charCodeAt(i));
+  }
 }

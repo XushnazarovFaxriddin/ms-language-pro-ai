@@ -105,7 +105,7 @@ export const api = {
   },
   feedback: {
     getAttemptFeedback: (attemptId: string, cookieHeader?: string) => call<AttemptFeedbackOut>(`/v1/attempts/${attemptId}/feedback`, { api: "exam", cookieHeader }),
-    generateOverview: (attemptId: string, body: { target_band?: number } = {}) => call<FeedbackArtifactOut>(`/v1/attempts/${attemptId}/feedback/overview`, { api: "exam", method: "POST", body }),
+    generateOverview: (attemptId: string, body: { target_band?: number } = {}, cookieHeader?: string) => call<FeedbackArtifactOut>(`/v1/attempts/${attemptId}/feedback/overview`, { api: "exam", method: "POST", body, cookieHeader }),
     getRecent: (cookieHeader?: string) => call<AttemptFeedbackOut[]>("/v1/me/feedback/recent", { api: "exam", cookieHeader }),
     getResponseFeedback: (responseId: string) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback`, { api: "exam" }),
     analyseWriting: (responseId: string, body: any) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback/analyse-writing`, { api: "exam", method: "POST", body }),
