@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { api, DrillGenerateOut, ListeningPassageGenerateOut } from "@/lib/api";
+import type { AdminCopy } from "@/lib/admin-i18n";
 import { Loader2, Copy, Check, Play } from "lucide-react";
 
-export function PracticeGenerationForms() {
+export function PracticeGenerationForms({ copy }: { copy: AdminCopy["practiceGeneration"] }) {
   const [activeTab, setActiveTab] = useState<"drill" | "listening">("drill");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,7 +39,7 @@ export function PracticeGenerationForms() {
       });
       setDrillResult(res);
     } catch (err: any) {
-      setError(err.message || "Failed to generate drill");
+      setError(err instanceof Error ? err.message : copy.drillError);
     } finally {
       setLoading(false);
     }
@@ -62,7 +63,7 @@ export function PracticeGenerationForms() {
       });
       setListeningResult(res);
     } catch (err: any) {
-      setError(err.message || "Failed to generate listening passage");
+      setError(err instanceof Error ? err.message : copy.listeningError);
     } finally {
       setLoading(false);
     }
@@ -81,7 +82,7 @@ export function PracticeGenerationForms() {
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
-            Drill Generatsiya
+            {copy.tabs.drill}
           </button>
           <button
             onClick={() => setActiveTab("listening")}
@@ -91,7 +92,7 @@ export function PracticeGenerationForms() {
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
-            Listening Matni
+            {copy.tabs.listening}
           </button>
         </div>
 
@@ -105,33 +106,33 @@ export function PracticeGenerationForms() {
           {activeTab === "drill" && (
             <form onSubmit={handleDrillSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Codes (vergul bilan)</label>
-                <input required name="target_codes" defaultValue="G1.1, V2.3" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.targetCodes}</label>
+                <input required name="target_codes" defaultValue={copy.defaults.targetCodes} className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">CEFR Level</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.cefrLevel}</label>
                   <select name="cefr_level" defaultValue="B1" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-black px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white">
                     <option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option>
                     <option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Drill Type</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.drillType}</label>
                   <select name="drill_type" defaultValue="mcq" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-black px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white">
-                    <option value="mcq">Multiple Choice</option>
-                    <option value="fill_in_the_blank">Fill in the blank</option>
-                    <option value="sentence_rewrite">Sentence Rewrite</option>
+                    <option value="mcq">{copy.drillTypes.mcq}</option>
+                    <option value="fill_in_the_blank">{copy.drillTypes.fillBlank}</option>
+                    <option value="sentence_rewrite">{copy.drillTypes.sentenceRewrite}</option>
                   </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Item Count</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.itemCount}</label>
                 <input type="number" required min={3} max={20} defaultValue={8} name="item_count" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
               </div>
               <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white transition-all hover:bg-emerald-400 disabled:opacity-50">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-                Generatsiya qilish
+                {copy.generate}
               </button>
             </form>
           )}
@@ -139,21 +140,21 @@ export function PracticeGenerationForms() {
           {activeTab === "listening" && (
             <form onSubmit={handleListeningSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Topic</label>
-                <input required name="topic" defaultValue="A conversation about university life" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.topic}</label>
+                <input required name="topic" defaultValue={copy.defaults.topic} className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Part</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.part}</label>
                   <select name="part" defaultValue="1" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-black px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white">
-                    <option value="1">Part 1 (Conversation)</option>
-                    <option value="2">Part 2 (Monologue)</option>
-                    <option value="3">Part 3 (Academic Conversation)</option>
-                    <option value="4">Part 4 (Academic Lecture)</option>
+                    <option value="1">{copy.parts.part1}</option>
+                    <option value="2">{copy.parts.part2}</option>
+                    <option value="3">{copy.parts.part3}</option>
+                    <option value="4">{copy.parts.part4}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">CEFR Level</label>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.cefrLevel}</label>
                   <select name="cefr_level" defaultValue="B2" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-black px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white">
                     <option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option>
                     <option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option>
@@ -161,12 +162,12 @@ export function PracticeGenerationForms() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Duration (seconds)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">{copy.fields.duration}</label>
                 <input type="number" required min={30} max={900} defaultValue={180} name="duration_target_seconds" className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-transparent px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none dark:text-white" />
               </div>
               <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 text-sm font-bold text-white transition-all hover:bg-emerald-400 disabled:opacity-50">
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-                Generatsiya qilish
+                {copy.generate}
               </button>
             </form>
           )}
@@ -176,14 +177,14 @@ export function PracticeGenerationForms() {
       {/* Preview Column */}
       <div className="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-xl flex flex-col h-[600px] lg:h-auto">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 bg-white dark:bg-black/40 px-6 py-4">
-          <h3 className="font-bold text-slate-900 dark:text-white">Natija (JSON)</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white">{copy.resultTitle}</h3>
           {(drillResult || listeningResult) && (
             <button 
               onClick={() => copyToClipboard(JSON.stringify(drillResult || listeningResult, null, 2))}
               className="flex items-center gap-2 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-              {copied ? "Nusxalandi" : "Nusxalash"}
+              {copied ? copy.copied : copy.copy}
             </button>
           )}
         </div>
@@ -194,7 +195,7 @@ export function PracticeGenerationForms() {
             </pre>
           ) : (
             <div className="flex h-full items-center justify-center text-sm font-medium text-slate-500">
-              {loading ? "Generatsiya qilinmoqda..." : "Natija bu yerda ko'rinadi"}
+              {loading ? copy.loading : copy.empty}
             </div>
           )}
         </div>

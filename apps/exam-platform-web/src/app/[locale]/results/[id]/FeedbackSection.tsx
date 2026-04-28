@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { api, type AttemptFeedbackOut, type FeedbackArtifactOut } from "@/lib/api";
 import { Loader2, MessageCircle, RefreshCw, ChevronDown, ChevronUp, FileText, CheckCircle, AlertTriangle, Lightbulb } from "lucide-react";
 
@@ -13,6 +13,7 @@ export function FeedbackSection({
   initialFeedback: AttemptFeedbackOut | null 
 }) {
   const t = useTranslations("Feedback");
+  const locale = useLocale();
   const [feedback, setFeedback] = useState<AttemptFeedbackOut | null>(initialFeedback);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -96,7 +97,7 @@ export function FeedbackSection({
           {openLayer === "overview" && (
             <div className="p-6 border-t border-[var(--color-border)]/50">
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="text-base leading-relaxed">{overview.payload.narrative_uz}</p>
+                <p className="text-base leading-relaxed">{selectLocalized(overview.payload, "narrative", locale)}</p>
                 {overview.payload.bands && (
                   <div className="mt-5 grid gap-3 sm:grid-cols-5">
                     {["overall", "listening", "reading", "writing", "speaking"].map((skill) => (
@@ -148,7 +149,7 @@ export function FeedbackSection({
                     {item.text || t("fallback.originalSentence")}
                   </p>
                   <p className="text-sm font-bold text-emerald-500 mb-3">
-                    {item.suggested_rewrite_uz || t("fallback.suggestedRewrite")}
+                    {selectLocalized(item, "suggested_rewrite", locale) || t("fallback.suggestedRewrite")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {item.issues?.map((issue, j) => (
@@ -193,7 +194,7 @@ export function FeedbackSection({
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-[var(--color-muted-fg)]">{item.rationale_uz}</p>
+                  <p className="text-xs text-[var(--color-muted-fg)]">{selectLocalized(item, "rationale", locale)}</p>
                 </div>
               ))}
             </div>
@@ -241,11 +242,13 @@ type SentenceIssue = { code: string };
 type SentenceItem = {
   text?: string;
   suggested_rewrite_uz?: string;
+  suggested_rewrite_en?: string;
   issues?: SentenceIssue[];
 };
 type WordItem = {
   word?: string;
   rationale_uz?: string;
+  rationale_en?: string;
   suggestions?: { lemma: string; cefr: string }[];
 };
 type PhonemeItem = { word?: string; gop?: number };
@@ -276,4 +279,13 @@ function flattenPhonemeItems(artifacts: FeedbackArtifactOut[]): PhonemeItem[] {
 
 function formatBand(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value) ? value.toFixed(1) : "—";
+}
+
+function selectLocalized(payload: Record<string, unknown>, baseKey: string, locale: string): string {
+  const localizedKey = `${baseKey}_${locale === "en" ? "en" : "uz"}`;
+  const fallbackKey = `${baseKey}_uz`;
+  const localized = payload[localizedKey];
+  if (typeof localized === "string" && localized.trim()) return localized;
+  const fallback = payload[fallbackKey];
+  return typeof fallback === "string" ? fallback : "";
 }

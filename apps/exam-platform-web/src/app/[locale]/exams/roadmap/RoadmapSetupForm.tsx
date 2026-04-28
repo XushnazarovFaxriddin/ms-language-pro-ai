@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { api } from "@/lib/api";
 import { Loader2, Map, Calendar, Target } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export function RoadmapSetupForm() {
+  const t = useTranslations("Roadmap.setup");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,7 +27,7 @@ export function RoadmapSetupForm() {
       // Refresh page to load the new roadmap
       window.location.reload();
     } catch (err: any) {
-      setError(err.message || "Xatolik yuz berdi");
+      setError(err instanceof Error ? err.message : t("error"));
       setLoading(false);
     }
   };
@@ -41,9 +41,9 @@ export function RoadmapSetupForm() {
       </div>
       
       <div>
-        <h1 className="text-4xl font-black tracking-tight">Shaxsiy reja yarating</h1>
+        <h1 className="text-4xl font-black tracking-tight">{t("title")}</h1>
         <p className="mt-4 text-lg text-[var(--color-muted-fg)]">
-          Maqsadingiz va bo'sh vaqtingizni kiriting. AI siz uchun eng optimal tayyorgarlik strategiyasini ishlab chiqadi.
+          {t("description")}
         </p>
       </div>
 
@@ -57,14 +57,14 @@ export function RoadmapSetupForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold mb-2">Maqsad (IELTS Band)</label>
+              <label className="block text-sm font-bold mb-2">{t("targetBand")}</label>
               <div className="relative">
                 <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-muted-fg)]" />
                 <input required type="number" step="0.5" min="4.0" max="9.0" defaultValue="7.0" name="target_band" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 pl-12 pr-4 py-3 font-medium focus:border-[var(--color-primary)] focus:outline-none" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Imtihon sanasi</label>
+              <label className="block text-sm font-bold mb-2">{t("examDate")}</label>
               <div className="relative">
                 <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-muted-fg)]" />
                 <input required type="date" name="target_date" defaultValue={new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]} className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 pl-12 pr-4 py-3 font-medium focus:border-[var(--color-primary)] focus:outline-none" />
@@ -74,17 +74,17 @@ export function RoadmapSetupForm() {
 
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold mb-2">Haftalik ajratiladigan vaqt (soat)</label>
+              <label className="block text-sm font-bold mb-2">{t("weeklyHours")}</label>
               <input required type="number" min="1" max="40" defaultValue="10" name="weekly_hours" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 px-4 py-3 font-medium focus:border-[var(--color-primary)] focus:outline-none" />
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Necha hafta qoldi?</label>
+              <label className="block text-sm font-bold mb-2">{t("weeksLeft")}</label>
               <input required type="number" min="4" max="12" defaultValue="8" name="weeks_until_target" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 px-4 py-3 font-medium focus:border-[var(--color-primary)] focus:outline-none" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-2">Asosiy e'tibor (Skill)</label>
+            <label className="block text-sm font-bold mb-2">{t("focusSkill")}</label>
             <select name="focus_skill" defaultValue="writing" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 px-4 py-3 font-medium focus:border-[var(--color-primary)] focus:outline-none">
               <option value="listening">Listening</option>
               <option value="reading">Reading</option>
@@ -95,7 +95,7 @@ export function RoadmapSetupForm() {
 
           <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] py-4 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 mt-4">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Map className="h-5 w-5" />}
-            Rejani shakllantirish
+            {t("submit")}
           </button>
         </form>
       </div>

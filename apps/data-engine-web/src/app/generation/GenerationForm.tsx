@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import type { AdminCopy } from "@/lib/admin-i18n";
 import { Zap, Target, BookOpen, Layers, Loader2, Sparkles } from "lucide-react";
 
 const SKILLS = [
@@ -14,11 +15,11 @@ const SKILLS = [
 
 const LEVELS = ["A2", "B1", "B2", "C1", "C2"];
 
-export function GenerationForm() {
+export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
   const router = useRouter();
   const [skill, setSkill] = useState("reading");
   const [cefr, setCefr] = useState("B1");
-  const [topic, setTopic] = useState("technology and society");
+  const [topic, setTopic] = useState<string>(copy.defaultTopic);
   const [count, setCount] = useState(3);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export function GenerationForm() {
           });
           router.push(`/generation/jobs/${job.id}`);
         } catch (err) {
-          setError(err instanceof ApiError ? err.detail : String(err));
+          setError(err instanceof ApiError ? err.detail : copy.errorFallback);
           setPending(false);
         }
       }}
@@ -48,7 +49,7 @@ export function GenerationForm() {
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
             <Zap className="h-4 w-4 text-emerald-400" />
-            Ko'nikma (Skill)
+            {copy.fields.skill}
           </label>
           <select 
             value={skill} 
@@ -66,7 +67,7 @@ export function GenerationForm() {
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
             <Layers className="h-4 w-4 text-emerald-400" />
-            CEFR Darajasi
+            {copy.fields.cefr}
           </label>
           <div className="flex flex-wrap gap-2">
             {LEVELS.map((l) => (
@@ -90,12 +91,12 @@ export function GenerationForm() {
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
           <BookOpen className="h-4 w-4 text-emerald-400" />
-          Mavzu yoki Kontekst
+          {copy.fields.topic}
         </label>
         <input
           type="text"
           required
-          placeholder="Masalan: Artificial intelligence in medicine"
+          placeholder={copy.topicPlaceholder}
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all"
@@ -105,7 +106,7 @@ export function GenerationForm() {
       <div className="space-y-2">
         <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
           <Target className="h-4 w-4 text-emerald-400" />
-          Savollar soni (1-50)
+          {copy.fields.count}
         </label>
         <div className="flex items-center gap-4">
           <input
@@ -139,14 +140,14 @@ export function GenerationForm() {
         ) : (
           <>
             <Sparkles className="h-5 w-5" />
-            Generatsiyani boshlash
+            {copy.start}
           </>
         )}
       </button>
 
       <div className="rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10 text-xs text-slate-400 leading-relaxed">
-        <span className="font-bold text-emerald-400 uppercase tracking-widest block mb-1">Eslatma</span>
-        Savollar AI tomonidan navbat asosida yaratiladi. Har bir savol uchun o'rtacha 15-30 soniya vaqt sarflanadi. Natijalarni "Savollar banki" bo'limida ko'rishingiz mumkin.
+        <span className="font-bold text-emerald-400 uppercase tracking-widest block mb-1">{copy.noteTitle}</span>
+        {copy.note}
       </div>
     </form>
   );

@@ -238,7 +238,41 @@
     "questionDetails": "Savollar tahlili",
     "correct": "To'g'ri",
     "incorrect": "Noto'g'ri",
-    "questionNumber": "Savol #"
+    "questionNumber": "Savol #",
+    "ieltsBand": "IELTS Band"
+  },
+  "Roadmap": {
+    "title": "Shaxsiy reja (Roadmap)",
+    "description": "Sizning maqsadingizga moslashtirilgan kunlik va haftalik mashg'ulotlar rejasi.",
+    "stats": {
+      "target": "Maqsad",
+      "date": "Sana",
+      "weeklyTime": "Haftalik vaqt",
+      "forecast": "Prognoz (P50)",
+      "hours": "{count} soat"
+    },
+    "weeklyMilestones": "Haftalik bosqichlar",
+    "expectedGrowth": "Kutilayotgan o'sish: +{value} band",
+    "dailyTasks": "Kunlik vazifalar",
+    "daily": {
+      "vocabulary": "Lug'at kartochkalari",
+      "drills": "Drill mashqlari",
+      "mock": "Mock savollar",
+      "cardsUnit": "{count} ta",
+      "minutesUnit": "{count} min"
+    },
+    "recommendation": "Tavsiya:",
+    "setup": {
+      "title": "Shaxsiy reja yarating",
+      "description": "Maqsadingiz va bo'sh vaqtingizni kiriting. AI siz uchun eng optimal tayyorgarlik strategiyasini ishlab chiqadi.",
+      "targetBand": "Maqsad (IELTS Band)",
+      "examDate": "Imtihon sanasi",
+      "weeklyHours": "Haftalik ajratiladigan vaqt (soat)",
+      "weeksLeft": "Necha hafta qoldi?",
+      "focusSkill": "Asosiy e'tibor (Skill)",
+      "submit": "Rejani shakllantirish",
+      "error": "Xatolik yuz berdi"
+    }
   },
   "Conversation": {
     "title": "Suhbat (Conversation)",

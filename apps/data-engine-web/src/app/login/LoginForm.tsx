@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, api } from "@/lib/api";
+import type { AdminCopy } from "@/lib/admin-i18n";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 
-export function LoginForm({ returnTo }: { returnTo: string }) {
+export function LoginForm({ returnTo, copy }: { returnTo: string; copy: AdminCopy["login"] }) {
   const router = useRouter();
   const [email, setEmail] = useState("admin@aiexam.uz");
   const [password, setPassword] = useState("admin12345");
@@ -31,7 +32,7 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
       className="space-y-5"
     >
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-300 ml-1">Email manzilingiz</label>
+        <label className="text-sm font-semibold text-slate-300 ml-1">{copy.email}</label>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
             <Mail className="h-5 w-5" />
@@ -49,7 +50,7 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between ml-1">
-          <label className="text-sm font-semibold text-slate-300">Maxfiy parol</label>
+          <label className="text-sm font-semibold text-slate-300">{copy.password}</label>
         </div>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
@@ -81,7 +82,7 @@ export function LoginForm({ returnTo }: { returnTo: string }) {
           <Loader2 className="h-5 w-5 animate-spin" />
         ) : (
           <>
-            Kirish <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            {copy.submit} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
           </>
         )}
       </button>

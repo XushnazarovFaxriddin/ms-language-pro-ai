@@ -1,10 +1,13 @@
 import { requireAdmin } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { GenerationForm } from "./GenerationForm";
 import { BrainCircuit } from "lucide-react";
 
 export default async function GenerationPage() {
   const user = await requireAdmin("/generation");
+  const copy = getAdminCopy(user.locale).generation;
+
   return (
     <AdminShell user={user}>
       <div className="relative min-h-full p-6 sm:p-10">
@@ -16,15 +19,15 @@ export default async function GenerationPage() {
               <BrainCircuit className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Savol generatsiyasi</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{copy.pageTitle}</h1>
               <p className="mt-2 text-lg text-slate-400">
-                AI yordamida sifatli test savollarini yarating (Batch Jobs & SSE).
+                {copy.pageDescription}
               </p>
             </div>
           </div>
           
           <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-            <GenerationForm />
+            <GenerationForm copy={copy} />
           </div>
         </div>
       </div>

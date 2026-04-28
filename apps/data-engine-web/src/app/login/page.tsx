@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { tryGetUser } from "@/lib/auth-server";
+import { adminLocale, getAdminCopy } from "@/lib/admin-i18n";
 import { LoginForm } from "./LoginForm";
 import { Sparkles, ShieldCheck } from "lucide-react";
 
@@ -11,6 +13,9 @@ export default async function LoginPage({
   const sp = await searchParams;
   const user = await tryGetUser();
   if (user) redirect(sp.returnTo ?? "/dashboard");
+  const headerStore = await headers();
+  const locale = adminLocale(headerStore.get("accept-language")?.toLowerCase().startsWith("en") ? "en" : "uz");
+  const copy = getAdminCopy(locale).login;
   
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-[#0a0a0a] p-6 text-slate-200">
@@ -29,17 +34,17 @@ export default async function LoginPage({
             Content<span className="text-emerald-400">Studio</span>
           </h1>
           <p className="mt-3 text-slate-400">
-            Admin boshqaruv paneliga xush kelibsiz.
+            {copy.welcome}
           </p>
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-2xl backdrop-blur-2xl">
-          <LoginForm returnTo={sp.returnTo ?? "/dashboard"} />
+          <LoginForm returnTo={sp.returnTo ?? "/dashboard"} copy={copy} />
           
           <div className="mt-8 space-y-4 rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
               <ShieldCheck className="h-4 w-4" />
-              Demo ruxsatlar
+              {copy.demoPermissions}
             </div>
             <div className="space-y-1.5 font-mono text-xs text-slate-400">
               <div className="flex justify-between">
@@ -55,7 +60,7 @@ export default async function LoginPage({
         </div>
 
         <p className="text-center text-sm text-slate-500">
-          © 2024 LanguagePro AI — Barcha huquqlar himoyalangan.
+          {copy.footer}
         </p>
       </div>
     </main>

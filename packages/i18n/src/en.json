@@ -238,7 +238,41 @@
     "questionDetails": "Question Details",
     "correct": "Correct",
     "incorrect": "Incorrect",
-    "questionNumber": "Question #"
+    "questionNumber": "Question #",
+    "ieltsBand": "IELTS Band"
+  },
+  "Roadmap": {
+    "title": "Personal roadmap",
+    "description": "Daily and weekly study plan tailored to your target.",
+    "stats": {
+      "target": "Target",
+      "date": "Date",
+      "weeklyTime": "Weekly time",
+      "forecast": "Forecast (P50)",
+      "hours": "{count} hours"
+    },
+    "weeklyMilestones": "Weekly milestones",
+    "expectedGrowth": "Expected growth: +{value} band",
+    "dailyTasks": "Daily tasks",
+    "daily": {
+      "vocabulary": "Vocabulary cards",
+      "drills": "Drill practice",
+      "mock": "Mock questions",
+      "cardsUnit": "{count} items",
+      "minutesUnit": "{count} min"
+    },
+    "recommendation": "Recommendation:",
+    "setup": {
+      "title": "Create a personal roadmap",
+      "description": "Enter your goal and available study time. AI will build an optimal preparation strategy for you.",
+      "targetBand": "Target (IELTS Band)",
+      "examDate": "Exam date",
+      "weeklyHours": "Weekly study time (hours)",
+      "weeksLeft": "Weeks left",
+      "focusSkill": "Main focus (Skill)",
+      "submit": "Create roadmap",
+      "error": "Something went wrong"
+    }
   },
   "Conversation": {
     "title": "Conversation",

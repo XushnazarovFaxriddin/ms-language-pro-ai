@@ -1,10 +1,12 @@
 import { requireAdmin } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { FlaskConical } from "lucide-react";
 import { PracticeGenerationForms } from "./PracticeGenerationForms";
 
 export default async function PracticeGenerationPage() {
   const user = await requireAdmin("/generation/practice");
+  const copy = getAdminCopy(user.locale).practiceGeneration;
   
   return (
     <AdminShell user={user}>
@@ -17,14 +19,14 @@ export default async function PracticeGenerationPage() {
               <FlaskConical className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Practice Generatsiya</h1>
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">{copy.pageTitle}</h1>
               <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
-                AI yordamida Drill mashqlari va Listening matnlarini yarating.
+                {copy.pageDescription}
               </p>
             </div>
           </div>
           
-          <PracticeGenerationForms />
+          <PracticeGenerationForms copy={copy} />
         </div>
       </div>
     </AdminShell>

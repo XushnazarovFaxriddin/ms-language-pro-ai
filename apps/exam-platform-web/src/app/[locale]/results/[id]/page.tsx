@@ -72,7 +72,7 @@ export default async function ResultsPage({
                 <span className="font-medium">{t("score")}</span>
               </div>
               <p className="mt-3 text-3xl font-bold tracking-tight">
-                {scoreLabel} <span className="text-sm font-medium text-[var(--color-muted-fg)]">IELTS Band</span>
+                {scoreLabel} <span className="text-sm font-medium text-[var(--color-muted-fg)]">{t("ieltsBand")}</span>
               </p>
             </div>
             <div className="bg-[var(--color-bg)] p-8">

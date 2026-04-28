@@ -24,23 +24,36 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
   const [audioUnavailable, setAudioUnavailable] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastTimeRef = useRef(0);
+  
+  const phaseRef = useRef(phase);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   // Reset on item change (next listening question gets a fresh play state)
   useEffect(() => {
     setPhase("ready");
     setAudioUnavailable(false);
     lastTimeRef.current = 0;
-    window.speechSynthesis?.cancel();
-    return () => window.speechSynthesis?.cancel();
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
   }, [item.id]);
 
   function play() {
     if (audioRef.current && audioUrl && !audioUnavailable) {
+      setPhase("playing");
       audioRef.current.play().catch(() => {
         setAudioUnavailable(true);
         playSpeechFallback();
       });
-      setPhase("playing");
       return;
     }
     playSpeechFallback();
@@ -51,12 +64,24 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
       setPhase("finished");
       return;
     }
+    
     const utterance = new SpeechSynthesisUtterance(transcript);
     utterance.lang = "en-US";
     utterance.rate = 0.92;
-    utterance.onend = () => setPhase("finished");
-    utterance.onerror = () => setPhase("finished");
-    window.speechSynthesis.cancel();
+    
+    utteranceRef.current = utterance;
+
+    utterance.onend = () => {
+      setPhase("finished");
+      utteranceRef.current = null;
+    };
+    
+    utterance.onerror = (e: any) => {
+      console.error("SpeechSynthesis error:", e.error || e);
+      setPhase("finished");
+      utteranceRef.current = null;
+    };
+
     window.speechSynthesis.speak(utterance);
     setPhase("playing");
   }
@@ -103,7 +128,7 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
               onEnded={() => setPhase("finished")}
               onError={() => {
                 setAudioUnavailable(true);
-                if (phase === "playing") playSpeechFallback();
+                if (phaseRef.current === "playing") playSpeechFallback();
               }}
               onTimeUpdate={() => {
                 if (audioRef.current) lastTimeRef.current = audioRef.current.currentTime;

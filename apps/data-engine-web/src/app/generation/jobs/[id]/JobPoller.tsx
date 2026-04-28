@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { api, type GenerationJob } from "@/lib/api";
-import { Loader2, CheckCircle2, AlertCircle, Clock, BarChart3, Settings2 } from "lucide-react";
+import type { AdminCopy } from "@/lib/admin-i18n";
+import { Loader2, CheckCircle2, AlertCircle, BarChart3, Settings2 } from "lucide-react";
 
-export function JobPoller({ jobId, initial }: { jobId: string; initial: GenerationJob }) {
+export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: GenerationJob; copy: AdminCopy["generation"] }) {
   const [job, setJob] = useState(initial);
 
   useEffect(() => {
@@ -42,12 +43,12 @@ export function JobPoller({ jobId, initial }: { jobId: string; initial: Generati
               {getStatusIcon()}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Job Status</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">{copy.jobStatus}</p>
               <h3 className="text-xl font-black text-white capitalize">{job.status}</h3>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Progress</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500">{copy.progress}</p>
             <p className="text-xl font-black text-emerald-400">{pct}%</p>
           </div>
         </div>
@@ -59,8 +60,8 @@ export function JobPoller({ jobId, initial }: { jobId: string; initial: Generati
           />
         </div>
         <div className="mt-3 flex justify-between text-xs font-bold text-slate-500 uppercase tracking-tighter">
-          <span>{total} savol tayyor</span>
-          <span>{target} jami kutilmoqda</span>
+          <span>{copy.ready.replace("{count}", String(total))}</span>
+          <span>{copy.expected.replace("{count}", String(target))}</span>
         </div>
       </div>
 
@@ -69,7 +70,7 @@ export function JobPoller({ jobId, initial }: { jobId: string; initial: Generati
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-400">
             <Settings2 className="h-4 w-4" />
-            Parametrlar
+            {copy.parameters}
           </div>
           <div className="rounded-3xl border border-slate-800/60 bg-black/40 p-6 font-mono text-sm">
             <div className="grid grid-cols-2 gap-4">
@@ -87,16 +88,16 @@ export function JobPoller({ jobId, initial }: { jobId: string; initial: Generati
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-400">
             <BarChart3 className="h-4 w-4" />
-            Natijalar tahlili
+            {copy.resultBreakdown}
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {([
-              { key: "approved", label: "Tasdiqlandi", color: "text-emerald-400" },
-              { key: "in_review", label: "Ko'rib chiqilmoqda", color: "text-yellow-400" },
-              { key: "rejected_jury", label: "Jury rad etdi", color: "text-orange-400" },
-              { key: "rejected_dup", label: "Dublikat", color: "text-purple-400" },
-              { key: "draft", label: "Qoralama", color: "text-slate-400" },
-              { key: "error", label: "Xatolik", color: "text-red-400" },
+              { key: "approved", label: copy.totals.approved, color: "text-emerald-400" },
+              { key: "in_review", label: copy.totals.inReview, color: "text-yellow-400" },
+              { key: "rejected_jury", label: copy.totals.rejectedJury, color: "text-orange-400" },
+              { key: "rejected_dup", label: copy.totals.rejectedDup, color: "text-purple-400" },
+              { key: "draft", label: copy.totals.draft, color: "text-slate-400" },
+              { key: "error", label: copy.totals.error, color: "text-red-400" },
             ]).map(({ key, label, color }) => (
               <div
                 key={key}
@@ -117,14 +118,14 @@ export function JobPoller({ jobId, initial }: { jobId: string; initial: Generati
             <CheckCircle2 className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">Generatsiya yakunlandi!</p>
-            <p className="text-xs text-slate-400">Barcha savollar muvaffaqiyatli saqlandi. Endi ularni savollar bankida ko'rishingiz mumkin.</p>
+            <p className="text-sm font-bold text-white">{copy.doneTitle}</p>
+            <p className="text-xs text-slate-400">{copy.doneDesc}</p>
           </div>
           <button 
             onClick={() => window.location.href = "/items"}
             className="ml-auto rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-400 transition-colors"
           >
-            Bankka o'tish
+            {copy.goToBank}
           </button>
         </div>
       )}

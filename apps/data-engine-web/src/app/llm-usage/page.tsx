@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { getCookieHeader, requireAdmin } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { TimeseriesChart } from "./TimeseriesChart";
 import { ModelBreakdownChart } from "./ModelBreakdownChart";
 import { CallsTable } from "./CallsTable";
@@ -15,6 +16,8 @@ export default async function LLMUsagePage({
   const period = sp.period ?? "7d";
   const user = await requireAdmin("/llm-usage");
   const ck = await getCookieHeader();
+  const copy = getAdminCopy(user.locale).usage;
+  const locale = user.locale === "en" ? "en-US" : "uz-UZ";
   const [summary, byPurpose, byModel, timeseries, calls] = await Promise.all([
     api.usage.summary(period, ck).catch(() => null),
     api.usage.byPurpose(period, ck).catch(() => []),
@@ -35,9 +38,9 @@ export default async function LLMUsagePage({
                 <Activity className="h-8 w-8" />
               </div>
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">LLM Xarajat Analytics</h1>
+                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{copy.pageTitle}</h1>
                 <p className="mt-2 text-lg text-slate-400">
-                  AI modellarining foydalanilishi, xarajatlar va kechikishlar tahlili.
+                  {copy.pageDescription}
                 </p>
               </div>
             </div>
@@ -45,34 +48,34 @@ export default async function LLMUsagePage({
           </div>
 
           <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat title="Jami xarajat" value={summary ? `$${Number(summary.total_cost_usd).toFixed(4)}` : "—"} color="emerald" />
-            <Stat title="Chaqiruvlar" value={summary ? String(summary.total_calls) : "—"} color="blue" />
+            <Stat title={copy.totalCost} value={summary ? `$${Number(summary.total_cost_usd).toFixed(4)}` : "—"} color="emerald" />
+            <Stat title={copy.calls} value={summary ? String(summary.total_calls) : "—"} color="blue" />
             <Stat
-              title="Tokenlar (in / out)"
+              title={copy.tokens}
               value={summary ? `${summary.total_tokens_in.toLocaleString()} / ${summary.total_tokens_out.toLocaleString()}` : "—"}
               color="amber"
             />
-            <Stat title="O'rtacha latency" value={summary ? `${summary.avg_latency_ms} ms` : "—"} color="teal" />
+            <Stat title={copy.avgLatency} value={summary ? `${summary.avg_latency_ms} ms` : "—"} color="teal" />
           </section>
 
           <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-            <h2 className="text-xl font-bold text-white mb-6">Vaqt bo&apos;yicha ({period}, kun)</h2>
+            <h2 className="text-xl font-bold text-white mb-6">{copy.timeseries.replace("{period}", period)}</h2>
             <div className="h-72">
-              <TimeseriesChart data={timeseries} />
+              <TimeseriesChart data={timeseries} noDataLabel={copy.noData} locale={locale} />
             </div>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
             <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-              <h2 className="text-xl font-bold text-white mb-6">Maqsad bo&apos;yicha</h2>
+              <h2 className="text-xl font-bold text-white mb-6">{copy.byPurpose}</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
                   <thead className="border-b border-slate-800/60 text-xs uppercase tracking-wider text-slate-400 font-semibold bg-black/20">
                     <tr>
-                      <th className="px-4 py-3 rounded-tl-xl">Purpose</th>
-                      <th className="px-4 py-3 text-right">Calls</th>
-                      <th className="px-4 py-3 text-right">Tokens (in/out)</th>
-                      <th className="px-4 py-3 text-right rounded-tr-xl">Cost</th>
+                      <th className="px-4 py-3 rounded-tl-xl">{copy.table.purpose}</th>
+                      <th className="px-4 py-3 text-right">{copy.calls}</th>
+                      <th className="px-4 py-3 text-right">{copy.table.tokens}</th>
+                      <th className="px-4 py-3 text-right rounded-tr-xl">{copy.table.cost}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
@@ -89,7 +92,7 @@ export default async function LLMUsagePage({
                     {byPurpose.length === 0 && (
                       <tr>
                         <td colSpan={4} className="py-8 text-center text-slate-500">
-                          Ma&apos;lumot yo&apos;q
+                          {copy.noData}
                         </td>
                       </tr>
                     )}
@@ -99,17 +102,17 @@ export default async function LLMUsagePage({
             </div>
 
             <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-              <h2 className="text-xl font-bold text-white mb-6">Model bo&apos;yicha</h2>
+              <h2 className="text-xl font-bold text-white mb-6">{copy.byModel}</h2>
               <div className="h-64">
-                <ModelBreakdownChart data={byModel} />
+                <ModelBreakdownChart data={byModel} noDataLabel={copy.noData} />
               </div>
             </div>
           </section>
 
           <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-            <h2 className="text-xl font-bold text-white mb-6">So&apos;nggi qo&apos;ng&apos;iroqlar (50)</h2>
+            <h2 className="text-xl font-bold text-white mb-6">{copy.recentCalls}</h2>
             <div className="rounded-xl overflow-hidden border border-slate-800/60">
-              <CallsTable rows={calls} />
+              <CallsTable rows={calls} copy={copy} locale={locale} />
             </div>
           </section>
         </div>
