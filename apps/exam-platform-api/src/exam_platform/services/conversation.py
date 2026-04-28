@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import base64
+import binascii
 from uuid import UUID
 
 from languagepro_common.errors import ConflictError, NotFoundError, ValidationError
+from languagepro_common.logging import get_logger
 from languagepro_llm import LLMRequest, LLMRouter
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +20,9 @@ from exam_platform.schemas import (
     ConversationTurnCreate,
     ConversationTurnOut,
 )
+
+log = get_logger(__name__)
+SUPPORTED_LLM_AUDIO_FORMATS = {"wav", "mp3"}
 
 
 async def start_session(
@@ -71,7 +76,7 @@ async def add_turn(
 
     try:
         audio_bytes = base64.b64decode(body.audio_base64, validate=True)
-    except ValueError as exc:
+    except (ValueError, binascii.Error) as exc:
         raise ValidationError("audio_base64 is not valid base64") from exc
     if not audio_bytes:
         raise ValidationError("audio_base64 must not be empty")
@@ -91,24 +96,58 @@ async def add_turn(
     ]
     turn_index = len(prior_turns)
 
-    resp = await router.complete(
-        LLMRequest(
-            purpose="score_speaking",
-            prompt_id="score_speaking/conversation_turn",
-            variables={
-                "topic": session.topic,
-                "prior_turns": prior_turns,
-                "user_locale": "uz",
-                "cefr_level": session.cefr_level,
-            },
-            audio_input=audio_bytes,
+    audio_format = _normalise_audio_format(body.audio_format)
+    raw_response: dict | None = None
+    model: str | None = None
+    prompt_version_id: str | None = None
+    if audio_format in SUPPORTED_LLM_AUDIO_FORMATS:
+        try:
+            resp = await router.complete(
+                LLMRequest(
+                    purpose="score_speaking",
+                    prompt_id="score_speaking/conversation_turn",
+                    variables={
+                        "topic": session.topic,
+                        "prior_turns": prior_turns,
+                        "user_locale": "uz",
+                        "cefr_level": session.cefr_level,
+                    },
+                    audio_input=audio_bytes,
+                    audio_format=audio_format,
+                    user_id=user_id,
+                )
+            )
+            if resp.parsed is None:
+                raise ValidationError("Conversation turn response did not match schema")
+            feedback = ConversationTurn.model_validate(resp.parsed)
+            raw_response = resp.parsed
+            model = resp.model
+            prompt_version_id = resp.prompt_version_id
+        except Exception as exc:
+            log.warning(
+                "conversation_turn_llm_failed_using_fallback",
+                session_id=str(session.id),
+                turn_index=turn_index,
+                audio_format=audio_format,
+                error=str(exc),
+            )
+            feedback = _fallback_turn(session.topic, session.cefr_level, turn_index, audio_bytes)
+            raw_response = feedback.model_dump(mode="json") | {
+                "fallback_reason": str(exc),
+            }
+            model = "system-fallback"
+    else:
+        log.warning(
+            "conversation_turn_unsupported_audio_format_using_fallback",
+            session_id=str(session.id),
+            turn_index=turn_index,
             audio_format=body.audio_format,
-            user_id=user_id,
         )
-    )
-    if resp.parsed is None:
-        raise ValidationError("Conversation turn response did not match schema")
-    feedback = ConversationTurn.model_validate(resp.parsed)
+        feedback = _fallback_turn(session.topic, session.cefr_level, turn_index, audio_bytes)
+        raw_response = feedback.model_dump(mode="json") | {
+            "fallback_reason": f"Unsupported audio format: {body.audio_format}",
+        }
+        model = "system-fallback"
 
     turn_id = (
         await db.execute(
@@ -120,9 +159,9 @@ async def add_turn(
                 user_transcript=feedback.user_transcript,
                 agent_response_text=feedback.agent_response_text,
                 feedback=feedback.model_dump(mode="json"),
-                raw_response=resp.parsed,
-                model=resp.model,
-                prompt_version_id=resp.prompt_version_id,
+                raw_response=raw_response or feedback.model_dump(mode="json"),
+                model=model,
+                prompt_version_id=prompt_version_id,
             )
             .returning(ConversationTurnRecord.id)
         )
@@ -151,6 +190,53 @@ async def _get_session(
     if session is None:
         raise NotFoundError(f"Conversation session {session_id} not found")
     return session
+
+
+def _normalise_audio_format(audio_format: str) -> str:
+    value = audio_format.lower().strip()
+    if "/" in value:
+        value = value.rsplit("/", 1)[-1]
+    if ";" in value:
+        value = value.split(";", 1)[0]
+    if value in {"x-wav", "wave"}:
+        return "wav"
+    if value in {"mpeg", "mp3"}:
+        return "mp3"
+    return value
+
+
+def _fallback_turn(
+    topic: str,
+    cefr_level: str,
+    turn_index: int,
+    audio_bytes: bytes,
+) -> ConversationTurn:
+    transcript = (
+        f"Audio response received ({len(audio_bytes)} bytes). "
+        "Automatic transcript is unavailable in fallback mode."
+    )
+    follow_ups = {
+        "A1": f"Thanks. Can you say one more simple sentence about {topic}?",
+        "A2": f"Thanks for sharing. What is one thing you like about {topic}?",
+        "B1": f"Good, let's continue. Can you give one clear example about {topic}?",
+        "B2": f"Interesting. What is the main advantage or disadvantage of {topic} in your view?",
+        "C1": f"That is a useful start. How would you compare two perspectives on {topic}?",
+        "C2": f"Let's push the idea further. What nuance or trade-off matters most in {topic}?",
+    }
+    return ConversationTurn(
+        user_transcript=transcript,
+        agent_response_text=follow_ups.get(cefr_level, follow_ups["B1"]),
+        fluency_band_estimate=5.0 if turn_index == 0 else 5.5,
+        grammar_issues=[],
+        pronunciation_issues=[],
+        lexis_suggestions=[],
+        encouragement_uz=(
+            "Audio saqlandi. Keyingi javobda fikringizni 2-3 sabab bilan kengaytiring."
+        ),
+        encouragement_en=(
+            "Your audio was saved. In the next response, expand your idea with 2-3 reasons."
+        ),
+    )
 
 
 def _session_out(row: ConversationSession) -> ConversationSessionOut:

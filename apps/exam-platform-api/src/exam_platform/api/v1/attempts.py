@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import Annotated
 from uuid import UUID
 
@@ -16,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from exam_platform.adapters.data_engine.client import DataEngineClient
 from exam_platform.api.deps import get_current_user, get_data_engine_client
 from exam_platform.db import get_session
-from exam_platform.models import Exam, ExamAttempt
+from exam_platform.models import AttemptResponse, Exam, ExamAttempt, ScoringResult
 from exam_platform.schemas import (
     AttemptListItem,
     AttemptOut,
@@ -92,20 +93,28 @@ async def list_attempts(
     )
     result = await db.execute(stmt)
     rows = result.all()
+    attempt_ids = [att.id for att, _ in rows]
+    bands_by_attempt: dict[UUID, list[float]] = defaultdict(list)
+    if attempt_ids:
+        band_rows = (
+            await db.execute(
+                select(AttemptResponse.attempt_id, ScoringResult.band)
+                .join(ScoringResult, ScoringResult.response_id == AttemptResponse.id)
+                .where(
+                    AttemptResponse.attempt_id.in_(attempt_ids),
+                    ScoringResult.band.is_not(None),
+                )
+            )
+        ).all()
+        for attempt_id, band in band_rows:
+            bands_by_attempt[attempt_id].append(float(band))
 
     items = []
     for att, exam in rows:
-        # Calculate a mock final score for display based on theta, or leave None
         score = None
-        if att.theta_estimates:
-            # Just take the average theta and convert to a 0-100 scale for demo,
-            # or just leave it as None if state != completed.
-            if att.state == "completed":
-                avg_theta = sum(float(v) for v in att.theta_estimates.values()) / len(
-                    att.theta_estimates
-                )
-                # Map theta (-3 to +3) roughly to 0-100%
-                score = round(max(0.0, min(100.0, (avg_theta + 3) / 6 * 100)), 1)
+        stored_bands = bands_by_attempt.get(att.id, [])
+        if att.state == "completed" and stored_bands:
+            score = round(sum(stored_bands) / len(stored_bands), 1)
 
         items.append(
             AttemptListItem(

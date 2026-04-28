@@ -1,5 +1,6 @@
 import { requireAdmin, getCookieHeader } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { api } from "@/lib/api";
 import { BookOpen } from "lucide-react";
 import { PracticeCatalogueTabs } from "@/components/PracticeCatalogueTabs";
@@ -7,6 +8,7 @@ import { PracticeCatalogueTabs } from "@/components/PracticeCatalogueTabs";
 export default async function PracticeCataloguePage() {
   const user = await requireAdmin("/practice-catalogue");
   const ck = await getCookieHeader();
+  const copy = getAdminCopy(user.locale);
   
   // Fetch all catalogue data concurrently
   const [errorTaxonomy, drills, conversationTopics] = await Promise.all([
@@ -22,10 +24,10 @@ export default async function PracticeCataloguePage() {
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
               <BookOpen className="h-8 w-8 text-emerald-500" />
-              Amaliyot Katalogi
+              {copy.catalogue.pageTitle}
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
-              Xatolar taksonomiyasi, drill mashqlari va suhbat mavzularini boshqarish.
+              {copy.catalogue.pageDescription}
             </p>
           </div>
         </div>
@@ -34,6 +36,7 @@ export default async function PracticeCataloguePage() {
           initialTaxonomy={errorTaxonomy} 
           initialDrills={drills} 
           initialTopics={conversationTopics} 
+          copy={copy.catalogue}
         />
       </div>
     </AdminShell>

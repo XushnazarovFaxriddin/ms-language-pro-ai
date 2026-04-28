@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from languagepro_common.errors import NotFoundError, ValidationError
+from languagepro_common.logging import get_logger
 from languagepro_llm import LLMRequest, LLMRouter
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -48,6 +49,7 @@ GENERIC_WORD_CEFR: dict[str, str] = {
 }
 
 IELTS_SKILLS = ("listening", "reading", "writing", "speaking")
+log = get_logger(__name__)
 
 
 async def get_attempt_artifacts(
@@ -196,24 +198,51 @@ async def generate_attempt_overview(
     top_error_codes = await _top_error_codes(db, attempt.id)
     vocabulary_metrics = await _vocabulary_metrics(db, attempt.id)
 
-    overview_resp = await router.complete(
-        LLMRequest(
-            purpose="feedback",
-            prompt_id="feedback/overview",
-            variables={
-                "bands": bands,
-                "top_error_codes": top_error_codes,
-                "vocabulary_metrics": vocabulary_metrics,
-                "target_band": body.target_band,
-                "user_locale": attempt.locale,
-            },
-            user_id=user_id,
-            attempt_id=attempt.id,
+    responses = (
+        (
+            await db.execute(
+                select(AttemptResponse)
+                .where(AttemptResponse.attempt_id == attempt.id)
+                .order_by(AttemptResponse.section_index.asc(), AttemptResponse.answered_at.asc())
+            )
         )
+        .scalars()
+        .all()
     )
-    if overview_resp.parsed is None:
-        raise ValidationError("Feedback overview response did not match schema")
-    overview = AttemptOverview.model_validate(overview_resp.parsed)
+    source = "llm"
+    model = None
+    prompt_version_id = None
+    try:
+        overview_resp = await router.complete(
+            LLMRequest(
+                purpose="feedback",
+                prompt_id="feedback/overview",
+                variables={
+                    "bands": bands,
+                    "top_error_codes": top_error_codes,
+                    "vocabulary_metrics": vocabulary_metrics,
+                    "target_band": body.target_band,
+                    "user_locale": attempt.locale,
+                },
+                user_id=user_id,
+                attempt_id=attempt.id,
+            )
+        )
+        if overview_resp.parsed is None:
+            raise ValidationError("Feedback overview response did not match schema")
+        overview_payload = AttemptOverview.model_validate(overview_resp.parsed).model_dump(
+            mode="json"
+        )
+        model = overview_resp.model
+        prompt_version_id = overview_resp.prompt_version_id
+    except Exception as exc:
+        log.warning(
+            "feedback_overview_llm_failed_using_fallback",
+            attempt_id=str(attempt.id),
+            error=str(exc),
+        )
+        overview_payload = _build_completion_overview(attempt, list(responses), bands)
+        source = "system"
 
     await db.execute(
         delete(FeedbackArtifact).where(
@@ -230,10 +259,10 @@ async def generate_attempt_overview(
                 response_id=None,
                 layer="overview",
                 skill="overall",
-                payload=overview.model_dump(mode="json"),
-                source="llm",
-                model=overview_resp.model,
-                prompt_version_id=overview_resp.prompt_version_id,
+                payload=overview_payload,
+                source=source,
+                model=model,
+                prompt_version_id=prompt_version_id,
             )
             .returning(FeedbackArtifact.id)
         )

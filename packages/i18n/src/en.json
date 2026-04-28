@@ -167,6 +167,9 @@
       "tableDate": "Date",
       "tableStatus": "Status",
       "tableScore": "Score",
+      "tableAction": "Action",
+      "ieltsBand": "IELTS Band",
+      "viewResult": "View",
       "completed": "Completed",
       "inProgress": "In Progress",
       "overall": "Overall"
@@ -236,5 +239,73 @@
     "correct": "Correct",
     "incorrect": "Incorrect",
     "questionNumber": "Question #"
+  },
+  "Conversation": {
+    "title": "Conversation",
+    "description": "Practice a voice conversation with AI and receive real-time feedback on fluency, grammar, and pronunciation.",
+    "startCard": {
+      "title": "Start a new conversation",
+      "topicLabel": "Conversation topic",
+      "defaultTopic": "University life",
+      "cefrLabel": "CEFR level"
+    },
+    "actions": {
+      "start": "Start",
+      "end": "End",
+      "record": "Press to speak",
+      "stopRecording": "Stop recording"
+    },
+    "labels": {
+      "fluency": "Fluency",
+      "noGrammarIssues": "No grammar issues",
+      "grammarIssues": "{count} grammar issues",
+      "suggestion": "Suggestion:"
+    },
+    "empty": "Press the microphone and start speaking. The AI will respond to you.",
+    "errors": {
+      "generic": "Something went wrong",
+      "endSession": "Could not end the session",
+      "microphone": "Microphone permission was denied or an error occurred.",
+      "noAudio": "No audio was recorded. Please try again.",
+      "submitAudio": "Could not submit the audio"
+    }
+  },
+  "Feedback": {
+    "title": "AI Feedback",
+    "emptyTitle": "Feedback",
+    "emptyDesc": "Full AI analysis and feedback are not available for this exam yet. You can generate them now.",
+    "actions": {
+      "generate": "Start analysis"
+    },
+    "sections": {
+      "overview": "Overview",
+      "sentence": "Sentence Structure",
+      "word": "Vocabulary",
+      "phoneme": "Pronunciation"
+    },
+    "skills": {
+      "overall": "Overall",
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "mainRecommendation": "Main recommendation",
+    "nextStep": "Next step: {ref}",
+    "biggestOpportunity": "Your biggest opportunity is improving: <code></code>.",
+    "counts": {
+      "errors": "{count} errors",
+      "suggestions": "{count} suggestions",
+      "words": "{count} words"
+    },
+    "fallback": {
+      "originalSentence": "Original sentence text",
+      "suggestedRewrite": "Suggested rewrite"
+    },
+    "replaceWith": "Replace with:",
+    "phonemeDesc": "These words need pronunciation practice. GOP (Goodness of Pronunciation) scores are shown below.",
+    "errors": {
+      "generate": "Could not generate feedback"
+    }
   }
 }

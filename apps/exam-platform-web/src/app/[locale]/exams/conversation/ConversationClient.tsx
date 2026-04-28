@@ -1,18 +1,45 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { api, ConversationSessionOut, ConversationTurnOut } from "@/lib/api";
-import { Mic, Square, Loader2, PlayCircle, StopCircle, RefreshCcw, CheckCircle, AlertTriangle } from "lucide-react";
+import { Mic, Square, Loader2, PlayCircle, StopCircle, CheckCircle, AlertTriangle } from "lucide-react";
 
 export function ConversationClient() {
+  const t = useTranslations("Conversation");
   const [session, setSession] = useState<ConversationSessionOut | null>(null);
   const [turns, setTurns] = useState<ConversationTurnOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
+  const isRecordingRef = useRef(false);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const audioSamples = useRef<Float32Array[]>([]);
+  const sampleRateRef = useRef(44100);
+
+  const cleanupRecorder = async () => {
+    processorRef.current?.disconnect();
+    sourceRef.current?.disconnect();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    if (audioContextRef.current?.state !== "closed") {
+      await audioContextRef.current?.close().catch(() => undefined);
+    }
+    processorRef.current = null;
+    sourceRef.current = null;
+    streamRef.current = null;
+    audioContextRef.current = null;
+  };
+
+  useEffect(() => {
+    return () => {
+      isRecordingRef.current = false;
+      void cleanupRecorder();
+    };
+  }, []);
 
   const startSession = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,7 +53,7 @@ export function ConversationClient() {
       });
       setSession(s);
     } catch (err: any) {
-      setError(err.message || "Xatolik yuz berdi");
+      setError(err.message || t("errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -39,58 +66,75 @@ export function ConversationClient() {
       setSession(null);
       setTurns([]);
     } catch (err: any) {
-      setError(err.message || "Sessiyani tugatib bo'lmadi");
+      setError(err.message || t("errors.endSession"));
     }
   };
 
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream);
-      audioChunks.current = [];
+      const AudioContextCtor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextCtor) {
+        throw new Error("AudioContext is not supported in this browser");
+      }
 
-      mediaRecorder.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
+      const audioContext = new AudioContextCtor();
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+      audioSamples.current = [];
+      sampleRateRef.current = audioContext.sampleRate;
+      isRecordingRef.current = true;
+      processor.onaudioprocess = (event) => {
+        if (!isRecordingRef.current) return;
+        const input = event.inputBuffer.getChannelData(0);
+        audioSamples.current.push(new Float32Array(input));
+        event.outputBuffer.getChannelData(0).fill(0);
       };
 
-      mediaRecorder.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-        await handleAudioSubmission(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.current.start();
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      streamRef.current = stream;
+      audioContextRef.current = audioContext;
+      sourceRef.current = source;
+      processorRef.current = processor;
       setIsRecording(true);
     } catch (err) {
-      setError("Mikrofonga ruxsat berilmadi yoki xatolik yuz berdi.");
+      setError(t("errors.microphone"));
+      await cleanupRecorder();
     }
   };
 
-  const stopRecording = () => {
-    if (mediaRecorder.current && isRecording) {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
+  const stopRecording = async () => {
+    if (!isRecordingRef.current || loading) return;
+    isRecordingRef.current = false;
+    setIsRecording(false);
+    const samples = audioSamples.current;
+    const sampleRate = sampleRateRef.current;
+    await cleanupRecorder();
+    if (samples.length === 0) {
+      setError(t("errors.noAudio"));
+      return;
     }
+    const audioBlob = encodeWav(samples, sampleRate);
+    await handleAudioSubmission(audioBlob, "wav");
   };
 
-  const handleAudioSubmission = async (blob: Blob) => {
+  const handleAudioSubmission = async (blob: Blob, audioFormat: "wav" | "mp3") => {
     if (!session) return;
     setLoading(true);
+    setError("");
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = (reader.result as string)?.split(',')[1] ?? "";
-        const turn = await api.conversation.submitTurn(session.id, {
-          audio_base64: base64data,
-          audio_format: "webm",
-        });
-        setTurns(prev => [...prev, turn]);
-      };
+      const base64data = await blobToBase64(blob);
+      const turn = await api.conversation.submitTurn(session.id, {
+        audio_base64: base64data,
+        audio_format: audioFormat,
+      });
+      setTurns(prev => [...prev, turn]);
     } catch (err: any) {
-      setError(err.message || "Audioni yuborib bo'lmadi");
+      setError(err.message || t("errors.submitAudio"));
     } finally {
       setLoading(false);
     }
@@ -99,7 +143,7 @@ export function ConversationClient() {
   if (!session) {
     return (
       <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-8 max-w-xl mx-auto shadow-xl">
-        <h2 className="text-2xl font-bold mb-6 text-center">Yangi suhbat boshlash</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">{t("startCard.title")}</h2>
         {error && (
           <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm font-medium text-red-600">
             {error}
@@ -107,11 +151,11 @@ export function ConversationClient() {
         )}
         <form onSubmit={startSession} className="space-y-6">
           <div>
-            <label className="block text-sm font-bold mb-2">Suhbat mavzusi</label>
-            <input required name="topic" defaultValue="University life" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:outline-none" />
+            <label className="block text-sm font-bold mb-2">{t("startCard.topicLabel")}</label>
+            <input required name="topic" defaultValue={t("startCard.defaultTopic")} className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:outline-none" />
           </div>
           <div>
-            <label className="block text-sm font-bold mb-2">CEFR darajasi</label>
+            <label className="block text-sm font-bold mb-2">{t("startCard.cefrLabel")}</label>
             <select name="cefr_level" defaultValue="B2" className="w-full rounded-xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] px-4 py-3 text-sm focus:border-[var(--color-primary)] focus:outline-none">
               <option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option>
               <option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option>
@@ -119,7 +163,7 @@ export function ConversationClient() {
           </div>
           <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] py-3.5 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50">
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <PlayCircle className="h-5 w-5" />}
-            Boshlash
+            {t("actions.start")}
           </button>
         </form>
       </div>
@@ -134,14 +178,14 @@ export function ConversationClient() {
           <span className="font-bold">{session.topic} ({session.cefr_level})</span>
         </div>
         <button onClick={endSession} className="flex items-center gap-2 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/20 transition-all">
-          <Square className="h-4 w-4" /> Yakunlash
+          <Square className="h-4 w-4" /> {t("actions.end")}
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {turns.length === 0 && !loading && (
           <div className="text-center text-[var(--color-muted-fg)] py-10">
-            Mikrofonni bosib gapirishni boshlang. AI sizga javob qaytaradi.
+            {t("empty")}
           </div>
         )}
         {turns.map((turn, i) => (
@@ -152,15 +196,15 @@ export function ConversationClient() {
                 <p className="text-sm">{turn.user_transcript}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase">
-                    Fluency: {turn.feedback.fluency_band_estimate}
+                    {t("labels.fluency")}: {turn.feedback.fluency_band_estimate}
                   </span>
                   {turn.feedback.grammar_issues.length === 0 ? (
                     <span className="flex items-center gap-1 rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase">
-                      <CheckCircle className="h-3 w-3" /> No Grammar Issues
+                      <CheckCircle className="h-3 w-3" /> {t("labels.noGrammarIssues")}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 rounded bg-orange-400/80 px-2 py-0.5 text-[10px] font-bold uppercase">
-                      <AlertTriangle className="h-3 w-3" /> {turn.feedback.grammar_issues.length} Grammar Issues
+                      <AlertTriangle className="h-3 w-3" /> {t("labels.grammarIssues", { count: turn.feedback.grammar_issues.length })}
                     </span>
                   )}
                 </div>
@@ -174,7 +218,7 @@ export function ConversationClient() {
                   {turn.agent_response_text}
                 </p>
                 <div className="mt-4 border-t border-[var(--color-border)]/50 pt-3">
-                  <p className="text-xs font-bold text-[var(--color-primary)]">Tavsiya:</p>
+                  <p className="text-xs font-bold text-[var(--color-primary)]">{t("labels.suggestion")}</p>
                   <p className="text-xs text-[var(--color-muted-fg)] mt-1">{turn.feedback.encouragement_uz}</p>
                 </div>
               </div>
@@ -192,15 +236,71 @@ export function ConversationClient() {
         {isRecording ? (
           <button onClick={stopRecording} className="flex items-center gap-2 rounded-full bg-red-500 px-8 py-4 font-bold text-white transition-all hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/20">
             <StopCircle className="h-6 w-6" />
-            Yozishni to'xtatish
+            {t("actions.stopRecording")}
           </button>
         ) : (
           <button onClick={startRecording} disabled={loading} className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-8 py-4 font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-lg shadow-[var(--color-primary)]/20">
             <Mic className="h-6 w-6" />
-            Gapirish uchun bosing
+            {t("actions.record")}
           </button>
         )}
       </div>
     </div>
   );
+}
+
+function encodeWav(chunks: Float32Array[], sampleRate: number): Blob {
+  const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const samples = new Float32Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    samples.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const bytesPerSample = 2;
+  const blockAlign = bytesPerSample;
+  const buffer = new ArrayBuffer(44 + samples.length * bytesPerSample);
+  const view = new DataView(buffer);
+
+  writeAscii(view, 0, "RIFF");
+  view.setUint32(4, 36 + samples.length * bytesPerSample, true);
+  writeAscii(view, 8, "WAVE");
+  writeAscii(view, 12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * blockAlign, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeAscii(view, 36, "data");
+  view.setUint32(40, samples.length * bytesPerSample, true);
+
+  let sampleOffset = 44;
+  for (let i = 0; i < samples.length; i += 1) {
+    const sample = Math.max(-1, Math.min(1, samples[i] ?? 0));
+    view.setInt16(sampleOffset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+    sampleOffset += bytesPerSample;
+  }
+
+  return new Blob([buffer], { type: "audio/wav" });
+}
+
+function writeAscii(view: DataView, offset: number, text: string) {
+  for (let i = 0; i < text.length; i += 1) {
+    view.setUint8(offset + i, text.charCodeAt(i));
+  }
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read audio"));
+    reader.onloadend = () => {
+      const result = typeof reader.result === "string" ? reader.result : "";
+      resolve(result.split(",")[1] ?? "");
+    };
+    reader.readAsDataURL(blob);
+  });
 }

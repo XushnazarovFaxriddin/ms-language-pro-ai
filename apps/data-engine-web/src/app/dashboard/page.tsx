@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { getCookieHeader, requireAdmin } from "@/lib/auth-server";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { AdminShell } from "@/components/AdminShell";
-import { DollarSign, Activity, Zap, BrainCircuit, BarChart3, ChevronRight } from "lucide-react";
+import { DollarSign, Activity, Zap, BrainCircuit, BarChart3, ChevronRight, BookOpen, ScrollText } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await requireAdmin("/dashboard");
@@ -13,6 +14,8 @@ export default async function DashboardPage() {
   } catch {
     /* ignore — empty DB on first run */
   }
+  const copy = getAdminCopy(user.locale);
+  const firstName = user.display_name?.split(" ")[0] || "Admin";
 
   return (
     <AdminShell user={user}>
@@ -24,28 +27,28 @@ export default async function DashboardPage() {
         <div className="relative z-10 mx-auto max-w-6xl space-y-10">
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Xush kelibsiz, {user.display_name?.split(" ")[0] || "Admin"}
+              {copy.dashboard.welcome.replace("{name}", firstName)}
             </h1>
             <p className="mt-2 text-lg text-slate-400 max-w-2xl">
-              LanguagePro AI — Content Studio. Savollar generatsiyasi, IRT kalibratsiyasi va LLM xarajatlarini kuzatib boring.
+              {copy.dashboard.description}
             </p>
           </div>
 
           <section className="grid gap-6 sm:grid-cols-3">
             <StatCard
-              title="LLM jami xarajat (7 kun)"
+              title={copy.dashboard.totalCost}
               value={summary ? `$${Number(summary.total_cost_usd).toFixed(4)}` : "$0.0000"}
               icon={DollarSign}
               color="emerald"
             />
             <StatCard
-              title="LLM chaqiruvlar (7 kun)"
+              title={copy.dashboard.totalCalls}
               value={summary ? String(summary.total_calls) : "0"}
               icon={Activity}
               color="blue"
             />
             <StatCard
-              title="O'rtacha latency (ms)"
+              title={copy.dashboard.avgLatency}
               value={summary ? String(summary.avg_latency_ms) : "0"}
               icon={Zap}
               color="amber"
@@ -55,15 +58,29 @@ export default async function DashboardPage() {
           <section className="grid gap-6 lg:grid-cols-2">
             <ActionCard
               href="/generation"
-              title="Savollar generatsiyasi"
-              desc="Gemini orqali IELTS va CEFR uchun avtomatik tarzda yangi sifatli savollar yarating."
+              title={copy.dashboard.generationTitle}
+              desc={copy.dashboard.generationDesc}
               icon={BrainCircuit}
               color="emerald"
             />
             <ActionCard
+              href="/practice-catalogue"
+              title={copy.dashboard.catalogueTitle}
+              desc={copy.dashboard.catalogueDesc}
+              icon={BookOpen}
+              color="blue"
+            />
+            <ActionCard
+              href="/methodology"
+              title={copy.dashboard.methodologyTitle}
+              desc={copy.dashboard.methodologyDesc}
+              icon={ScrollText}
+              color="amber"
+            />
+            <ActionCard
               href="/llm-usage"
-              title="LLM Xarajat Analytics"
-              desc="Token sarfi, modellar bo'yicha taqsimot va qo'ng'iroqlar tarixini chuqur tahlil qiling."
+              title={copy.dashboard.usageTitle}
+              desc={copy.dashboard.usageDesc}
               icon={BarChart3}
               color="teal"
             />
@@ -97,10 +114,12 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
   );
 }
 
-function ActionCard({ href, title, desc, icon: Icon, color }: { href: string; title: string; desc: string; icon: any; color: "emerald" | "teal" }) {
+function ActionCard({ href, title, desc, icon: Icon, color }: { href: string; title: string; desc: string; icon: any; color: "emerald" | "teal" | "blue" | "amber" }) {
   const colorMap = {
     emerald: "group-hover:border-emerald-500/40 text-emerald-400",
     teal: "group-hover:border-teal-500/40 text-teal-400",
+    blue: "group-hover:border-blue-500/40 text-blue-400",
+    amber: "group-hover:border-amber-500/40 text-amber-400",
   };
 
   return (

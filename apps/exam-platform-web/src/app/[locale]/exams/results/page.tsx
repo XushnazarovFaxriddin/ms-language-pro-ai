@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { getCookieHeader, requireUser } from "@/lib/auth-server";
-import { MoveRight, History, FileText, CheckCircle2, Clock } from "lucide-react";
+import { MoveRight, History, FileText, CheckCircle2, Clock, Eye } from "lucide-react";
 
 export default async function ResultsPage() {
   const user = await requireUser("/exams/results");
@@ -45,6 +45,7 @@ export default async function ResultsPage() {
                   <th className="px-6 py-4">{tRes("tableDate")}</th>
                   <th className="px-6 py-4">{tRes("tableStatus")}</th>
                   <th className="px-6 py-4 text-right">{tRes("tableScore")}</th>
+                  <th className="px-6 py-4 text-right">{tRes("tableAction")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]/50">
@@ -93,14 +94,23 @@ export default async function ResultsPage() {
                     <td className="px-6 py-5 text-right font-bold">
                       {attempt.score !== null && attempt.score !== undefined ? (
                         <div className="flex flex-col items-end">
-                          <span className={`text-xl ${attempt.score >= 50 ? 'text-green-500' : 'text-red-500'}`}>
-                            {attempt.score}%
+                          <span className={`text-xl ${attempt.score >= 6 ? 'text-green-500' : 'text-amber-500'}`}>
+                            {attempt.score.toFixed(1)}
                           </span>
-                          <span className="text-xs text-[var(--color-muted-fg)] font-medium">{tRes("overall")}</span>
+                          <span className="text-xs text-[var(--color-muted-fg)] font-medium">{tRes("ieltsBand")}</span>
                         </div>
                       ) : (
                         <span className="text-[var(--color-muted-fg)]">—</span>
                       )}
+                    </td>
+                    <td className="px-6 py-5 text-right">
+                      <Link
+                        href={`/results/${attempt.id}`}
+                        className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)]/50 px-3 py-2 text-xs font-bold text-[var(--color-fg)] transition-colors hover:bg-[var(--color-muted)]/40"
+                      >
+                        <Eye className="h-4 w-4" />
+                        {tRes("viewResult")}
+                      </Link>
                     </td>
                   </tr>
                 ))}

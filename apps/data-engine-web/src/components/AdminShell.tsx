@@ -5,19 +5,21 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@/lib/api";
+import { getAdminCopy } from "@/lib/admin-i18n";
 import { LogoutButton } from "./LogoutButton";
-import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, LogOut, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon, BookOpen, FlaskConical } from "lucide-react";
+import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon, BookOpen, FlaskConical, ScrollText } from "lucide-react";
 
 const NAV = [
-  { href: "/dashboard", label: "Bosh sahifa", icon: LayoutDashboard },
-  { href: "/generation", label: "Savol generatsiyasi", icon: BrainCircuit },
-  { href: "/generation/practice", label: "Practice generatsiya", icon: FlaskConical },
-  { href: "/items", label: "Savollar banki", icon: Database },
-  { href: "/practice-catalogue", label: "Amaliyot katalogi", icon: BookOpen },
-  { href: "/review", label: "Tasdiqlash navbati", icon: ClipboardCheck },
-  { href: "/llm-usage", label: "LLM xarajat", icon: Activity },
-  { href: "/settings", label: "Sozlamalar", icon: Settings },
-];
+  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/generation", labelKey: "generation", icon: BrainCircuit },
+  { href: "/generation/practice", labelKey: "practiceGeneration", icon: FlaskConical },
+  { href: "/items", labelKey: "items", icon: Database },
+  { href: "/practice-catalogue", labelKey: "practiceCatalogue", icon: BookOpen },
+  { href: "/methodology", labelKey: "methodology", icon: ScrollText },
+  { href: "/review", labelKey: "review", icon: ClipboardCheck },
+  { href: "/llm-usage", labelKey: "usage", icon: Activity },
+  { href: "/settings", labelKey: "settings", icon: Settings },
+] as const;
 
 export function AdminShell({
   user,
@@ -27,6 +29,7 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const copy = getAdminCopy(user.locale);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -74,7 +77,7 @@ export function AdminShell({
                   <div className="absolute inset-0 rounded-xl bg-transparent transition-colors group-hover:bg-slate-200/50 dark:group-hover:bg-slate-800/50" />
                 )}
                 <n.icon className={`relative z-10 h-5 w-5 transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
-                <span className="relative z-10">{n.label}</span>
+                <span className="relative z-10">{copy.nav[n.labelKey]}</span>
                 {isActive && <ChevronRight className="relative z-10 h-4 w-4 ml-auto opacity-70" />}
               </Link>
             );

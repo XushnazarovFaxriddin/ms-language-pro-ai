@@ -167,6 +167,9 @@
       "tableDate": "Sana",
       "tableStatus": "Holati",
       "tableScore": "Natija",
+      "tableAction": "Amal",
+      "ieltsBand": "IELTS Band",
+      "viewResult": "Ko'rish",
       "completed": "Tugallangan",
       "inProgress": "Jarayonda",
       "overall": "Umumiy"
@@ -236,5 +239,73 @@
     "correct": "To'g'ri",
     "incorrect": "Noto'g'ri",
     "questionNumber": "Savol #"
+  },
+  "Conversation": {
+    "title": "Suhbat (Conversation)",
+    "description": "AI bilan ovozli suhbatlashing. Fluency, Grammar va Pronunciation bo'yicha real vaqtda fikr-mulohaza oling.",
+    "startCard": {
+      "title": "Yangi suhbat boshlash",
+      "topicLabel": "Suhbat mavzusi",
+      "defaultTopic": "Universitet hayoti",
+      "cefrLabel": "CEFR darajasi"
+    },
+    "actions": {
+      "start": "Boshlash",
+      "end": "Yakunlash",
+      "record": "Gapirish uchun bosing",
+      "stopRecording": "Yozishni to'xtatish"
+    },
+    "labels": {
+      "fluency": "Fluency",
+      "noGrammarIssues": "Grammar xatosi yo'q",
+      "grammarIssues": "{count} ta grammar xatosi",
+      "suggestion": "Tavsiya:"
+    },
+    "empty": "Mikrofonni bosib gapirishni boshlang. AI sizga javob qaytaradi.",
+    "errors": {
+      "generic": "Xatolik yuz berdi",
+      "endSession": "Sessiyani tugatib bo'lmadi",
+      "microphone": "Mikrofonga ruxsat berilmadi yoki xatolik yuz berdi.",
+      "noAudio": "Audio yozilmadi. Qayta urinib ko'ring.",
+      "submitAudio": "Audioni yuborib bo'lmadi"
+    }
+  },
+  "Feedback": {
+    "title": "AI Fikr-mulohaza",
+    "emptyTitle": "Fikr-mulohaza (Feedback)",
+    "emptyDesc": "Ushbu imtihon uchun AI tomonidan to'liq tahlil va fikr-mulohazalar hozircha mavjud emas. Uni hoziroq generatsiya qilishingiz mumkin.",
+    "actions": {
+      "generate": "Tahlilni boshlash"
+    },
+    "sections": {
+      "overview": "Umumiy xulosa (Overview)",
+      "sentence": "Gap qurilishi (Sentence)",
+      "word": "So'z boyligi (Vocabulary)",
+      "phoneme": "Talaffuz (Pronunciation)"
+    },
+    "skills": {
+      "overall": "Umumiy",
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "mainRecommendation": "Asosiy tavsiya",
+    "nextStep": "Keyingi qadam: {ref}",
+    "biggestOpportunity": "Siz uchun eng katta imkoniyat bu: <code></code> ni yaxshilash.",
+    "counts": {
+      "errors": "{count} ta xato",
+      "suggestions": "{count} ta tavsiya",
+      "words": "{count} ta so'z"
+    },
+    "fallback": {
+      "originalSentence": "Original sentence text",
+      "suggestedRewrite": "Tavsiya qilingan variant"
+    },
+    "replaceWith": "Quyidagilarga almashtiring:",
+    "phonemeDesc": "Siz ushbu so'zlarning talaffuzida xatoliklarga yo'l qo'ygansiz. GOP (Goodness of Pronunciation) ko'rsatkichlari keltirilgan.",
+    "errors": {
+      "generate": "Fikr-mulohaza yaratishda xatolik"
+    }
   }
 }
