@@ -7,20 +7,18 @@ import type { ItemView } from "@/lib/api";
 type Props = {
   item: ItemView;
   audioReady: boolean;
-  onAudioReady: (key: string, durationMs: number) => void;
+  onAudioReady: (audioBase64: string, durationMs: number, format: string) => void;
   disabled: boolean;
 };
 
-type Phase = "idle" | "preparing" | "recording" | "uploading" | "done" | "denied";
+type Phase = "idle" | "preparing" | "recording" | "processing" | "done" | "denied" | "error";
 
 /**
  * Speaking item: cue card → preparation timer → record → upload.
  *
- * MVP upload path: send the recorded blob as base64 inside SubmitResponseRequest's
- * `audio_s3_key` is the production target (presigned PUT). For dev, we POST the
- * blob to a placeholder upload URL; if the upload fails, we still allow the
- * student to submit — the back-end stores the placeholder key and grading
- * happens in async (with the real audio later).
+ * MVP capture path: send the recorded blob as base64 in SubmitResponseRequest.
+ * The backend validates and stores the audio payload; a later S3 presigned PUT
+ * path can replace this without changing the item-level UI contract.
  */
 export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props) {
   const prep = item.payload.preparation_seconds ?? 60;
@@ -31,6 +29,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
   const chunksRef = useRef<Blob[]>([]);
   const startedAtRef = useRef<number>(0);
   const tickRef = useRef<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Cleanup on unmount or item change
   useEffect(() => {
@@ -57,10 +56,17 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
 
   async function startRecording() {
     try {
+      setError(null);
+      if (typeof MediaRecorder === "undefined") {
+        setError("Brauzeringiz audio yozishni qo'llab-quvvatlamaydi. Chrome ishlating.");
+        setPhase("error");
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mime = "audio/webm;codecs=opus";
       const supported = MediaRecorder.isTypeSupported?.(mime) ? mime : undefined;
       const mr = new MediaRecorder(stream, supported ? { mimeType: supported } : undefined);
+      const recordingType = mr.mimeType || supported || "audio/webm";
       chunksRef.current = [];
       mr.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
@@ -68,24 +74,32 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
       mr.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
         const durationMs = Date.now() - startedAtRef.current;
-        const blob = new Blob(chunksRef.current, { type: mime });
-        setPhase("uploading");
+        const blob = new Blob(chunksRef.current, { type: recordingType });
+        setPhase("processing");
         try {
-          // MVP: simulate an upload by base64-encoding the blob into the S3 key.
-          // In Phase 2 we'll request a presigned PUT and stream the bytes.
+          if (blob.size === 0) {
+            throw new Error("empty recording");
+          }
+          if (blob.size > 15 * 1024 * 1024) {
+            throw new Error("recording is too large");
+          }
           const reader = new FileReader();
-          const base64 = await new Promise<string>((resolve, reject) => {
+          const dataUrl = await new Promise<string>((resolve, reject) => {
             reader.onload = () => resolve(reader.result as string);
             reader.onerror = () => reject(reader.error);
             reader.readAsDataURL(blob);
           });
-          const fakeKey = `local-blob:${item.id}:${Math.round(durationMs)}ms:${base64.slice(0, 40)}…`;
-          onAudioReady(fakeKey, durationMs);
+          const [, encoded] = dataUrl.split(",", 2);
+          const base64 = encoded ?? dataUrl;
+          onAudioReady(base64, durationMs, recordingType);
           setPhase("done");
-        } catch {
-          // Still let the student finish; backend will store a placeholder.
-          onAudioReady(`failed-upload:${item.id}`, durationMs);
-          setPhase("done");
+        } catch (err) {
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Audio yozuvni tayyorlashda xatolik yuz berdi.",
+          );
+          setPhase("error");
         }
       };
       mediaRef.current = mr;
@@ -99,6 +113,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
   }
 
   function stopRecording() {
+    if (tickRef.current) window.clearInterval(tickRef.current);
     if (mediaRef.current && mediaRef.current.state !== "inactive") {
       mediaRef.current.stop();
     }
@@ -173,8 +188,8 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
             </button>
           </div>
         )}
-        {phase === "uploading" && (
-          <span className="text-sm text-[var(--color-muted-fg)]">Yuklanmoqda…</span>
+        {phase === "processing" && (
+          <span className="text-sm text-[var(--color-muted-fg)]">Audio tayyorlanmoqda…</span>
         )}
         {phase === "done" && (
           <span className="flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
@@ -186,6 +201,23 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
           <span className="rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300">
             Mikrofon uchun ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering.
           </span>
+        )}
+        {phase === "error" && (
+          <div className="space-y-3">
+            <span className="block rounded-xl bg-red-500/15 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
+              {error ?? "Audio yozuvni tayyorlashda xatolik yuz berdi."}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setPhase("idle");
+              }}
+              className="rounded-full border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-primary)]/10"
+            >
+              Qayta urinib ko'rish
+            </button>
+          </div>
         )}
       </div>
     </div>

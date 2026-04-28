@@ -9,6 +9,7 @@ from arq.connections import ArqRedis, RedisSettings, create_pool
 from fastapi import APIRouter, Depends
 from languagepro_common.auth import CurrentUser
 from languagepro_common.errors import NotFoundError
+from languagepro_common.logging import get_logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,6 +30,7 @@ from exam_platform.services import attempt as attempt_svc
 from exam_platform.settings import settings
 
 router = APIRouter(tags=["attempts"])
+log = get_logger(__name__)
 
 _arq_pool: ArqRedis | None = None
 
@@ -154,14 +156,24 @@ async def submit(
         mcq_choice_id=body.mcq_choice_id,
         text_answer=body.text_answer,
         audio_s3_key=body.audio_s3_key,
+        audio_base64=body.audio_base64,
+        audio_format=body.audio_format,
         time_ms=body.time_ms,
     )
     if body.text_answer and body.type.startswith("writing_"):
-        arq = await _get_arq()
-        await arq.enqueue_job(
-            "analyse_writing",
-            str(out.response_id),
-            str(user.id),
-            _queue_name="arq:exam-platform",
-        )
+        try:
+            arq = await _get_arq()
+            await arq.enqueue_job(
+                "analyse_writing",
+                str(out.response_id),
+                str(user.id),
+                _queue_name="arq:exam-platform",
+            )
+        except Exception as exc:
+            log.warning(
+                "analyse_writing_enqueue_failed",
+                attempt_id=str(attempt_id),
+                response_id=str(out.response_id),
+                error=str(exc),
+            )
     return out

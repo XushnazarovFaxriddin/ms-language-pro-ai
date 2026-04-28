@@ -59,7 +59,8 @@ export function ExamRunner({
   // Per-skill answer state
   const [mcqChoice, setMcqChoice] = useState<string | null>(null);
   const [writingText, setWritingText] = useState<string>("");
-  const [audioKey, setAudioKey] = useState<string | null>(null);
+  const [audioBase64, setAudioBase64] = useState<string | null>(null);
+  const [audioFormat, setAudioFormat] = useState<string>("webm");
   const [audioDurationMs, setAudioDurationMs] = useState<number>(0);
 
   // Progress tracking (per current section)
@@ -114,7 +115,8 @@ export function ExamRunner({
   useEffect(() => {
     setMcqChoice(null);
     setWritingText("");
-    setAudioKey(null);
+    setAudioBase64(null);
+    setAudioFormat("webm");
     setAudioDurationMs(0);
     setFeedback(null);
     setItemStartTime(Date.now());
@@ -132,8 +134,14 @@ export function ExamRunner({
       return { item_id: item.id, type: item.type, text_answer: writingText.trim(), time_ms };
     }
     if (item.skill === "speaking") {
-      return audioKey
-        ? { item_id: item.id, type: item.type, audio_s3_key: audioKey, time_ms: audioDurationMs || time_ms }
+      return audioBase64
+        ? {
+            item_id: item.id,
+            type: item.type,
+            audio_base64: audioBase64,
+            audio_format: audioFormat,
+            time_ms: audioDurationMs || time_ms,
+          }
         : null;
     }
     // listening + reading → MCQ
@@ -146,9 +154,9 @@ export function ExamRunner({
     if (item.skill === "writing") {
       return writingText.trim().length === 0;
     }
-    if (item.skill === "speaking") return audioKey === null;
+    if (item.skill === "speaking") return audioBase64 === null;
     return mcqChoice === null;
-  }, [item, submitting, writingText, audioKey, mcqChoice]);
+  }, [item, submitting, writingText, audioBase64, mcqChoice]);
 
   async function submit() {
     const body = buildBody();
@@ -303,9 +311,10 @@ export function ExamRunner({
           {item.skill === "speaking" && (
             <SpeakingItem
               item={item}
-              audioReady={audioKey !== null}
-              onAudioReady={(k, ms) => {
-                setAudioKey(k);
+              audioReady={audioBase64 !== null}
+              onAudioReady={(base64, ms, format) => {
+                setAudioBase64(base64);
+                setAudioFormat(format);
                 setAudioDurationMs(ms);
               }}
               disabled={submitting}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { api, AttemptFeedbackOut } from "@/lib/api";
+import { api, type AttemptFeedbackOut, type FeedbackArtifactOut } from "@/lib/api";
 import { Loader2, MessageCircle, RefreshCw, ChevronDown, ChevronUp, FileText, CheckCircle, AlertTriangle, Lightbulb } from "lucide-react";
 
 export function FeedbackSection({ 
@@ -20,17 +20,18 @@ export function FeedbackSection({
     setLoading(true);
     setError("");
     try {
-      const res = await api.feedback.generateOverview(attemptId);
-      setFeedback(res);
+      await api.feedback.generateOverview(attemptId);
+      const refreshed = await api.feedback.getAttemptFeedback(attemptId);
+      setFeedback(refreshed);
       setOpenLayer("overview");
-    } catch (err: any) {
-      setError(err.message || "Fikr-mulohaza yaratishda xatolik");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Fikr-mulohaza yaratishda xatolik");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!feedback) {
+  if (!feedback || feedback.artifacts.length === 0) {
     return (
       <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-8 sm:p-12 text-center shadow-sm">
         <MessageCircle className="mx-auto h-12 w-12 text-[var(--color-muted-fg)] opacity-50 mb-4" />
@@ -62,6 +63,9 @@ export function FeedbackSection({
   const sentenceArtifacts = feedback.artifacts.filter(a => a.layer === "sentence");
   const wordArtifacts = feedback.artifacts.filter(a => a.layer === "word");
   const phonemeArtifacts = feedback.artifacts.filter(a => a.layer === "phoneme");
+  const sentenceItems = flattenSentenceItems(sentenceArtifacts);
+  const wordItems = flattenWordItems(wordArtifacts);
+  const phonemeItems = flattenPhonemeItems(phonemeArtifacts);
 
   const toggleLayer = (layer: string) => {
     setOpenLayer(prev => prev === layer ? null : layer);
@@ -91,6 +95,20 @@ export function FeedbackSection({
             <div className="p-6 border-t border-[var(--color-border)]/50">
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 <p className="text-base leading-relaxed">{overview.payload.narrative_uz}</p>
+                {overview.payload.bands && (
+                  <div className="mt-5 grid gap-3 sm:grid-cols-5">
+                    {["overall", "listening", "reading", "writing", "speaking"].map((skill) => (
+                      <div key={skill} className="rounded-xl border border-[var(--color-border)]/50 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)]">
+                          {skill}
+                        </p>
+                        <p className="mt-1 text-xl font-black">
+                          {formatBand(overview.payload.bands[skill])}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                   <p className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mb-2">
                     <CheckCircle className="h-4 w-4" /> Asosiy tavsiya
@@ -105,7 +123,7 @@ export function FeedbackSection({
       )}
 
       {/* Sentence Accordion */}
-      {sentenceArtifacts.length > 0 && (
+      {sentenceItems.length > 0 && (
         <div className="rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] overflow-hidden">
           <button 
             onClick={() => toggleLayer("sentence")}
@@ -115,23 +133,23 @@ export function FeedbackSection({
               <AlertTriangle className="h-5 w-5 text-orange-500" /> Gap Qurilishi (Sentence)
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold bg-orange-500/20 text-orange-500 px-2 py-1 rounded">{sentenceArtifacts.length} ta xato</span>
+              <span className="text-xs font-bold bg-orange-500/20 text-orange-500 px-2 py-1 rounded">{sentenceItems.length} ta xato</span>
               {openLayer === "sentence" ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </div>
           </button>
           
           {openLayer === "sentence" && (
             <div className="p-6 border-t border-[var(--color-border)]/50 space-y-4">
-              {sentenceArtifacts.map((a, i) => (
+              {sentenceItems.map((item, i) => (
                 <div key={i} className="p-4 rounded-xl border border-[var(--color-border)]/30 bg-[var(--color-muted)]/5">
                   <p className="text-sm font-bold text-red-500 line-through decoration-red-500/50 mb-2">
-                    {a.payload.text || "Original sentence text"}
+                    {item.text || "Original sentence text"}
                   </p>
                   <p className="text-sm font-bold text-emerald-500 mb-3">
-                    {a.payload.suggested_rewrite_uz || "Tavsiya qilingan variant"}
+                    {item.suggested_rewrite_uz || "Tavsiya qilingan variant"}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {a.payload.issues?.map((issue: any, j: number) => (
+                    {item.issues?.map((issue, j) => (
                       <span key={j} className="text-[10px] font-mono bg-[var(--color-border)]/50 px-2 py-0.5 rounded">{issue.code}</span>
                     ))}
                   </div>
@@ -143,7 +161,7 @@ export function FeedbackSection({
       )}
 
       {/* Word Accordion */}
-      {wordArtifacts.length > 0 && (
+      {wordItems.length > 0 && (
         <div className="rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] overflow-hidden">
           <button 
             onClick={() => toggleLayer("word")}
@@ -153,27 +171,27 @@ export function FeedbackSection({
               <Lightbulb className="h-5 w-5 text-yellow-500" /> So'z Boyligi (Vocabulary)
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 px-2 py-1 rounded">{wordArtifacts.length} ta tavsiya</span>
+              <span className="text-xs font-bold bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 px-2 py-1 rounded">{wordItems.length} ta tavsiya</span>
               {openLayer === "word" ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </div>
           </button>
           
           {openLayer === "word" && (
             <div className="p-6 border-t border-[var(--color-border)]/50 grid gap-4 grid-cols-1 sm:grid-cols-2">
-              {wordArtifacts.map((a, i) => (
+              {wordItems.map((item, i) => (
                 <div key={i} className="p-4 rounded-xl border border-[var(--color-border)]/30 bg-[var(--color-muted)]/5">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-red-500">{a.payload.word}</span>
+                    <span className="font-bold text-red-500">{item.word}</span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)]">Quyidagilarga almashtiring:</span>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {a.payload.suggestions?.map((sugg: any, j: number) => (
+                    {item.suggestions?.map((sugg, j) => (
                       <div key={j} className="flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded text-xs font-bold">
                         {sugg.lemma} <span className="opacity-50">({sugg.cefr})</span>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-[var(--color-muted-fg)]">{a.payload.rationale_uz}</p>
+                  <p className="text-xs text-[var(--color-muted-fg)]">{item.rationale_uz}</p>
                 </div>
               ))}
             </div>
@@ -182,7 +200,7 @@ export function FeedbackSection({
       )}
 
       {/* Phoneme Accordion */}
-      {phonemeArtifacts.length > 0 && (
+      {phonemeItems.length > 0 && (
         <div className="rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] overflow-hidden">
           <button 
             onClick={() => toggleLayer("phoneme")}
@@ -192,7 +210,7 @@ export function FeedbackSection({
               <MessageCircle className="h-5 w-5 text-indigo-500" /> Talaffuz (Pronunciation)
             </span>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold bg-indigo-500/20 text-indigo-500 px-2 py-1 rounded">{phonemeArtifacts.length} ta so'z</span>
+              <span className="text-xs font-bold bg-indigo-500/20 text-indigo-500 px-2 py-1 rounded">{phonemeItems.length} ta so'z</span>
               {openLayer === "phoneme" ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </div>
           </button>
@@ -201,10 +219,10 @@ export function FeedbackSection({
             <div className="p-6 border-t border-[var(--color-border)]/50 space-y-4">
               <p className="text-sm text-[var(--color-muted-fg)]">Siz ushbu so'zlarning talaffuzida xatoliklarga yo'l qo'ygansiz. GOP (Goodness of Pronunciation) ko'rsatkichlari keltirilgan.</p>
               <div className="flex flex-wrap gap-3">
-                {phonemeArtifacts.map((a, i) => (
+                {phonemeItems.map((item, i) => (
                   <div key={i} className="flex flex-col border border-[var(--color-border)]/50 rounded-lg p-2 bg-[var(--color-bg)]">
-                    <span className="font-bold">{a.payload.word}</span>
-                    <span className="text-[10px] text-red-500">GOP: {a.payload.gop?.toFixed(2) || "0.00"}</span>
+                    <span className="font-bold">{item.word}</span>
+                    <span className="text-[10px] text-red-500">GOP: {formatBand(item.gop)}</span>
                   </div>
                 ))}
               </div>
@@ -215,4 +233,45 @@ export function FeedbackSection({
 
     </div>
   );
+}
+
+type SentenceIssue = { code: string };
+type SentenceItem = {
+  text?: string;
+  suggested_rewrite_uz?: string;
+  issues?: SentenceIssue[];
+};
+type WordItem = {
+  word?: string;
+  rationale_uz?: string;
+  suggestions?: { lemma: string; cefr: string }[];
+};
+type PhonemeItem = { word?: string; gop?: number };
+
+function flattenSentenceItems(artifacts: FeedbackArtifactOut[]): SentenceItem[] {
+  return artifacts.flatMap((artifact) => {
+    const annotations = artifact.payload.annotations;
+    if (Array.isArray(annotations)) return annotations as SentenceItem[];
+    return [artifact.payload as SentenceItem];
+  });
+}
+
+function flattenWordItems(artifacts: FeedbackArtifactOut[]): WordItem[] {
+  return artifacts.flatMap((artifact) => {
+    const items = artifact.payload.items;
+    if (Array.isArray(items)) return items as WordItem[];
+    return [artifact.payload as WordItem];
+  });
+}
+
+function flattenPhonemeItems(artifacts: FeedbackArtifactOut[]): PhonemeItem[] {
+  return artifacts.flatMap((artifact) => {
+    const items = artifact.payload.items;
+    if (Array.isArray(items)) return items as PhonemeItem[];
+    return [artifact.payload as PhonemeItem];
+  });
+}
+
+function formatBand(value: unknown): string {
+  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(1) : "—";
 }

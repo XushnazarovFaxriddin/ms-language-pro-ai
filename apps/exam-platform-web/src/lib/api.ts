@@ -105,7 +105,7 @@ export const api = {
   },
   feedback: {
     getAttemptFeedback: (attemptId: string, cookieHeader?: string) => call<AttemptFeedbackOut>(`/v1/attempts/${attemptId}/feedback`, { api: "exam", cookieHeader }),
-    generateOverview: (attemptId: string, body: { target_band?: number } = {}) => call<AttemptFeedbackOut>(`/v1/attempts/${attemptId}/feedback/overview`, { api: "exam", method: "POST", body }),
+    generateOverview: (attemptId: string, body: { target_band?: number } = {}) => call<FeedbackArtifactOut>(`/v1/attempts/${attemptId}/feedback/overview`, { api: "exam", method: "POST", body }),
     getRecent: (cookieHeader?: string) => call<AttemptFeedbackOut[]>("/v1/me/feedback/recent", { api: "exam", cookieHeader }),
     getResponseFeedback: (responseId: string) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback`, { api: "exam" }),
     analyseWriting: (responseId: string, body: any) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback/analyse-writing`, { api: "exam", method: "POST", body }),
@@ -217,6 +217,8 @@ export type SubmitResponseIn = {
   mcq_choice_id?: string;
   text_answer?: string;
   audio_s3_key?: string;
+  audio_base64?: string;
+  audio_format?: string;
   time_ms: number;
 };
 
@@ -234,7 +236,20 @@ export type SubmitResponseOut = {
 // ----- New DTOs -----
 export type AttemptFeedbackOut = {
   attempt_id: string;
-  artifacts: any[];
+  artifacts: FeedbackArtifactOut[];
+};
+
+export type FeedbackArtifactOut = {
+  id: string;
+  attempt_id: string;
+  response_id: string | null;
+  layer: string;
+  skill: string;
+  payload: Record<string, any>;
+  source: string;
+  model?: string | null;
+  prompt_version_id?: string | null;
+  created_at: string;
 };
 
 export type ResponseFeedbackOut = {

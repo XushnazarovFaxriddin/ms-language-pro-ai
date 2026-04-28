@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import re
 from collections import Counter, defaultdict
+from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
 from languagepro_common.errors import NotFoundError, ValidationError
 from languagepro_llm import LLMRequest, LLMRouter
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exam_platform.models import AttemptResponse, ExamAttempt, FeedbackArtifact
+from exam_platform.models import AttemptResponse, ExamAttempt, FeedbackArtifact, ScoringResult
 from exam_platform.schemas import (
     AnalyseWritingRequest,
     AttemptOverview,
@@ -45,6 +46,8 @@ GENERIC_WORD_CEFR: dict[str, str] = {
     "thing": "A1",
     "very": "A1",
 }
+
+IELTS_SKILLS = ("listening", "reading", "writing", "speaking")
 
 
 async def get_attempt_artifacts(
@@ -109,6 +112,75 @@ async def get_recent_attempt_feedback(
             (attempt_id, [_artifact_out(row) for row in (await db.execute(stmt)).scalars().all()])
         )
     return results
+
+
+async def ensure_attempt_completion_feedback(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+    attempt_id: UUID,
+) -> list[FeedbackArtifactOut]:
+    """Create deterministic completion feedback for a finished attempt.
+
+    The LLM scoring pipeline can later replace or enrich these artifacts, but the
+    student should always see a complete IELTS result immediately after the last
+    section is submitted. This keeps the E2E exam usable when Redis/LLM workers
+    are not running in local/dev environments.
+    """
+    attempt = await _get_attempt_for_user(db, user_id=user_id, attempt_id=attempt_id)
+    if attempt.state != "completed":
+        return await get_attempt_artifacts(db, user_id=user_id, attempt_id=attempt_id)
+
+    responses = (
+        (
+            await db.execute(
+                select(AttemptResponse)
+                .where(AttemptResponse.attempt_id == attempt.id)
+                .order_by(AttemptResponse.section_index.asc(), AttemptResponse.answered_at.asc())
+            )
+        )
+        .scalars()
+        .all()
+    )
+    if not responses:
+        return await get_attempt_artifacts(db, user_id=user_id, attempt_id=attempt_id)
+
+    for response in responses:
+        band, criteria, feedback_uz, feedback_en = _score_response_heuristically(response)
+        await _upsert_scoring_result(
+            db,
+            response_id=response.id,
+            band=band,
+            criteria=criteria,
+            feedback_uz=feedback_uz,
+            feedback_en=feedback_en,
+        )
+
+    bands = await _attempt_bands(db, attempt.id)
+    overview_payload = _build_completion_overview(attempt, responses, bands)
+
+    await db.execute(
+        delete(FeedbackArtifact).where(
+            FeedbackArtifact.attempt_id == attempt.id,
+            FeedbackArtifact.response_id.is_(None),
+            FeedbackArtifact.layer == "overview",
+            FeedbackArtifact.source == "system",
+        )
+    )
+    await db.execute(
+        insert(FeedbackArtifact).values(
+            attempt_id=attempt.id,
+            response_id=None,
+            layer="overview",
+            skill="overall",
+            payload=overview_payload,
+            source="system",
+            model=None,
+            prompt_version_id=None,
+        )
+    )
+    await db.commit()
+    return await get_attempt_artifacts(db, user_id=user_id, attempt_id=attempt.id)
 
 
 async def generate_attempt_overview(
@@ -268,6 +340,204 @@ async def analyse_writing_response(
     return await get_response_artifacts(db, user_id=user_id, response_id=response.id)
 
 
+async def _upsert_scoring_result(
+    db: AsyncSession,
+    *,
+    response_id: UUID,
+    band: float,
+    criteria: dict[str, Any],
+    feedback_uz: str,
+    feedback_en: str,
+) -> None:
+    existing_id = (
+        await db.execute(select(ScoringResult.id).where(ScoringResult.response_id == response_id))
+    ).scalar_one_or_none()
+    values = {
+        "source": "hybrid",
+        "band": Decimal(str(band)),
+        "criteria": criteria,
+        "feedback_uz": feedback_uz,
+        "feedback_en": feedback_en,
+    }
+    if existing_id is None:
+        await db.execute(insert(ScoringResult).values(response_id=response_id, **values))
+    else:
+        await db.execute(
+            update(ScoringResult).where(ScoringResult.id == existing_id).values(**values)
+        )
+
+
+def _score_response_heuristically(
+    response: AttemptResponse,
+) -> tuple[float, dict[str, Any], str, str]:
+    if response.is_correct is not None:
+        accuracy = 1.0 if response.is_correct else 0.0
+        band = _round_band(4.5 + (3.5 * accuracy))
+        criteria = {"accuracy": accuracy, "method": "objective_sync"}
+        feedback_uz = (
+            "Javob to'g'ri. Shu turdagi savollarda aniqlikni saqlang."
+            if response.is_correct
+            else "Javob noto'g'ri. Savol kalit so'zlari va distractorlarni qayta tahlil qiling."
+        )
+        feedback_en = (
+            "Correct answer. Keep this level of accuracy for similar items."
+            if response.is_correct
+            else "Incorrect answer. Review the keywords and distractors in this item type."
+        )
+        return band, criteria, feedback_uz, feedback_en
+
+    if response.skill == "writing" or response.type.startswith("writing_"):
+        return _score_writing_heuristically(response)
+
+    if response.skill == "speaking" or response.type.startswith("speaking_"):
+        return _score_speaking_heuristically(response)
+
+    band = _round_band(5.0)
+    return (
+        band,
+        {"method": "completion_fallback"},
+        "Javob qabul qilindi. Batafsil baholash keyingi scoring bosqichida boyitiladi.",
+        "Answer accepted. Detailed scoring will be enriched by the scoring pipeline.",
+    )
+
+
+def _score_writing_heuristically(
+    response: AttemptResponse,
+) -> tuple[float, dict[str, Any], str, str]:
+    text = response.raw_answer.get("text_answer", "")
+    essay = text if isinstance(text, str) else ""
+    words = re.findall(r"[A-Za-z][A-Za-z'-]*", essay)
+    word_count = len(words)
+    payload = _response_payload(response)
+    minimum = int(payload.get("word_limit_min") or 250)
+
+    length_ratio = min(word_count / max(1, minimum), 1.25)
+    task_response = _round_band(4.5 + min(length_ratio, 1.0) * 2.0)
+    coherence = _round_band(5.0 + (0.5 if "\n" in essay.strip() else 0.0))
+    lexical = _round_band(5.0 + min(len({w.lower() for w in words}) / 120, 1.0))
+    grammar = _round_band(5.0 + (0.5 if len(_sentence_ranges(essay)) >= 3 else 0.0))
+    band = _round_band((task_response + coherence + lexical + grammar) / 4)
+    criteria = {
+        "task_response": task_response,
+        "coherence_cohesion": coherence,
+        "lexical_resource": lexical,
+        "grammatical_range_accuracy": grammar,
+        "word_count": word_count,
+        "method": "heuristic_fallback",
+    }
+    feedback_uz = (
+        f"Insho qabul qilindi: {word_count} ta so'z. Keyingi bosqichda dalillar, "
+        "paragraf tuzilishi va akademik leksikani kuchaytirish eng foydali bo'ladi."
+    )
+    feedback_en = (
+        f"Essay accepted: {word_count} words. The next best improvements are stronger "
+        "supporting evidence, paragraph structure, and more academic lexical choices."
+    )
+    return band, criteria, feedback_uz, feedback_en
+
+
+def _score_speaking_heuristically(
+    response: AttemptResponse,
+) -> tuple[float, dict[str, Any], str, str]:
+    payload = _response_payload(response)
+    target_seconds = float(payload.get("speaking_seconds") or 120)
+    duration_seconds = max(float(response.time_ms or 0) / 1000.0, 0.0)
+    duration_ratio = min(duration_seconds / max(target_seconds, 1.0), 1.0)
+    audio_bytes = int(response.raw_answer.get("audio_bytes") or 0)
+
+    fluency = _round_band(4.5 + duration_ratio * 2.0)
+    pronunciation = _round_band(5.0 + (0.5 if audio_bytes > 0 else 0.0))
+    lexical = _round_band(5.0 + duration_ratio)
+    grammar = _round_band(5.0 + duration_ratio)
+    band = _round_band((fluency + pronunciation + lexical + grammar) / 4)
+    criteria = {
+        "fluency_coherence": fluency,
+        "lexical_resource": lexical,
+        "grammatical_range_accuracy": grammar,
+        "pronunciation": pronunciation,
+        "duration_seconds": round(duration_seconds, 1),
+        "audio_bytes": audio_bytes,
+        "method": "heuristic_fallback",
+    }
+    feedback_uz = (
+        f"Speaking javobi yozib olindi ({round(duration_seconds, 1)}s). Keyingi mashqda "
+        "javobni to'liqroq kengaytirish va tabiiy bog'lovchilar ishlatishga e'tibor bering."
+    )
+    feedback_en = (
+        f"Speaking response recorded ({round(duration_seconds, 1)}s). For the next attempt, "
+        "expand the answer more fully and use natural linking language."
+    )
+    return band, criteria, feedback_uz, feedback_en
+
+
+def _build_completion_overview(
+    attempt: ExamAttempt,
+    responses: list[AttemptResponse],
+    bands: dict[str, float | None],
+) -> dict[str, Any]:
+    responses_by_skill: dict[str, list[AttemptResponse]] = defaultdict(list)
+    for response in responses:
+        responses_by_skill[response.skill].append(response)
+
+    sections: list[dict[str, Any]] = []
+    for section in attempt.blueprint_snapshot.get("sections", []):
+        skill = str(section.get("skill"))
+        skill_responses = responses_by_skill.get(skill, [])
+        objective = [r for r in skill_responses if r.is_correct is not None]
+        correct = sum(1 for r in objective if r.is_correct)
+        sections.append(
+            {
+                "skill": skill,
+                "name_uz": section.get("name_uz"),
+                "name_en": section.get("name_en"),
+                "answered": len(skill_responses),
+                "objective_correct": correct,
+                "objective_total": len(objective),
+                "band": bands.get(skill),
+            }
+        )
+
+    skill_bands = {
+        skill: bands.get(skill)
+        for skill in IELTS_SKILLS
+        if bands.get(skill) is not None
+    }
+    weakest_skill = min(
+        skill_bands,
+        key=lambda key: float(skill_bands[key] or 0.0),
+        default="writing",
+    )
+    overall = bands.get("overall")
+    overall_text = f"{overall:.1f}" if overall is not None else "N/A"
+
+    return {
+        "bands": bands,
+        "sections": sections,
+        "narrative_uz": (
+            f"Imtihon yakunlandi. Umumiy IELTS band taxmini: {overall_text}. "
+            "Listening, Reading, Writing va Speaking javoblari saqlandi va dastlabki "
+            "baholashdan o'tdi."
+        ),
+        "narrative_en": (
+            f"Exam completed. Estimated overall IELTS band: {overall_text}. Listening, "
+            "Reading, Writing, and Speaking answers were stored and received an initial score."
+        ),
+        "biggest_opportunity_code": f"{weakest_skill}.foundation",
+        "next_step_ref": f"roadmap:{weakest_skill}:7-day-focus",
+        "source_note": "Deterministic fallback feedback; LLM scoring can enrich it later.",
+    }
+
+
+def _response_payload(response: AttemptResponse) -> dict[str, Any]:
+    snapshot = response.item_snapshot or {}
+    payload = snapshot.get("payload")
+    return payload if isinstance(payload, dict) else {}
+
+
+def _round_band(value: float) -> float:
+    return max(0.0, min(9.0, round(value * 2) / 2))
+
+
 def target_cefr_for_band(target_band: float) -> str:
     if target_band >= 8.0:
         return "C2"
@@ -333,8 +603,6 @@ def _artifact_out(row: FeedbackArtifact) -> FeedbackArtifactOut:
 
 
 async def _attempt_bands(db: AsyncSession, attempt_id: UUID) -> dict[str, float | None]:
-    from exam_platform.models import ScoringResult
-
     rows = (
         await db.execute(
             select(AttemptResponse.skill, ScoringResult.band)

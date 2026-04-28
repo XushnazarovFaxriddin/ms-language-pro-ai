@@ -19,6 +19,8 @@ toward the section budget; full async grading happens off-thread (see jobs/__ini
 
 from __future__ import annotations
 
+import base64
+import binascii
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -40,6 +42,7 @@ from exam_platform.schemas import (
 )
 
 ATTEMPT_TTL_HOURS = 4
+AUDIO_INLINE_MAX_BYTES = 15 * 1024 * 1024
 log = get_logger(__name__)
 
 
@@ -85,6 +88,22 @@ def _item_snapshot(item: ItemView | None) -> dict[str, Any] | None:
     if item is None:
         return None
     return item.model_dump(mode="json")
+
+
+def _decode_audio_base64(audio_base64: str) -> tuple[str, bytes]:
+    """Validate browser-recorded audio submitted inline for the MVP exam runner."""
+    payload = audio_base64
+    if "," in payload and payload.lstrip().lower().startswith("data:"):
+        payload = payload.split(",", 1)[1]
+    try:
+        audio_bytes = base64.b64decode(payload, validate=True)
+    except binascii.Error as exc:
+        raise ValidationError("audio_base64 is not valid base64") from exc
+    if not audio_bytes:
+        raise ValidationError("audio_base64 must not be empty")
+    if len(audio_bytes) > AUDIO_INLINE_MAX_BYTES:
+        raise ValidationError("audio_base64 exceeds the 15MB inline upload limit")
+    return payload, audio_bytes
 
 
 async def _count_responses_in_section(
@@ -352,6 +371,8 @@ async def submit_response(
     mcq_choice_id: str | None,
     text_answer: str | None,
     audio_s3_key: str | None,
+    audio_base64: str | None,
+    audio_format: str,
     time_ms: int,
 ) -> SubmitResponseOut:
     attempt = (
@@ -395,8 +416,17 @@ async def submit_response(
         raw_answer = {"mcq_choice_id": mcq_choice_id}
     elif text_answer is not None:
         raw_answer = {"text_answer": text_answer}
+    elif audio_base64 is not None:
+        normalized_audio, audio_bytes = _decode_audio_base64(audio_base64)
+        raw_answer = {
+            "audio_base64": normalized_audio,
+            "audio_format": audio_format,
+            "audio_bytes": len(audio_bytes),
+        }
+        if audio_s3_key:
+            raw_answer["audio_s3_key"] = audio_s3_key
     elif audio_s3_key is not None:
-        raw_answer = {"audio_s3_key": audio_s3_key}
+        raw_answer = {"audio_s3_key": audio_s3_key, "audio_format": audio_format}
     else:
         raise ValidationError("No answer provided")
 
@@ -533,6 +563,22 @@ async def submit_response(
         )
     )
     await db.commit()
+
+    if attempt_complete:
+        try:
+            from exam_platform.services.feedback import ensure_attempt_completion_feedback
+
+            await ensure_attempt_completion_feedback(
+                db,
+                user_id=user_id,
+                attempt_id=attempt_id,
+            )
+        except Exception as exc:
+            log.warning(
+                "attempt_completion_feedback_failed",
+                attempt_id=str(attempt_id),
+                error=str(exc),
+            )
 
     return SubmitResponseOut(
         response_id=response_id,

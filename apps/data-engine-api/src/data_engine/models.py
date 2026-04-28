@@ -202,7 +202,7 @@ class LLMCall(Base):
     """analytics.llm_calls — written by every LLMRouter call."""
 
     __tablename__ = "llm_calls"
-    __table_args__ = ({"schema": "analytics"},)
+    __table_args__ = ({"schema": "analytics", "extend_existing": True},)
 
     request_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -19,21 +19,49 @@ type Props = {
  */
 export function ListeningItem({ item, choice, onChange, disabled }: Props) {
   const audioUrl = item.payload.audio_url;
+  const transcript = item.payload.transcript ?? item.payload.passage ?? item.payload.prompt ?? "";
   const [phase, setPhase] = useState<"ready" | "playing" | "finished">("ready");
+  const [audioUnavailable, setAudioUnavailable] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const lastTimeRef = useRef(0);
 
   // Reset on item change (next listening question gets a fresh play state)
   useEffect(() => {
     setPhase("ready");
+    setAudioUnavailable(false);
     lastTimeRef.current = 0;
+    window.speechSynthesis?.cancel();
+    return () => window.speechSynthesis?.cancel();
   }, [item.id]);
 
   function play() {
-    if (!audioRef.current) return;
-    audioRef.current.play().catch(() => setPhase("ready"));
+    if (audioRef.current && audioUrl && !audioUnavailable) {
+      audioRef.current.play().catch(() => {
+        setAudioUnavailable(true);
+        playSpeechFallback();
+      });
+      setPhase("playing");
+      return;
+    }
+    playSpeechFallback();
+  }
+
+  function playSpeechFallback() {
+    if (!transcript || typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setPhase("finished");
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(transcript);
+    utterance.lang = "en-US";
+    utterance.rate = 0.92;
+    utterance.onend = () => setPhase("finished");
+    utterance.onerror = () => setPhase("finished");
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
     setPhase("playing");
   }
+
+  const hasPlayablePrompt = Boolean(audioUrl || transcript);
 
   return (
     <div className="mt-8 space-y-6">
@@ -50,11 +78,11 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
             <button
               type="button"
               onClick={play}
-              disabled={!audioUrl}
+              disabled={!hasPlayablePrompt}
               className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 disabled:opacity-40"
             >
               <Play className="h-4 w-4" />
-              Play audio
+              {audioUrl && !audioUnavailable ? "Play audio" : "Play browser audio"}
             </button>
           )}
           {phase === "playing" && (
@@ -73,6 +101,10 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
               src={audioUrl}
               preload="auto"
               onEnded={() => setPhase("finished")}
+              onError={() => {
+                setAudioUnavailable(true);
+                if (phase === "playing") playSpeechFallback();
+              }}
               onTimeUpdate={() => {
                 if (audioRef.current) lastTimeRef.current = audioRef.current.currentTime;
               }}
@@ -90,11 +122,13 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
         item={item}
         choice={choice}
         onChange={onChange}
-        disabled={disabled || phase !== "finished"}
+        disabled={disabled || (hasPlayablePrompt && phase !== "finished")}
       />
       {phase === "ready" && (
         <p className="text-sm text-[var(--color-muted-fg)]">
-          Audio bir martagina ijro etiladi. Tinglashni boshlash uchun Play tugmasini bosing.
+          {hasPlayablePrompt
+            ? "Audio bir martagina ijro etiladi. Tinglashni boshlash uchun Play tugmasini bosing."
+            : "Bu savolda audio topilmadi, javob berishni davom ettirishingiz mumkin."}
         </p>
       )}
     </div>

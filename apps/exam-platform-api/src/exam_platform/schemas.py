@@ -43,6 +43,8 @@ class SubmitResponseIn(BaseModel):
     mcq_choice_id: str | None = None
     text_answer: str | None = None
     audio_s3_key: str | None = None
+    audio_base64: str | None = None
+    audio_format: str = Field(default="webm", min_length=1, max_length=64)
     time_ms: int = Field(ge=0)
 
 

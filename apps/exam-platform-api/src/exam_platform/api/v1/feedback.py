@@ -38,6 +38,12 @@ async def attempt_feedback(
         attempt_id=attempt_id,
         layer=layer,
     )
+    if layer is None and not artifacts:
+        artifacts = await feedback_svc.ensure_attempt_completion_feedback(
+            db,
+            user_id=user.id,
+            attempt_id=attempt_id,
+        )
     return AttemptFeedbackOut(attempt_id=attempt_id, artifacts=artifacts)
 
 

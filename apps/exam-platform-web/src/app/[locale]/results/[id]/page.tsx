@@ -3,7 +3,7 @@ import { Link } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { getCookieHeader, requireUser } from "@/lib/auth-server";
 import { AppHeader } from "@/components/AppHeader";
-import { CheckCircle2, XCircle, Clock, Trophy, ArrowLeft } from "lucide-react";
+import { CheckCircle2, Clock, Trophy, ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { FeedbackSection } from "./FeedbackSection";
 
@@ -31,15 +31,9 @@ export default async function ResultsPage({
     // 404 or other errors mean no feedback exists yet
   }
 
-  // Calculate stats
-  // Note: the backend AttemptOut does not expose raw item responses out of the box in this schema snapshot,
-  // but we can calculate score from theta or assume backend provides it.
-  // Wait, AttemptOut has theta_estimates.
-  const theta = attempt.theta_estimates["reading"] ?? 0;
-  
-  // To make this page work properly based on the current AttemptOut type, we will render
-  // a beautiful placeholder for the score and focus on the completion status, since detailed
-  // item responses are not in AttemptOut currently.
+  const overview = feedback?.artifacts.find((artifact) => artifact.layer === "overview");
+  const overallBand = overview?.payload.bands?.overall;
+  const scoreLabel = typeof overallBand === "number" ? overallBand.toFixed(1) : "—";
 
   const finishedAt = attempt.finished_at ? new Date(attempt.finished_at) : new Date();
   const startedAt = new Date(attempt.started_at);
@@ -78,8 +72,7 @@ export default async function ResultsPage({
                 <span className="font-medium">{t("score")}</span>
               </div>
               <p className="mt-3 text-3xl font-bold tracking-tight">
-                {/* Fallback score display based on theta since responses are not in AttemptOut */}
-                {theta > 0 ? "B2" : "B1"} <span className="text-sm font-medium text-[var(--color-muted-fg)]">CEFR Estimate</span>
+                {scoreLabel} <span className="text-sm font-medium text-[var(--color-muted-fg)]">IELTS Band</span>
               </p>
             </div>
             <div className="bg-[var(--color-bg)] p-8">
