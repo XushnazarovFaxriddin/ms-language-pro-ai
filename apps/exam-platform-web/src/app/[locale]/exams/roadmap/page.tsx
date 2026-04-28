@@ -1,8 +1,7 @@
 import { getCookieHeader } from "@/lib/auth-server";
-import { api, RoadmapOut } from "@/lib/api";
+import { api, ApiError, type RoadmapOut } from "@/lib/api";
 import { RoadmapSetupForm } from "./RoadmapSetupForm";
-import { Map, Target, Calendar, Clock, Flag, Award, Zap } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { Map, Target, Calendar, Clock, Award, Zap } from "lucide-react";
 
 export default async function RoadmapPage() {
   const ck = await getCookieHeader();
@@ -10,9 +9,9 @@ export default async function RoadmapPage() {
 
   let roadmap: RoadmapOut | null = null;
   try {
-    roadmap = await api.roadmap.get();
-  } catch (err: any) {
-    if (err.status !== 404) {
+    roadmap = await api.roadmap.get(ck);
+  } catch (err: unknown) {
+    if (!(err instanceof ApiError) || err.status !== 404) {
       console.error("Failed to fetch roadmap:", err);
     }
   }
