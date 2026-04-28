@@ -43,6 +43,14 @@ from exam_platform.schemas import (
 
 ATTEMPT_TTL_HOURS = 4
 AUDIO_INLINE_MAX_BYTES = 15 * 1024 * 1024
+DEMO_AUDIO_URLS = {
+    "https://demo.aiexam.uz/audio/listening/library_dialog.mp3": (
+        "/audio/listening/library_dialog.m4a"
+    ),
+    "https://demo.aiexam.uz/audio/listening/lecture_climate.mp3": (
+        "/audio/listening/lecture_climate.m4a"
+    ),
+}
 log = get_logger(__name__)
 
 
@@ -81,13 +89,22 @@ def _active_section(attempt: ExamAttempt) -> dict[str, Any]:
 def item_from_snapshot(snapshot: dict[str, Any] | None) -> ItemView | None:
     if not snapshot:
         return None
-    return ItemView.model_validate(snapshot)
+    return _normalise_item_audio(ItemView.model_validate(snapshot))
 
 
 def _item_snapshot(item: ItemView | None) -> dict[str, Any] | None:
     if item is None:
         return None
     return item.model_dump(mode="json")
+
+
+def _normalise_item_audio(item: ItemView) -> ItemView:
+    """Map known-dead demo audio URLs to local static audio assets."""
+    payload = dict(item.payload or {})
+    audio_url = payload.get("audio_url")
+    if isinstance(audio_url, str) and audio_url in DEMO_AUDIO_URLS:
+        payload["audio_url"] = DEMO_AUDIO_URLS[audio_url]
+    return item.model_copy(update={"payload": payload})
 
 
 def _decode_audio_base64(audio_base64: str) -> tuple[str, bytes]:
@@ -182,14 +199,14 @@ async def _next_item_from_de(
     item = resp.get("item")
     if not item:
         return None
-    return ItemView(
+    return _normalise_item_audio(ItemView(
         id=UUID(item["id"]),
         type=item["type"],
         skill=item["skill"],
         cefr_level=item["cefr_level"],
         payload=item["payload"],
         estimated_seconds=item["estimated_seconds"],
-    )
+    ))
 
 
 async def _advance_to_next_skill_with_items(

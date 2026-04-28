@@ -18,12 +18,11 @@ type Props = {
  * a "Audio finished" badge. We disable the native seek bar.
  */
 export function ListeningItem({ item, choice, onChange, disabled }: Props) {
-  const audioUrl = item.payload.audio_url;
+  const audioUrl = resolveAudioUrl(item.payload.audio_url);
   const transcript = item.payload.transcript ?? item.payload.passage ?? item.payload.prompt ?? "";
   const [phase, setPhase] = useState<"ready" | "playing" | "finished">("ready");
   const [audioUnavailable, setAudioUnavailable] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const lastTimeRef = useRef(0);
   
   const phaseRef = useRef(phase);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -36,11 +35,14 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
   useEffect(() => {
     setPhase("ready");
     setAudioUnavailable(false);
-    lastTimeRef.current = 0;
+    audioRef.current?.pause();
+    audioRef.current = null;
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
       if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
@@ -48,10 +50,27 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
   }, [item.id]);
 
   function play() {
-    if (audioRef.current && audioUrl && !audioUnavailable) {
-      setPhase("playing");
-      audioRef.current.play().catch(() => {
+    if (audioUrl && !audioUnavailable && typeof window !== "undefined") {
+      audioRef.current?.pause();
+      const audio = new Audio(audioUrl);
+      audio.preload = "auto";
+      audio.volume = 1;
+      audio.onended = () => {
+        setPhase("finished");
+        phaseRef.current = "finished";
+        audioRef.current = null;
+      };
+      audio.onerror = () => {
         setAudioUnavailable(true);
+        audioRef.current = null;
+        playSpeechFallback();
+      };
+      audioRef.current = audio;
+      setPhase("playing");
+      phaseRef.current = "playing";
+      audio.play().catch(() => {
+        setAudioUnavailable(true);
+        audioRef.current = null;
         playSpeechFallback();
       });
       return;
@@ -62,8 +81,11 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
   function playSpeechFallback() {
     if (!transcript || typeof window === "undefined" || !("speechSynthesis" in window)) {
       setPhase("finished");
+      phaseRef.current = "finished";
       return;
     }
+
+    window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(transcript);
     utterance.lang = "en-US";
@@ -73,17 +95,20 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
 
     utterance.onend = () => {
       setPhase("finished");
+      phaseRef.current = "finished";
       utteranceRef.current = null;
     };
     
     utterance.onerror = (e: any) => {
       console.error("SpeechSynthesis error:", e.error || e);
       setPhase("finished");
+      phaseRef.current = "finished";
       utteranceRef.current = null;
     };
 
     window.speechSynthesis.speak(utterance);
     setPhase("playing");
+    phaseRef.current = "playing";
   }
 
   const hasPlayablePrompt = Boolean(audioUrl || transcript);
@@ -107,7 +132,7 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
               className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 disabled:opacity-40"
             >
               <Play className="h-4 w-4" />
-              {audioUrl && !audioUnavailable ? "Play audio" : "Play browser audio"}
+              Play audio
             </button>
           )}
           {phase === "playing" && (
@@ -119,25 +144,6 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
             <span className="rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
               Audio finished
             </span>
-          )}
-          {audioUrl && (
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              preload="auto"
-              onEnded={() => setPhase("finished")}
-              onError={() => {
-                setAudioUnavailable(true);
-                if (phaseRef.current === "playing") playSpeechFallback();
-              }}
-              onTimeUpdate={() => {
-                if (audioRef.current) lastTimeRef.current = audioRef.current.currentTime;
-              }}
-              onSeeking={() => {
-                if (audioRef.current) audioRef.current.currentTime = lastTimeRef.current;
-              }}
-              className="hidden"
-            />
           )}
         </div>
       </article>
@@ -158,4 +164,23 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
       )}
     </div>
   );
+}
+
+function resolveAudioUrl(audioUrl: string | undefined): string | undefined {
+  if (!audioUrl) return undefined;
+
+  const demoAudioMap: Record<string, string> = {
+    "https://demo.aiexam.uz/audio/listening/library_dialog.mp3": "/audio/listening/library_dialog.m4a",
+    "https://demo.aiexam.uz/audio/listening/lecture_climate.mp3": "/audio/listening/lecture_climate.m4a",
+  };
+  if (demoAudioMap[audioUrl]) return demoAudioMap[audioUrl];
+
+  try {
+    const parsed = new URL(audioUrl);
+    if (parsed.hostname === "demo.aiexam.uz") return undefined;
+  } catch {
+    return audioUrl;
+  }
+
+  return audioUrl;
 }
