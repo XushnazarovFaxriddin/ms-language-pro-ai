@@ -1,4 +1,8 @@
 {
+  "Meta": {
+    "title": "LanguagePro AI — Exam Platform",
+    "description": "AI-powered IELTS and CEFR online assessment platform"
+  },
   "Common": {
     "appName": "LanguagePro AI",
     "tagline": "AI-powered IELTS & CEFR online assessment",
@@ -228,7 +232,57 @@
     "submit": "Submit",
     "correct": "Correct",
     "incorrect": "Incorrect",
-    "submitted": "Submitted"
+    "submitted": "Submitted",
+    "section": "Section {current} of {total}",
+    "skills": {
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "skillDesc": {
+      "listening": "Audio plays only once. Press Play when you're ready to listen.",
+      "reading": "Read the passage carefully and answer the questions.",
+      "writing": "Write an essay of at least 250 words on the given topic.",
+      "speaking": "Speak based on the cue card. 1 minute preparation + 2 minutes speaking."
+    },
+    "transition": {
+      "previousDone": "{skill} section completed",
+      "continue": "Start"
+    },
+    "listening": {
+      "label": "Listening · single play",
+      "play": "Play audio",
+      "playing": "Playing… (cannot seek or replay)",
+      "finished": "Audio finished",
+      "singlePlayHint": "Audio plays only once. Press Play to start listening.",
+      "noAudio": "No audio for this question — you may continue answering."
+    },
+    "writing": {
+      "label": "Writing · {task}",
+      "limits": "{min}–{max} words · {minutes} minutes",
+      "placeholder": "Write your essay here…",
+      "wordCount": "{count} words",
+      "needMore": "(at least {min} required)",
+      "tooMany": "(maximum {max})",
+      "ok": "✓",
+      "pasteBlocked": "Paste is blocked — please type your answer."
+    },
+    "speaking": {
+      "label": "Speaking · Part {part}",
+      "timing": "{prep}s preparation · {speak}s speaking",
+      "startPrep": "Start preparation",
+      "preparing": "Preparing · {seconds}s",
+      "startNow": "Start now",
+      "recording": "Recording · {seconds}s",
+      "stop": "Stop",
+      "processing": "Processing audio…",
+      "ready": "Recording ready — press Submit below",
+      "denied": "Microphone permission was denied. Please grant permission in your browser settings.",
+      "errorGeneric": "Failed to prepare the audio recording.",
+      "retry": "Try again",
+      "unsupported": "Your browser does not support audio recording. Please use Chrome."
+    }
   },
   "Results": {
     "title": "Exam Results",
@@ -272,6 +326,37 @@
     "reasonNotFound": "No certificate found with this ID.",
     "reasonLookupError": "Could not look up this certificate. Please try again.",
     "reasonGeneric": "We could not validate this certificate."
+  },
+  "Practice": {
+    "title": "Practice",
+    "description": "Spaced-repetition review of the questions you got wrong, and your skill mastery over time.",
+    "intro": "Every time you finish an exam, the questions you missed are added here. Review them to lock in what you learned — the system schedules the next review for you.",
+    "empty": {
+      "title": "Nothing to review yet",
+      "hint": "Take any exam — when you miss a question, it lands here automatically. Come back to drill it until you remember it.",
+      "cta": "Browse exams"
+    },
+    "doneTitle": "All caught up — great work!",
+    "progress": "Card {current} of {total}",
+    "noPrompt": "(no prompt available)",
+    "yourAnswer": "Your answer",
+    "correctAnswer": "Correct answer",
+    "showAnswer": "Show answer",
+    "hideAnswer": "Hide answer",
+    "mastery": {
+      "title": "Skill mastery",
+      "empty": "Take an exam to start tracking your mastery."
+    },
+    "grade": {
+      "again": "Again",
+      "againSub": "Forgot",
+      "hard": "Hard",
+      "hardSub": "+6 hours",
+      "good": "Good",
+      "goodSub": "+1 day",
+      "easy": "Easy",
+      "easySub": "Several days"
+    }
   },
   "Roadmap": {
     "title": "Personal roadmap",
@@ -349,6 +434,20 @@
     "title": "AI Feedback",
     "emptyTitle": "Feedback",
     "emptyDesc": "Full AI analysis and feedback are not available for this exam yet. You can generate them now.",
+    "progress": {
+      "title": "AI is grading your exam",
+      "subtitle": "This usually takes 30–90 seconds. You can stay here.",
+      "stages": {
+        "reading": "Reading your responses",
+        "writing": "Scoring writing essays",
+        "speaking": "Analysing speaking audio",
+        "composing": "Composing the final report"
+      },
+      "hint": "Real IELTS-rubric scoring runs through Gemini 2.5 — no shortcuts, real bands.",
+      "errorTitle": "AI grading is temporarily unavailable",
+      "errorBody": "The model could not score this attempt right now. This is honest — we'd rather show you nothing than fake bands.",
+      "retry": "Try again"
+    },
     "actions": {
       "generate": "Start analysis",
       "regenerateAi": "Generate real AI analysis"

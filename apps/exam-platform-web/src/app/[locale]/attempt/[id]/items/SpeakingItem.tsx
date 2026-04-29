@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Mic, Square, CheckCircle2 } from "lucide-react";
 import type { ItemView } from "@/lib/api";
 
@@ -22,6 +23,7 @@ type Phase = "idle" | "preparing" | "recording" | "processing" | "done" | "denie
  * path can replace this without changing the item-level UI contract.
  */
 export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props) {
+  const t = useTranslations("Exam.speaking");
   const prep = item.payload.preparation_seconds ?? 60;
   const speak = item.payload.speaking_seconds ?? 120;
   const [phase, setPhase] = useState<Phase>("idle");
@@ -80,7 +82,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
       setError(null);
       const AudioContextCtor = getAudioContextCtor();
       if (!AudioContextCtor || !navigator.mediaDevices?.getUserMedia) {
-        setError("Brauzeringiz audio yozishni qo'llab-quvvatlamaydi. Chrome ishlating.");
+        setError(t("unsupported"));
         setPhase("error");
         return;
       }
@@ -147,11 +149,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
       onAudioReady(base64, durationMs, "wav");
       setPhase("done");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Audio yozuvni tayyorlashda xatolik yuz berdi.",
-      );
+      setError(err instanceof Error ? err.message : t("errorGeneric"));
       setPhase("error");
     }
   }
@@ -170,14 +168,14 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
         <div className="flex items-center gap-3 text-[var(--color-muted-fg)]">
           <Mic className="h-5 w-5" />
           <span className="text-sm font-semibold uppercase tracking-wider">
-            Speaking · Part {item.payload.part ?? 2}
+            {t("label", { part: item.payload.part ?? 2 })}
           </span>
         </div>
         <p className="mt-6 whitespace-pre-wrap text-lg leading-relaxed">
           {item.payload.prompt}
         </p>
         <p className="mt-4 text-sm text-[var(--color-muted-fg)]">
-          {prep}s tayyorgarlik · {speak}s gapirish
+          {t("timing", { prep, speak })}
         </p>
       </article>
 
@@ -189,13 +187,13 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
             disabled={disabled || audioReady}
             className="rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 disabled:opacity-40"
           >
-            Tayyorgarlikni boshlash
+            {t("startPrep")}
           </button>
         )}
         {phase === "preparing" && (
           <div className="flex items-center gap-4">
             <span className="rounded-full bg-amber-500/15 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
-              Tayyorgarlik · {secondsLeft}s
+              {t("preparing", { seconds: secondsLeft })}
             </span>
             <button
               type="button"
@@ -205,7 +203,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
               }}
               className="rounded-full border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-primary)]/10"
             >
-              Hozir boshlash
+              {t("startNow")}
             </button>
           </div>
         )}
@@ -213,7 +211,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-2 rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300">
               <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-              Yozilmoqda · {secondsLeft}s
+              {t("recording", { seconds: secondsLeft })}
             </span>
             <button
               type="button"
@@ -221,28 +219,28 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
               className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-[var(--color-primary-fg)]"
             >
               <Square className="h-4 w-4" />
-              To'xtatish
+              {t("stop")}
             </button>
           </div>
         )}
         {phase === "processing" && (
-          <span className="text-sm text-[var(--color-muted-fg)]">Audio tayyorlanmoqda…</span>
+          <span className="text-sm text-[var(--color-muted-fg)]">{t("processing")}</span>
         )}
         {phase === "done" && (
           <span className="flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4" />
-            Yozuv tayyor — pastdagi Yuborish tugmasini bosing
+            {t("ready")}
           </span>
         )}
         {phase === "denied" && (
           <span className="rounded-full bg-red-500/15 px-4 py-2 text-sm font-medium text-red-700 dark:text-red-300">
-            Mikrofon uchun ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering.
+            {t("denied")}
           </span>
         )}
         {phase === "error" && (
           <div className="space-y-3">
             <span className="block rounded-xl bg-red-500/15 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300">
-              {error ?? "Audio yozuvni tayyorlashda xatolik yuz berdi."}
+              {error ?? t("errorGeneric")}
             </span>
             <button
               type="button"
@@ -252,7 +250,7 @@ export function SpeakingItem({ item, audioReady, onAudioReady, disabled }: Props
               }}
               className="rounded-full border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-primary)]/10"
             >
-              Qayta urinib ko'rish
+              {t("retry")}
             </button>
           </div>
         )}

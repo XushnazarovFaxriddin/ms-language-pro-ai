@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle } from "lucide-react";
 import { ApiError, api, type AttemptOut, type ItemView, type SubmitResponseIn } from "@/lib/api";
@@ -37,6 +37,8 @@ export function ExamRunner({
 }) {
   const router = useRouter();
   const t = useTranslations("Exam");
+  const tSkill = useTranslations("Exam.skills");
+  const locale = useLocale();
 
   // Redirect if attempt is already completed
   useEffect(() => {
@@ -275,7 +277,9 @@ export function ExamRunner({
       <div className="mb-6 flex items-center justify-between text-sm">
         <div className="flex flex-wrap items-center gap-2 text-[var(--color-muted-fg)] font-medium">
           <span className="rounded-full bg-[var(--color-primary)]/10 px-3 py-1 text-[var(--color-primary)]">
-            {currentSection.name_uz ?? item.skill} · {sectionIndex + 1}/{sections.length}
+            {(locale === "en" ? currentSection.name_en : currentSection.name_uz) ??
+              tSkill(item.skill as "listening" | "reading" | "writing" | "speaking")}{" "}
+            · {sectionIndex + 1}/{sections.length}
           </span>
           <span>
             {t("question")} {itemsAnsweredInSection + 1} / {totalItemsInSection}

@@ -609,6 +609,17 @@ async def submit_response(
                 attempt_id=str(attempt_id),
                 error=str(exc),
             )
+        try:
+            from exam_platform.services.practice import seed_srs_from_attempt
+
+            await seed_srs_from_attempt(db, user_id=user_id, attempt_id=attempt_id)
+            await db.commit()
+        except Exception as exc:
+            log.warning(
+                "srs_seed_failed",
+                attempt_id=str(attempt_id),
+                error=str(exc),
+            )
 
     return SubmitResponseOut(
         response_id=response_id,

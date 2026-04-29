@@ -1,4 +1,8 @@
 {
+  "Meta": {
+    "title": "LanguagePro AI — Imtihon platformasi",
+    "description": "IELTS va CEFR onlayn imtihon platformasi"
+  },
   "Common": {
     "appName": "LanguagePro AI",
     "tagline": "Sun'iy intellekt yordamida IELTS va CEFR onlayn baholash",
@@ -228,7 +232,57 @@
     "submit": "Yuborish",
     "correct": "To'g'ri",
     "incorrect": "Noto'g'ri",
-    "submitted": "Yuborildi"
+    "submitted": "Yuborildi",
+    "section": "Bo'lim {current} / {total}",
+    "skills": {
+      "listening": "Tinglash",
+      "reading": "O'qish",
+      "writing": "Yozish",
+      "speaking": "Gapirish"
+    },
+    "skillDesc": {
+      "listening": "Audio bir martagina ijro etiladi. Tayyor bo'lganingizda Play tugmasini bosing.",
+      "reading": "Matnni diqqat bilan o'qing va savollarga javob bering.",
+      "writing": "Berilgan mavzuda kamida 250 so'zli insho yozing.",
+      "speaking": "Cue card asosida gapirib bering. 1 daqiqa tayyorgarlik + 2 daqiqa gapirish."
+    },
+    "transition": {
+      "previousDone": "{skill} bo'limi tugadi",
+      "continue": "Boshlash"
+    },
+    "listening": {
+      "label": "Listening · bir martagina",
+      "play": "Audioni boshlash",
+      "playing": "Ijro etilmoqda… (qayta ko'chirish mumkin emas)",
+      "finished": "Audio tugadi",
+      "singlePlayHint": "Audio bir martagina ijro etiladi. Tinglashni boshlash uchun Play tugmasini bosing.",
+      "noAudio": "Bu savolda audio topilmadi, javob berishni davom ettirishingiz mumkin."
+    },
+    "writing": {
+      "label": "Writing · {task}",
+      "limits": "{min}–{max} so'z · {minutes} daqiqa",
+      "placeholder": "Insho matnini shu yerga yozing…",
+      "wordCount": "{count} so'z",
+      "needMore": "(kamida {min} kerak)",
+      "tooMany": "(eng ko'pi {max})",
+      "ok": "✓",
+      "pasteBlocked": "Paste bloklangan — matnni o'zingiz yozing."
+    },
+    "speaking": {
+      "label": "Speaking · Part {part}",
+      "timing": "{prep}s tayyorgarlik · {speak}s gapirish",
+      "startPrep": "Tayyorgarlikni boshlash",
+      "preparing": "Tayyorgarlik · {seconds}s",
+      "startNow": "Hozir boshlash",
+      "recording": "Yozilmoqda · {seconds}s",
+      "stop": "To'xtatish",
+      "processing": "Audio tayyorlanmoqda…",
+      "ready": "Yozuv tayyor — pastdagi Yuborish tugmasini bosing",
+      "denied": "Mikrofon uchun ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering.",
+      "errorGeneric": "Audio yozuvni tayyorlashda xatolik yuz berdi.",
+      "retry": "Qayta urinib ko'rish",
+      "unsupported": "Brauzeringiz audio yozishni qo'llab-quvvatlamaydi. Chrome ishlating."
+    }
   },
   "Results": {
     "title": "Imtihon Natijalari",
@@ -272,6 +326,37 @@
     "reasonNotFound": "Bunday ID bo'yicha sertifikat topilmadi.",
     "reasonLookupError": "Sertifikatni tekshirib bo'lmadi. Qayta urinib ko'ring.",
     "reasonGeneric": "Sertifikatni tasdiqlay olmadik."
+  },
+  "Practice": {
+    "title": "Amaliyot",
+    "description": "Xato qilgan savollaringizni takrorlash va vaqt o'tishi bilan ko'nikma darajangizni kuzatish.",
+    "intro": "Har imtihondan so'ng xato qilgan savollaringiz shu yerga tushadi. Ularni takrorlasangiz, eslab qolasiz — keyingi takrorlash vaqtini tizim avtomatik belgilaydi.",
+    "empty": {
+      "title": "Hozircha takrorlash uchun savol yo'q",
+      "hint": "Birorta imtihon topshiring — xato qilgan savolingiz avtomatik shu sahifaga tushadi va to'g'ri javob esda qolguncha takrorlash imkoni bo'ladi.",
+      "cta": "Imtihonlarga o'tish"
+    },
+    "doneTitle": "Hammasi takrorlandi — zo'r!",
+    "progress": "{current}/{total}-karta",
+    "noPrompt": "(savol matni mavjud emas)",
+    "yourAnswer": "Sizning javobingiz",
+    "correctAnswer": "To'g'ri javob",
+    "showAnswer": "Javobni ko'rsatish",
+    "hideAnswer": "Javobni yashirish",
+    "mastery": {
+      "title": "Ko'nikma darajasi",
+      "empty": "Ko'nikma kuzatuvi uchun avval imtihon topshiring."
+    },
+    "grade": {
+      "again": "Qaytadan",
+      "againSub": "Esimda yo'q",
+      "hard": "Qiyin",
+      "hardSub": "+6 soat",
+      "good": "Yaxshi",
+      "goodSub": "+1 kun",
+      "easy": "Oson",
+      "easySub": "Bir necha kun"
+    }
   },
   "Roadmap": {
     "title": "Shaxsiy reja (Roadmap)",
@@ -349,6 +434,20 @@
     "title": "AI Fikr-mulohaza",
     "emptyTitle": "Fikr-mulohaza (Feedback)",
     "emptyDesc": "Ushbu imtihon uchun AI tomonidan to'liq tahlil va fikr-mulohazalar hozircha mavjud emas. Uni hoziroq generatsiya qilishingiz mumkin.",
+    "progress": {
+      "title": "AI imtihoningizni baholamoqda",
+      "subtitle": "Odatda 30–90 soniya davom etadi. Sahifani yopmang.",
+      "stages": {
+        "reading": "Javoblaringiz o'qilmoqda",
+        "writing": "Yozma insholar baholanmoqda",
+        "speaking": "Speaking audio tahlil qilinmoqda",
+        "composing": "Yakuniy hisobot tuzilmoqda"
+      },
+      "hint": "Haqiqiy IELTS rubrikasi bo'yicha Gemini 2.5 baholaydi — soxta band yo'q.",
+      "errorTitle": "AI baholash hozircha mavjud emas",
+      "errorBody": "Model ushbu imtihonni hozircha baholay olmadi. Soxta band ko'rsatishdan ko'ra, halol xato xabari ma'qul.",
+      "retry": "Qayta urinib ko'rish"
+    },
     "actions": {
       "generate": "Tahlilni boshlash",
       "regenerateAi": "Real AI tahlil yaratish"

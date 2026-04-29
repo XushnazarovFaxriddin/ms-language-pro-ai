@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { PenSquare } from "lucide-react";
 import type { ItemView } from "@/lib/api";
 
@@ -20,6 +21,7 @@ type Props = {
  * editor (TipTap) ships in Phase 2 per docs/13-skills-deep.md §3.2.
  */
 export function WritingItem({ item, text, onChange, disabled }: Props) {
+  const t = useTranslations("Exam.writing");
   const min = item.payload.word_limit_min ?? 250;
   const max = item.payload.word_limit_max ?? 400;
   const ref = useRef<HTMLTextAreaElement | null>(null);
@@ -50,14 +52,14 @@ export function WritingItem({ item, text, onChange, disabled }: Props) {
         <div className="flex items-center gap-3 text-[var(--color-muted-fg)]">
           <PenSquare className="h-5 w-5" />
           <span className="text-sm font-semibold uppercase tracking-wider">
-            Writing · {item.payload.task_type ?? "task2"}
+            {t("label", { task: item.payload.task_type ?? "task2" })}
           </span>
         </div>
         <p className="mt-6 whitespace-pre-wrap text-lg leading-relaxed">
           {item.payload.prompt}
         </p>
         <p className="mt-4 text-sm text-[var(--color-muted-fg)]">
-          {min}–{max} words · {item.payload.time_limit_minutes ?? 40} minutes
+          {t("limits", { min, max, minutes: item.payload.time_limit_minutes ?? 40 })}
         </p>
       </article>
 
@@ -67,7 +69,7 @@ export function WritingItem({ item, text, onChange, disabled }: Props) {
           value={text}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          placeholder="Insho matnini shu yerga yozing…"
+          placeholder={t("placeholder")}
           className="min-h-[320px] w-full resize-y rounded-xl border-0 bg-transparent p-4 text-base leading-relaxed outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60"
           spellCheck={false}
           onPaste={(e) => {
@@ -86,12 +88,15 @@ export function WritingItem({ item, text, onChange, disabled }: Props) {
                 : "text-rose-600 dark:text-rose-400"
             }
           >
-            {wordCount} so'z {status === "low" ? `(kamida ${min} kerak)` : status === "over" ? `(eng ko'pi ${max})` : "✓"}
+            {t("wordCount", { count: wordCount })}{" "}
+            {status === "low"
+              ? t("needMore", { min })
+              : status === "over"
+                ? t("tooMany", { max })
+                : t("ok")}
           </span>
           {pasteWarn && (
-            <span className="text-rose-600 dark:text-rose-400">
-              Paste bloklangan — matnni o'zingiz yozing.
-            </span>
+            <span className="text-rose-600 dark:text-rose-400">{t("pasteBlocked")}</span>
           )}
         </div>
       </div>

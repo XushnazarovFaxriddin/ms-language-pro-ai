@@ -150,10 +150,8 @@ LISTENING_QUESTIONS = [
         "id": LISTENING_Q_IDS[0],
         "audio_url": "https://demo.aiexam.uz/audio/listening/library_dialog.mp3",
         "transcript": (
-            "Hello, I'd like to register for a library card. — Of course. Could you tell me "
-            "your name and current address? — My name is Aziza Karimova, and I live at "
-            "12 Mustaqillik Street, Bukhara. — Great. The card costs 5,000 so'm and gives "
-            "you access to all branches for one year."
+            "The annual library card is five thousand so'm and gives you access "
+            "to every branch for twelve months."
         ),
         "prompt": "How much does the library card cost per year?",
         "options": [
@@ -163,7 +161,7 @@ LISTENING_QUESTIONS = [
             {"id": "D", "label": "Free"},
         ],
         "correct_option_id": "B",
-        "distractor_rationale": "The dialogue states 5,000 so'm explicitly.",
+        "distractor_rationale": "The clip states 5,000 so'm.",
         "difficulty_b": -0.3,
         "cefr": "B1",
     },
@@ -171,11 +169,9 @@ LISTENING_QUESTIONS = [
         "id": LISTENING_Q_IDS[1],
         "audio_url": "https://demo.aiexam.uz/audio/listening/lecture_climate.mp3",
         "transcript": (
-            "In today's lecture we will examine three drivers of urban heat: dense building "
-            "materials that absorb solar radiation, the lack of vegetation in city centres, "
-            "and emissions from vehicles. Of these, the absence of green space contributes "
-            "the most measurable temperature increase, often raising readings by two to three "
-            "degrees Celsius compared to surrounding suburbs."
+            "Of the three drivers of urban heat we discussed, the absence of "
+            "green space — not building materials or traffic — contributes the "
+            "largest measurable temperature rise."
         ),
         "prompt": "According to the lecturer, which factor most increases urban temperatures?",
         "options": [
@@ -185,7 +181,7 @@ LISTENING_QUESTIONS = [
             {"id": "D", "label": "Industrial activity"},
         ],
         "correct_option_id": "B",
-        "distractor_rationale": "The lecture explicitly states the absence of green space contributes the most.",
+        "distractor_rationale": "The lecturer says the absence of green space contributes the most.",
         "difficulty_b": 0.3,
         "cefr": "B2",
     },
@@ -354,116 +350,132 @@ READING_EXTRA_QUESTIONS = [
     },
 ]
 
-# 5 AI-generated (not real IELTS!) MCQ reading questions — open-licensed
+# Reading: B2/C1-level academic items — paraphrase, inference, vocab-in-context.
+# Tuned harder than the previous draft: questions test understanding of writer's
+# stance, implication, or precise word meaning rather than literal fact lookup.
 SAMPLE_QUESTIONS = [
     {
         "id": Q_IDS[0],
         "passage": (
-            "The development of renewable energy sources has become a global priority. "
-            "Solar panels, which convert sunlight into electricity, have seen a dramatic "
-            "decrease in cost over the past decade. In 2010, the average cost of solar "
-            "panels was approximately $2.50 per watt. By 2023, this figure had dropped "
-            "to around $0.30 per watt, making solar energy increasingly accessible to "
-            "households and businesses worldwide."
+            "Although photovoltaic costs collapsed by roughly 88 per cent between 2010 "
+            "and 2023, the energy transition has been less even than the headline figure "
+            "suggests. Grid integration, storage capacity and permitting delays continue "
+            "to throttle deployment in many jurisdictions, so falling module prices alone "
+            "do not guarantee proportional growth in installed capacity."
         ),
-        "prompt": "According to the passage, what was the approximate cost of solar panels per watt in 2023?",
+        "prompt": "What does the writer mainly imply about the fall in solar panel costs?",
         "options": [
-            {"id": "A", "label": "$2.50"},
-            {"id": "B", "label": "$1.00"},
-            {"id": "C", "label": "$0.30"},
-            {"id": "D", "label": "$0.50"},
+            {"id": "A", "label": "It has accelerated installations everywhere at the same pace."},
+            {"id": "B", "label": "It is the single most important factor in the energy transition."},
+            {"id": "C", "label": "Cheaper modules do not automatically translate into more capacity."},
+            {"id": "D", "label": "The headline cost decline is exaggerated by official figures."},
         ],
         "correct_option_id": "C",
-        "distractor_rationale": "A is the 2010 price; B and D are plausible but incorrect values.",
-        "difficulty_b": -0.5,
-        "cefr": "B1",
+        "distractor_rationale": (
+            "C captures the writer's stance — 'do not guarantee proportional growth'. "
+            "A contradicts the passage; B overstates importance; D misreads 'less even' as 'exaggerated'."
+        ),
+        "difficulty_b": 0.6,
+        "cefr": "B2",
     },
     {
         "id": Q_IDS[1],
         "passage": (
-            "Urban green spaces provide numerous benefits to city residents. Parks and "
-            "gardens not only offer recreational opportunities but also play a crucial "
-            "role in reducing air pollution, mitigating urban heat islands, and supporting "
-            "biodiversity. Research has shown that access to green spaces can improve "
-            "mental health, reduce stress levels, and encourage physical activity."
+            "The benefits of urban green space are routinely catalogued — cooler "
+            "microclimates, cleaner air, calmer minds — yet planners still treat parks as "
+            "amenities to be added once the 'real' city is built. The recent literature "
+            "argues for the inverse: that green corridors should be the structural skeleton "
+            "around which housing, transport and utilities are organised, rather than the "
+            "decorative surface laid over them."
         ),
-        "prompt": "Which of the following is NOT mentioned as a benefit of urban green spaces?",
+        "prompt": "What argument does the recent literature, as summarised by the writer, put forward?",
         "options": [
-            {"id": "A", "label": "Reducing air pollution"},
-            {"id": "B", "label": "Increasing property values"},
-            {"id": "C", "label": "Supporting biodiversity"},
-            {"id": "D", "label": "Improving mental health"},
+            {"id": "A", "label": "Parks should be added after the essential urban infrastructure is in place."},
+            {"id": "B", "label": "Green space should function as the city's organising framework, not its decoration."},
+            {"id": "C", "label": "Microclimates and air quality matter more than mental-health benefits."},
+            {"id": "D", "label": "Existing parks need to be expanded before new housing is approved."},
         ],
         "correct_option_id": "B",
-        "distractor_rationale": "A, C, and D are explicitly mentioned. B (property values) is not in the passage.",
-        "difficulty_b": 0.0,
-        "cefr": "B1",
+        "distractor_rationale": (
+            "B paraphrases 'structural skeleton… rather than the decorative surface'. "
+            "A is the position the literature opposes; C reorders unrelated benefits; "
+            "D introduces an idea not in the text."
+        ),
+        "difficulty_b": 0.9,
+        "cefr": "C1",
     },
     {
         "id": Q_IDS[2],
         "passage": (
-            "The process of desalination — removing salt from seawater to produce fresh "
-            "water — has long been considered an expensive solution to water scarcity. "
-            "However, advances in reverse osmosis technology have significantly reduced "
-            "energy consumption, making desalination more economically viable. Countries "
-            "in the Middle East, particularly Saudi Arabia and the UAE, now rely on "
-            "desalinated water for a substantial portion of their freshwater supply."
+            "Reverse-osmosis desalination has become markedly less costly per cubic metre, "
+            "but its economic 'viability' is heavily contingent on the price of electricity, "
+            "the salinity of the source water, and the availability of brine outfalls. In "
+            "regions where any of these conditions tightens, the technology can rapidly "
+            "revert to being a luxury rather than a baseload solution."
         ),
-        "prompt": "What technological advance has made desalination more economically viable?",
+        "prompt": "In the second sentence, the word 'contingent' is closest in meaning to:",
         "options": [
-            {"id": "A", "label": "Solar-powered pumps"},
-            {"id": "B", "label": "Improvements in reverse osmosis"},
-            {"id": "C", "label": "Chemical filtration methods"},
-            {"id": "D", "label": "Underground water storage"},
+            {"id": "A", "label": "dependent"},
+            {"id": "B", "label": "unrelated"},
+            {"id": "C", "label": "guaranteed"},
+            {"id": "D", "label": "irrelevant"},
         ],
-        "correct_option_id": "B",
-        "distractor_rationale": "Only reverse osmosis is mentioned. Others are plausible but not stated.",
-        "difficulty_b": 0.3,
+        "correct_option_id": "A",
+        "distractor_rationale": (
+            "A is the standard academic gloss of 'contingent on'. B and D are antonyms; C reverses meaning."
+        ),
+        "difficulty_b": 0.7,
         "cefr": "B2",
     },
     {
         "id": Q_IDS[3],
         "passage": (
-            "Cognitive scientists have demonstrated that bilingual individuals often "
-            "outperform monolinguals on tasks requiring attentional control and cognitive "
-            "flexibility. This 'bilingual advantage' is thought to arise from the constant "
-            "need to manage two language systems, which strengthens executive function. "
-            "Nevertheless, some researchers argue that the effect is smaller than initially "
-            "claimed and may be influenced by socioeconomic and cultural factors."
+            "Early studies trumpeted a robust 'bilingual advantage' in executive function, "
+            "but a wave of larger, pre-registered replications has tempered those claims. "
+            "The contemporary consensus is more cautious: any cognitive bonus appears small, "
+            "task-specific, and partially confounded with socioeconomic background, leaving "
+            "the original blanket conclusions difficult to defend."
         ),
-        "prompt": "What is the main reason given for the 'bilingual advantage'?",
+        "prompt": "Which best describes the writer's view of the original 'bilingual advantage' claims?",
         "options": [
-            {"id": "A", "label": "Bilinguals have larger vocabularies"},
-            {"id": "B", "label": "Managing two languages strengthens executive function"},
-            {"id": "C", "label": "Bilinguals receive better education"},
-            {"id": "D", "label": "Speaking two languages improves memory capacity"},
+            {"id": "A", "label": "They have been entirely refuted by recent evidence."},
+            {"id": "B", "label": "They were broadly correct but understated the size of the effect."},
+            {"id": "C", "label": "They overgeneralised an effect that newer evidence shows is small and conditional."},
+            {"id": "D", "label": "They remain valid because socioeconomic factors are unrelated."},
         ],
-        "correct_option_id": "B",
-        "distractor_rationale": "The passage explicitly links the advantage to managing two systems/executive function.",
-        "difficulty_b": 0.7,
-        "cefr": "B2",
+        "correct_option_id": "C",
+        "distractor_rationale": (
+            "C matches 'tempered… small, task-specific… partially confounded'. A is too strong; "
+            "B reverses direction; D contradicts the passage."
+        ),
+        "difficulty_b": 1.0,
+        "cefr": "C1",
     },
     {
         "id": Q_IDS[4],
         "passage": (
-            "The concept of 'circular economy' challenges the traditional linear model of "
-            "'take, make, dispose.' In a circular economy, products and materials are kept "
-            "in use for as long as possible through recycling, repairing, and repurposing. "
-            "Proponents argue this approach not only reduces waste but also creates new "
-            "economic opportunities. Critics, however, point out that implementing circular "
-            "systems at scale requires significant infrastructure investment and changes in "
-            "consumer behaviour that may prove difficult to achieve."
+            "Advocates of the circular economy frequently invoke recycling rates as evidence "
+            "of progress, yet on closer inspection these figures often double-count waste, "
+            "exclude exported material, or rely on optimistic assumptions about what is "
+            "ultimately reprocessed. Genuine circularity, the more rigorous critics argue, "
+            "would be measurable not by the volume diverted from landfill but by reductions "
+            "in primary resource extraction — a metric on which most economies have moved "
+            "scarcely at all."
         ),
-        "prompt": "According to critics, what is the main challenge of implementing a circular economy?",
+        "prompt": "What flaw in current circular-economy reporting do the 'rigorous critics' identify?",
         "options": [
-            {"id": "A", "label": "Lack of consumer interest in recycled products"},
-            {"id": "B", "label": "Higher costs of raw materials"},
-            {"id": "C", "label": "Infrastructure investment and behavioural change"},
-            {"id": "D", "label": "Insufficient government regulation"},
+            {"id": "A", "label": "Recycling rates are an unhelpful proxy because primary resource use has barely fallen."},
+            {"id": "B", "label": "Exported waste is the only source of double-counting."},
+            {"id": "C", "label": "Critics dispute the existence of any genuine circular economy."},
+            {"id": "D", "label": "Landfill diversion volumes have been deliberately understated."},
         ],
-        "correct_option_id": "C",
-        "distractor_rationale": "C directly matches critics' stated concerns (infrastructure + consumer behaviour).",
-        "difficulty_b": 1.0,
+        "correct_option_id": "A",
+        "distractor_rationale": (
+            "A captures the contrast between 'volume diverted from landfill' and 'reductions in "
+            "primary resource extraction'. B narrows multi-cause double-counting to one cause; "
+            "C overstates the critique; D inverts the direction."
+        ),
+        "difficulty_b": 1.3,
         "cefr": "C1",
     },
 ]

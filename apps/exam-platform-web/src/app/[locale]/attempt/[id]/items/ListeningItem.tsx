@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Headphones, Play } from "lucide-react";
 import type { ItemView } from "@/lib/api";
 import { MCQItem } from "./MCQItem";
@@ -18,6 +19,7 @@ type Props = {
  * a "Audio finished" badge. We disable the native seek bar.
  */
 export function ListeningItem({ item, choice, onChange, disabled }: Props) {
+  const t = useTranslations("Exam.listening");
   const audioUrl = resolveAudioUrl(item.payload.audio_url);
   const transcript = item.payload.transcript ?? item.payload.passage ?? item.payload.prompt ?? "";
   const [phase, setPhase] = useState<"ready" | "playing" | "finished">("ready");
@@ -120,7 +122,7 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
         <div className="flex items-center gap-3 text-[var(--color-muted-fg)]">
           <Headphones className="h-5 w-5" />
           <span className="text-sm font-semibold uppercase tracking-wider">
-            Listening · single play
+            {t("label")}
           </span>
         </div>
         <div className="mt-6 flex items-center gap-4">
@@ -132,17 +134,17 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
               className="flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-3 text-sm font-semibold text-[var(--color-primary-fg)] shadow-sm transition-all hover:bg-[var(--color-primary)]/90 disabled:opacity-40"
             >
               <Play className="h-4 w-4" />
-              Play audio
+              {t("play")}
             </button>
           )}
           {phase === "playing" && (
             <span className="rounded-full bg-amber-500/15 px-4 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
-              Playing… (cannot seek or replay)
+              {t("playing")}
             </span>
           )}
           {phase === "finished" && (
             <span className="rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
-              Audio finished
+              {t("finished")}
             </span>
           )}
         </div>
@@ -157,9 +159,7 @@ export function ListeningItem({ item, choice, onChange, disabled }: Props) {
       />
       {phase === "ready" && (
         <p className="text-sm text-[var(--color-muted-fg)]">
-          {hasPlayablePrompt
-            ? "Audio bir martagina ijro etiladi. Tinglashni boshlash uchun Play tugmasini bosing."
-            : "Bu savolda audio topilmadi, javob berishni davom ettirishingiz mumkin."}
+          {hasPlayablePrompt ? t("singlePlayHint") : t("noAudio")}
         </p>
       )}
     </div>

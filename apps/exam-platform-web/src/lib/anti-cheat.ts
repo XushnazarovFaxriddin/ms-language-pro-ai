@@ -85,6 +85,7 @@ export function createAntiCheatTracker(attemptId: string) {
   // It's not perfect (no detection is on modern browsers) but it's a soft
   // tripwire that surfaces obvious cases.
   let devtoolsLogged = false;
+  let devtoolsPollHandle: number | null = null;
   function checkDevtools() {
     if (devtoolsLogged) return;
     const heightDiff = window.outerHeight - window.innerHeight;
@@ -104,10 +105,8 @@ export function createAntiCheatTracker(attemptId: string) {
       window.addEventListener("focus", onFocus);
       document.addEventListener("contextmenu", onContextMenu);
       document.addEventListener("copy", onCopy);
-      const id = window.setInterval(checkDevtools, 2000);
+      devtoolsPollHandle = window.setInterval(checkDevtools, 2000);
       timer = window.setInterval(() => void flush(), FLUSH_INTERVAL_MS);
-      // Stash devtools poll handle on the tracker scope by closing it from stop()
-      stopDevtools = () => window.clearInterval(id);
     },
     stop() {
       if (!isStarted) return;
@@ -117,7 +116,10 @@ export function createAntiCheatTracker(attemptId: string) {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("copy", onCopy);
-      stopDevtools?.();
+      if (devtoolsPollHandle !== null) {
+        window.clearInterval(devtoolsPollHandle);
+        devtoolsPollHandle = null;
+      }
       if (timer !== null) {
         window.clearInterval(timer);
         timer = null;
@@ -127,8 +129,4 @@ export function createAntiCheatTracker(attemptId: string) {
     flush,
     record,
   };
-
-  // Hoisted late so closure captures it
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let stopDevtools: (() => void) | undefined;
 }

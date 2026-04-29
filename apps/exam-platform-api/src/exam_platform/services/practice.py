@@ -4,13 +4,17 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from languagepro_common.errors import ConflictError, NotFoundError
-from sqlalchemy import select, update
+from languagepro_common.logging import get_logger
+from sqlalchemy import insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from exam_platform.models import DrillAttempt, SRSCard, UserMastery
+from exam_platform.models import AttemptResponse, DrillAttempt, SRSCard, UserMastery
+
+log = get_logger(__name__)
 from exam_platform.schemas import (
     DrillAttemptComplete,
     DrillAttemptCreate,
@@ -28,14 +32,55 @@ async def get_srs_queue(
     user_id: UUID,
     limit: int = 20,
 ) -> list[SRSCardOut]:
-    rows = (
-        await db.execute(
-            select(SRSCard)
-            .where(SRSCard.user_id == user_id, SRSCard.due_at <= datetime.now(UTC))
-            .order_by(SRSCard.due_at.asc())
-            .limit(limit)
-        )
-    ).scalars()
+    rows = list(
+        (
+            await db.execute(
+                select(SRSCard)
+                .where(SRSCard.user_id == user_id, SRSCard.due_at <= datetime.now(UTC))
+                .order_by(SRSCard.due_at.asc())
+                .limit(limit)
+            )
+        ).scalars()
+    )
+    if not rows:
+        # First-time user: backfill from any completed attempts they already have.
+        # Idempotent — `seed_srs_from_attempt` skips items already seeded.
+        from exam_platform.models import ExamAttempt
+
+        any_card = (
+            await db.execute(
+                select(SRSCard.id).where(SRSCard.user_id == user_id).limit(1)
+            )
+        ).scalar_one_or_none()
+        if any_card is None:
+            attempts = (
+                await db.execute(
+                    select(ExamAttempt.id).where(
+                        ExamAttempt.user_id == user_id,
+                        ExamAttempt.state == "completed",
+                    )
+                )
+            ).scalars().all()
+            inserted_total = 0
+            for att_id in attempts:
+                inserted_total += await seed_srs_from_attempt(
+                    db, user_id=user_id, attempt_id=att_id
+                )
+            if inserted_total > 0:
+                await db.commit()
+                rows = list(
+                    (
+                        await db.execute(
+                            select(SRSCard)
+                            .where(
+                                SRSCard.user_id == user_id,
+                                SRSCard.due_at <= datetime.now(UTC),
+                            )
+                            .order_by(SRSCard.due_at.asc())
+                            .limit(limit)
+                        )
+                    ).scalars()
+                )
     return [_srs_out(row) for row in rows]
 
 
@@ -147,6 +192,100 @@ async def complete_drill_attempt(
         attempt_id=attempt_id,
     )
     return _drill_attempt_out(attempt)
+
+
+async def seed_srs_from_attempt(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+    attempt_id: UUID,
+) -> int:
+    """For each incorrect objective response, insert an SRS card (skip duplicates).
+
+    Also nudges per-skill mastery downward for missed items. Idempotent:
+    same call twice does NOT insert duplicates because we check existing
+    (user_id, ref_type='question', ref_id=item_id) tuples first.
+    """
+    rows = (
+        await db.execute(
+            select(AttemptResponse).where(
+                AttemptResponse.attempt_id == attempt_id,
+                AttemptResponse.is_correct.is_(False),
+            )
+        )
+    ).scalars().all()
+
+    if not rows:
+        return 0
+
+    # Find which item_ids already have a card so we don't double-seed.
+    item_ids = list({str(r.item_id) for r in rows})
+    existing = (
+        await db.execute(
+            select(SRSCard.ref_id).where(
+                SRSCard.user_id == user_id,
+                SRSCard.ref_type == "question",
+                SRSCard.ref_id.in_(item_ids),
+            )
+        )
+    ).scalars().all()
+    existing_set = set(existing)
+
+    now = datetime.now(UTC)
+    inserted = 0
+    skill_misses: dict[str, int] = {}
+    for r in rows:
+        skill_misses[r.skill] = skill_misses.get(r.skill, 0) + 1
+        ref_id = str(r.item_id)
+        if ref_id in existing_set:
+            continue
+        existing_set.add(ref_id)
+        payload = _build_srs_payload(r.item_snapshot, r.raw_answer, r.skill, r.type)
+        await db.execute(
+            insert(SRSCard).values(
+                user_id=user_id,
+                ref_type="question",
+                ref_id=ref_id,
+                payload=payload,
+                stability=Decimal("1.0"),
+                difficulty=Decimal("5.0"),
+                due_at=now,  # available for review immediately
+            )
+        )
+        inserted += 1
+
+    # Nudge mastery downward for each skill the user missed.
+    for skill, _miss_count in skill_misses.items():
+        await _adjust_mastery(db, user_id=user_id, code=f"skill_{skill}", correct=False)
+
+    log.info(
+        "srs_seeded_from_attempt",
+        attempt_id=str(attempt_id),
+        inserted=inserted,
+        skipped_existing=len(rows) - inserted,
+    )
+    return inserted
+
+
+def _build_srs_payload(
+    item_snapshot: dict[str, Any],
+    raw_answer: dict[str, Any],
+    skill: str,
+    item_type: str,
+) -> dict[str, Any]:
+    """Build a self-contained payload for the SRS card."""
+    snap = item_snapshot or {}
+    p = snap.get("payload") or {}
+    return {
+        "skill": skill,
+        "type": item_type,
+        "prompt": p.get("prompt") or p.get("question") or p.get("passage", "")[:500],
+        "options": p.get("options") or [],
+        "correct_option_id": p.get("correct_option_id"),
+        "correct_answer": p.get("correct_answer") or p.get("answer"),
+        "user_answer": raw_answer or {},
+        "cefr_level": snap.get("cefr_level") or p.get("cefr_level"),
+    }
 
 
 async def get_mastery(

@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { api, type AttemptFeedbackOut, type FeedbackArtifactOut } from "@/lib/api";
 import { Loader2, MessageCircle, RefreshCw, ChevronDown, ChevronUp, FileText, CheckCircle, AlertTriangle, Lightbulb } from "lucide-react";
+import { AIGradingProgress } from "./AIGradingProgress";
 
-export function FeedbackSection({ 
-  attemptId, 
-  initialFeedback 
-}: { 
-  attemptId: string, 
-  initialFeedback: AttemptFeedbackOut | null 
+export function FeedbackSection({
+  attemptId,
+  initialFeedback,
+  attemptCompleted,
+}: {
+  attemptId: string;
+  initialFeedback: AttemptFeedbackOut | null;
+  attemptCompleted?: boolean;
 }) {
   const t = useTranslations("Feedback");
   const locale = useLocale();
@@ -18,6 +21,7 @@ export function FeedbackSection({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [openLayer, setOpenLayer] = useState<string | null>("overview");
+  const autoStartedRef = useRef(false);
 
   const generateFeedback = async () => {
     setLoading(true);
@@ -34,7 +38,33 @@ export function FeedbackSection({
     }
   };
 
-  if (!feedback || feedback.artifacts.length === 0) {
+  // Auto-trigger LLM grading once if attempt is completed and we haven't got
+  // a real LLM overview yet. We don't block server render — this gives the
+  // user immediate page navigation, then upgrades the grading in the background.
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    if (!attemptCompleted) return;
+    const overview = latestOverview(feedback);
+    if (overview && overview.source === "llm") return;
+    autoStartedRef.current = true;
+    void generateFeedback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attemptCompleted]);
+
+  // Empty / not-yet-graded — show the animated grading progress.
+  if (!feedback || feedback.artifacts.length === 0 || loading) {
+    if (loading || (attemptCompleted && !feedback)) {
+      return (
+        <AIGradingProgress
+          state={error ? "error" : "running"}
+          errorMessage={error}
+          onRetry={() => {
+            autoStartedRef.current = true;
+            void generateFeedback();
+          }}
+        />
+      );
+    }
     return (
       <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-8 sm:p-12 text-center shadow-sm">
         <MessageCircle className="mx-auto h-12 w-12 text-[var(--color-muted-fg)] opacity-50 mb-4" />
@@ -42,14 +72,14 @@ export function FeedbackSection({
         <p className="text-[var(--color-muted-fg)] mb-8 max-w-md mx-auto">
           {t("emptyDesc")}
         </p>
-        
+
         {error && (
           <div className="mb-6 mx-auto max-w-md rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm font-medium text-red-600">
             {error}
           </div>
         )}
 
-        <button 
+        <button
           onClick={generateFeedback}
           disabled={loading}
           className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"

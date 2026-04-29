@@ -32,17 +32,10 @@ export default async function ResultsPage({
     // 404 or other errors mean no feedback exists yet
   }
 
-  let overview = latestOverview(feedback);
-  if (attempt.state === "completed" && overview?.source !== "llm") {
-    try {
-      await api.feedback.generateOverview(id, {}, ck);
-      feedback = await api.feedback.getAttemptFeedback(id, ck);
-      overview = latestOverview(feedback);
-    } catch (err) {
-      // Keep deterministic feedback visible when the LLM provider is unavailable.
-    }
-  }
-
+  // Don't block server render on the LLM call — FeedbackSection auto-triggers
+  // the upgrade on the client with animated progress. (30–60s of LLM latency
+  // hanging the page was the old behavior; users thought the page was broken.)
+  const overview = latestOverview(feedback);
   const overallBand = overview?.payload.bands?.overall;
   const scoreLabel = typeof overallBand === "number" ? overallBand.toFixed(1) : "—";
 
@@ -97,7 +90,11 @@ export default async function ResultsPage({
         </div>
 
         <div className="mt-12">
-          <FeedbackSection attemptId={id} initialFeedback={feedback} />
+          <FeedbackSection
+            attemptId={id}
+            initialFeedback={feedback}
+            attemptCompleted={attempt.state === "completed"}
+          />
         </div>
 
         {attempt.state === "completed" && (

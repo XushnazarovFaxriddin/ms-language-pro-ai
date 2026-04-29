@@ -241,8 +241,8 @@ async def generate_attempt_overview(
     base_payload = _build_completion_overview(attempt, list(responses), bands)
     base_payload["scoring_sources"] = await _scoring_source_summary(db, attempt.id)
     source = "llm"
-    model = None
-    prompt_version_id = None
+    model: str | None = None
+    prompt_version_id: str | None = None
     try:
         overview_resp = await router.complete(
             LLMRequest(
@@ -269,13 +269,19 @@ async def generate_attempt_overview(
         model = overview_resp.model
         prompt_version_id = overview_resp.prompt_version_id
     except Exception as exc:
-        log.warning(
-            "feedback_overview_llm_failed_using_fallback",
+        # Be honest with the student: instead of silently swapping in a
+        # deterministic fallback (which produces optimistic bands the LLM
+        # would not have given), surface the failure so the UI can show a
+        # clear retry. We still write a record so subsequent reads return
+        # the deterministic snapshot — but we re-raise to signal "not real".
+        log.exception(
+            "feedback_overview_llm_failed",
             attempt_id=str(attempt.id),
             error=str(exc),
         )
-        overview_payload = base_payload
-        source = "system"
+        raise ValidationError(
+            f"AI grading is temporarily unavailable: {exc!s}"[:240]
+        ) from exc
 
     await db.execute(
         delete(FeedbackArtifact).where(
@@ -767,6 +773,10 @@ def _score_response_heuristically(
 def _score_writing_heuristically(
     response: AttemptResponse,
 ) -> tuple[float, dict[str, Any], str, str]:
+    """Pre-LLM placeholder. Punitive on short/empty answers so the student is
+    never misled into thinking a near-blank essay scored 5+. Real grading
+    overwrites this when the LLM call succeeds.
+    """
     text = response.raw_answer.get("text_answer", "")
     essay = text if isinstance(text, str) else ""
     words = re.findall(r"[A-Za-z][A-Za-z'-]*", essay)
@@ -774,11 +784,25 @@ def _score_writing_heuristically(
     payload = _response_payload(response)
     minimum = int(payload.get("word_limit_min") or 250)
 
-    length_ratio = min(word_count / max(1, minimum), 1.25)
-    task_response = _round_band(4.5 + min(length_ratio, 1.0) * 2.0)
-    coherence = _round_band(5.0 + (0.5 if "\n" in essay.strip() else 0.0))
-    lexical = _round_band(5.0 + min(len({w.lower() for w in words}) / 120, 1.0))
-    grammar = _round_band(5.0 + (0.5 if len(_sentence_ranges(essay)) >= 3 else 0.0))
+    # Hard caps based on length completeness.
+    if word_count == 0:
+        cap = 0.0
+    elif word_count < 40:
+        cap = 2.5
+    elif word_count < minimum * 0.4:
+        cap = 4.0
+    elif word_count < minimum * 0.8:
+        cap = 5.0
+    else:
+        cap = 6.5
+
+    length_ratio = min(word_count / max(1, minimum), 1.0)
+    task_response = _round_band(min(cap, 3.0 + length_ratio * 3.0))
+    coherence = _round_band(min(cap, 3.5 + (0.5 if "\n" in essay.strip() else 0.0) + length_ratio * 1.5))
+    lexical_pool = len({w.lower() for w in words})
+    lexical = _round_band(min(cap, 3.5 + min(lexical_pool / 120, 1.0) * 2.0))
+    sentence_count = len(_sentence_ranges(essay))
+    grammar = _round_band(min(cap, 3.5 + min(sentence_count / 8, 1.0) * 2.0))
     band = _round_band((task_response + coherence + lexical + grammar) / 4)
     criteria = {
         "task_response": task_response,
@@ -787,15 +811,29 @@ def _score_writing_heuristically(
         "grammatical_range_accuracy": grammar,
         "word_count": word_count,
         "method": "heuristic_fallback",
+        "is_estimate": True,
     }
-    feedback_uz = (
-        f"Insho qabul qilindi: {word_count} ta so'z. Keyingi bosqichda dalillar, "
-        "paragraf tuzilishi va akademik leksikani kuchaytirish eng foydali bo'ladi."
-    )
-    feedback_en = (
-        f"Essay accepted: {word_count} words. The next best improvements are stronger "
-        "supporting evidence, paragraph structure, and more academic lexical choices."
-    )
+    if word_count == 0:
+        feedback_uz = "Insho topshirilmadi (matn bo'sh). AI baholash haqiqiy band bera olmaydi."
+        feedback_en = "No essay was submitted (empty text). AI grading cannot produce a real band."
+    elif word_count < minimum * 0.5:
+        feedback_uz = (
+            f"Insho juda qisqa ({word_count}/{minimum} so'z) — bu band cheklangan. "
+            "To'liq baholash uchun talab qilingan uzunlikda yozing."
+        )
+        feedback_en = (
+            f"Essay is well below the minimum length ({word_count}/{minimum} words), "
+            "which caps your band. Write the full required length for a real grade."
+        )
+    else:
+        feedback_uz = (
+            f"Bu — vaqtinchalik baholash ({word_count} so'z). To'liq AI tahlili uchun "
+            "yuqoridagi 'AI tahlilini boshlash' tugmasini bosing."
+        )
+        feedback_en = (
+            f"This is a placeholder estimate ({word_count} words). Trigger the full AI "
+            "analysis above for the real, evidence-backed band."
+        )
     return band, criteria, feedback_uz, feedback_en
 
 
@@ -808,10 +846,21 @@ def _score_speaking_heuristically(
     duration_ratio = min(duration_seconds / max(target_seconds, 1.0), 1.0)
     audio_bytes = int(response.raw_answer.get("audio_bytes") or 0)
 
-    fluency = _round_band(4.5 + duration_ratio * 2.0)
-    pronunciation = _round_band(5.0 + (0.5 if audio_bytes > 0 else 0.0))
-    lexical = _round_band(5.0 + duration_ratio)
-    grammar = _round_band(5.0 + duration_ratio)
+    if audio_bytes <= 0 or duration_seconds < 1.0:
+        cap = 0.0
+    elif duration_seconds < 15:
+        cap = 3.0
+    elif duration_seconds < target_seconds * 0.4:
+        cap = 4.5
+    elif duration_seconds < target_seconds * 0.8:
+        cap = 5.5
+    else:
+        cap = 6.5
+
+    fluency = _round_band(min(cap, 3.0 + duration_ratio * 2.5))
+    pronunciation = _round_band(min(cap, 3.5 + (0.5 if audio_bytes > 0 else 0.0)))
+    lexical = _round_band(min(cap, 3.5 + duration_ratio * 2.0))
+    grammar = _round_band(min(cap, 3.5 + duration_ratio * 2.0))
     band = _round_band((fluency + pronunciation + lexical + grammar) / 4)
     criteria = {
         "fluency_coherence": fluency,
@@ -821,15 +870,29 @@ def _score_speaking_heuristically(
         "duration_seconds": round(duration_seconds, 1),
         "audio_bytes": audio_bytes,
         "method": "heuristic_fallback",
+        "is_estimate": True,
     }
-    feedback_uz = (
-        f"Speaking javobi yozib olindi ({round(duration_seconds, 1)}s). Keyingi mashqda "
-        "javobni to'liqroq kengaytirish va tabiiy bog'lovchilar ishlatishga e'tibor bering."
-    )
-    feedback_en = (
-        f"Speaking response recorded ({round(duration_seconds, 1)}s). For the next attempt, "
-        "expand the answer more fully and use natural linking language."
-    )
+    if audio_bytes <= 0:
+        feedback_uz = "Speaking audio yozib olinmagan. AI baholash haqiqiy band bera olmaydi."
+        feedback_en = "No speaking audio was recorded. AI grading cannot produce a real band."
+    elif duration_seconds < 15:
+        feedback_uz = (
+            f"Javob juda qisqa ({round(duration_seconds, 1)}s). To'liq baholash uchun "
+            "kamida 60 soniya gapiring."
+        )
+        feedback_en = (
+            f"Response is very short ({round(duration_seconds, 1)}s). Speak for at least "
+            "60 seconds for a meaningful band."
+        )
+    else:
+        feedback_uz = (
+            f"Bu — vaqtinchalik baholash ({round(duration_seconds, 1)}s audio). "
+            "To'liq AI tahlili tez orada tayyor bo'ladi."
+        )
+        feedback_en = (
+            f"This is a placeholder estimate ({round(duration_seconds, 1)}s audio). "
+            "Full AI analysis will be ready shortly."
+        )
     return band, criteria, feedback_uz, feedback_en
 
 

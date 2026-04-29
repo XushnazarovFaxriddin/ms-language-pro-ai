@@ -1,135 +1,225 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { api, SRSCardOut } from "@/lib/api";
-import { Loader2, ArrowRight, PlayCircle, Target, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, XCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+
+type CardPayload = {
+  skill?: string;
+  type?: string;
+  prompt?: string;
+  options?: { id: string; text: string }[];
+  correct_option_id?: string | null;
+  correct_answer?: string | null;
+  user_answer?: Record<string, unknown> | null;
+  cefr_level?: string;
+};
 
 export function PracticeClient({ initialQueue }: { initialQueue: SRSCardOut[] }) {
+  const t = useTranslations("Practice");
   const [queue, setQueue] = useState(initialQueue);
-  const [loading, setLoading] = useState(false);
+  const [reveal, setReveal] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  // Drill state
-  const [drillActive, setDrillActive] = useState(false);
-  const [drillAttemptId, setDrillAttemptId] = useState<string | null>(null);
-  const [drillLoading, setDrillLoading] = useState(false);
+  const card = queue[0];
+  const payload = (card?.payload as CardPayload | undefined) ?? null;
+  const total = useMemo(() => initialQueue.length, [initialQueue]);
+  const remaining = queue.length;
 
-  const handleGrade = async (cardId: string, grade: "again" | "hard" | "good" | "easy") => {
-    setLoading(true);
+  const handleGrade = async (
+    cardId: string,
+    grade: "again" | "hard" | "good" | "easy",
+  ) => {
+    setBusy(true);
     try {
       await api.practice.gradeSRS({ card_id: cardId, grade });
-      // Remove graded card
-      setQueue(q => q.filter(c => c.id !== cardId));
+      setQueue((q) => q.slice(1));
+      setReveal(false);
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
-  const startDrill = async () => {
-    setDrillLoading(true);
-    try {
-      // Mock Drill ID for demonstration. In reality, user selects a drill.
-      const drillId = "00000000-0000-0000-0000-000000000000"; 
-      const attempt = await api.practice.startDrill(drillId, { items_total: 5 });
-      setDrillAttemptId(attempt.id);
-      setDrillActive(true);
-    } catch (err) {
-      console.error(err);
-      // For demo purposes if API fails:
-      setDrillActive(true);
-    } finally {
-      setDrillLoading(false);
-    }
-  };
-
-  const completeDrill = async () => {
-    setDrillLoading(true);
-    try {
-      if (drillAttemptId) {
-        await api.practice.completeDrill("00000000-0000-0000-0000-000000000000", drillAttemptId, { duration_ms: 120000 });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setDrillActive(false);
-      setDrillAttemptId(null);
-      setDrillLoading(false);
-    }
-  };
-
-  if (drillActive) {
+  if (!card || !payload) {
     return (
-      <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-8 shadow-xl text-center space-y-6">
-        <Target className="h-12 w-12 text-[var(--color-primary)] mx-auto" />
-        <h2 className="text-2xl font-bold">Drill Mashg'uloti Jarayonda</h2>
-        <p className="text-[var(--color-muted-fg)] max-w-md mx-auto">
-          Bu yerda haqiqiy drill savollari ketma-ket chiqadi. Har biriga javob berganingizda submitDrillItem ishlaydi.
-        </p>
-        <button 
-          onClick={completeDrill}
-          disabled={drillLoading}
-          className="flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-6 py-3 font-bold text-white transition-all hover:opacity-90 mx-auto"
-        >
-          {drillLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
-          Mashqni yakunlash
-        </button>
+      <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-12 text-center text-[var(--color-muted-fg)]">
+        {t("doneTitle")}
       </div>
     );
   }
 
+  const userPicked = (payload.user_answer as { option_id?: string } | null)?.option_id;
+  const userText = (payload.user_answer as { text?: string; answer?: string } | null)?.text
+    ?? (payload.user_answer as { answer?: string } | null)?.answer
+    ?? "";
+
   return (
-    <div className="space-y-8">
-      {/* Drill CTA */}
-      <div className="rounded-3xl border border-[var(--color-primary)]/20 bg-gradient-to-r from-[var(--color-primary)]/10 to-transparent p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-[var(--color-primary)]">Yangi Drill Boshlash</h2>
-          <p className="text-sm text-[var(--color-muted-fg)] mt-1">Siz uchun eng kerakli mavzularda 5 ta savol.</p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-[var(--color-muted-fg)]">
+        <span>
+          {t("progress", {
+            current: total - remaining + 1,
+            total,
+          })}
+        </span>
+        <div className="flex items-center gap-2">
+          {payload.skill && <Pill>{payload.skill}</Pill>}
+          {payload.cefr_level && <Pill>{payload.cefr_level}</Pill>}
         </div>
-        <button 
-          onClick={startDrill}
-          disabled={drillLoading}
-          className="flex whitespace-nowrap items-center gap-2 rounded-xl bg-[var(--color-primary)] px-5 py-3 font-bold text-white transition-all hover:opacity-90 shadow-lg shadow-[var(--color-primary)]/20"
-        >
-          {drillLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <PlayCircle className="h-5 w-5" />}
-          Boshlash
-        </button>
       </div>
 
-      {/* SRS Queue */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Takrorlash uchun ({queue.length})</h2>
-        {queue.length === 0 ? (
-          <div className="rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-12 text-center text-[var(--color-muted-fg)]">
-            Hozircha takrorlash uchun hech narsa yo'q! 🎉
+      <div className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-6 sm:p-8 shadow-xl space-y-6">
+        <p className="text-base leading-relaxed font-medium text-[var(--color-fg)]">
+          {payload.prompt || t("noPrompt")}
+        </p>
+
+        {payload.options && payload.options.length > 0 ? (
+          <div className="space-y-2">
+            {payload.options.map((opt) => {
+              const isCorrect = reveal && payload.correct_option_id === opt.id;
+              const isUserPick = userPicked === opt.id;
+              const isUserWrong = reveal && isUserPick && !isCorrect;
+              return (
+                <div
+                  key={opt.id}
+                  className={`flex items-start gap-3 rounded-2xl border p-3 text-sm transition-colors ${
+                    isCorrect
+                      ? "border-emerald-500/40 bg-emerald-500/10"
+                      : isUserWrong
+                        ? "border-red-500/40 bg-red-500/10"
+                        : "border-[var(--color-border)]/50 bg-[var(--color-muted)]/10"
+                  }`}
+                >
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)]/60 text-[10px] font-bold uppercase">
+                    {opt.id.toUpperCase()}
+                  </span>
+                  <span className="flex-1">{opt.text}</span>
+                  {isCorrect && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
+                  {isUserWrong && <XCircle className="h-4 w-4 text-red-500 shrink-0" />}
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <div className="space-y-4">
-            {queue.slice(0, 1).map(card => (
-              <div key={card.id} className="rounded-3xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] p-6 sm:p-8 shadow-xl">
-                <div className="mb-8">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted-fg)]">{card.ref_type}</span>
-                  <pre className="mt-4 p-4 rounded-xl bg-[var(--color-muted)]/20 overflow-x-auto text-sm font-mono whitespace-pre-wrap border border-[var(--color-border)]/30">
-                    {JSON.stringify(card.payload, null, 2)}
-                  </pre>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-                  <button onClick={() => handleGrade(card.id, "again")} disabled={loading} className="rounded-xl border border-red-500/20 bg-red-500/10 py-3 text-sm font-bold text-red-500 hover:bg-red-500/20 transition-colors">Qayta</button>
-                  <button onClick={() => handleGrade(card.id, "hard")} disabled={loading} className="rounded-xl border border-orange-500/20 bg-orange-500/10 py-3 text-sm font-bold text-orange-500 hover:bg-orange-500/20 transition-colors">Qiyin</button>
-                  <button onClick={() => handleGrade(card.id, "good")} disabled={loading} className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 py-3 text-sm font-bold text-emerald-500 hover:bg-emerald-500/20 transition-colors">Yaxshi</button>
-                  <button onClick={() => handleGrade(card.id, "easy")} disabled={loading} className="rounded-xl border border-blue-500/20 bg-blue-500/10 py-3 text-sm font-bold text-blue-500 hover:bg-blue-500/20 transition-colors">Oson</button>
-                </div>
-              </div>
-            ))}
-            {queue.length > 1 && (
-              <div className="text-center text-sm font-bold text-[var(--color-muted-fg)] pt-2">
-                Va yana {queue.length - 1} ta karta bor...
-              </div>
+        ) : userText || payload.correct_answer ? (
+          <div className="space-y-3 text-sm">
+            {userText && (
+              <Row
+                label={t("yourAnswer")}
+                value={userText}
+                tone="warn"
+              />
             )}
+            {reveal && payload.correct_answer && (
+              <Row label={t("correctAnswer")} value={payload.correct_answer} tone="ok" />
+            )}
+          </div>
+        ) : null}
+
+        <div className="flex items-center justify-between border-t border-[var(--color-border)]/40 pt-4">
+          <button
+            type="button"
+            onClick={() => setReveal((r) => !r)}
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--color-border)]/60 px-4 py-2 text-xs font-bold transition-colors hover:bg-[var(--color-muted)]/20"
+          >
+            {reveal ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {reveal ? t("hideAnswer") : t("showAnswer")}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 pt-2">
+          <GradeBtn
+            disabled={busy}
+            onClick={() => handleGrade(card.id, "again")}
+            tone="red"
+            label={t("grade.again")}
+            sub={t("grade.againSub")}
+          />
+          <GradeBtn
+            disabled={busy}
+            onClick={() => handleGrade(card.id, "hard")}
+            tone="orange"
+            label={t("grade.hard")}
+            sub={t("grade.hardSub")}
+          />
+          <GradeBtn
+            disabled={busy}
+            onClick={() => handleGrade(card.id, "good")}
+            tone="green"
+            label={t("grade.good")}
+            sub={t("grade.goodSub")}
+          />
+          <GradeBtn
+            disabled={busy}
+            onClick={() => handleGrade(card.id, "easy")}
+            tone="blue"
+            label={t("grade.easy")}
+            sub={t("grade.easySub")}
+          />
+        </div>
+        {busy && (
+          <div className="flex items-center justify-center pt-2 text-xs text-[var(--color-muted-fg)]">
+            <Loader2 className="h-4 w-4 animate-spin" />
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function Pill({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-[var(--color-border)]/50 bg-[var(--color-muted)]/20 px-3 py-1 text-[10px] uppercase tracking-wider">
+      {children}
+    </span>
+  );
+}
+
+function Row({ label, value, tone }: { label: string; value: string; tone: "ok" | "warn" }) {
+  const cls =
+    tone === "ok"
+      ? "border-emerald-500/30 bg-emerald-500/10"
+      : "border-orange-500/30 bg-orange-500/10";
+  return (
+    <div className={`rounded-2xl border ${cls} p-3`}>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-fg)] mb-1">
+        {label}
+      </div>
+      <div className="text-sm font-medium">{value}</div>
+    </div>
+  );
+}
+
+function GradeBtn({
+  disabled,
+  onClick,
+  tone,
+  label,
+  sub,
+}: {
+  disabled: boolean;
+  onClick: () => void;
+  tone: "red" | "orange" | "green" | "blue";
+  label: string;
+  sub: string;
+}) {
+  const cls = {
+    red: "border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20",
+    orange: "border-orange-500/20 bg-orange-500/10 text-orange-500 hover:bg-orange-500/20",
+    green: "border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20",
+    blue: "border-blue-500/20 bg-blue-500/10 text-blue-500 hover:bg-blue-500/20",
+  }[tone];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex flex-col items-center justify-center rounded-xl border ${cls} py-3 text-sm font-bold transition-colors disabled:opacity-50`}
+    >
+      <span>{label}</span>
+      <span className="mt-0.5 text-[10px] font-medium opacity-70">{sub}</span>
+    </button>
   );
 }
