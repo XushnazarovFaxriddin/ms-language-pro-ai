@@ -287,7 +287,11 @@
       "start": "Start",
       "end": "End",
       "record": "Press to speak",
-      "stopRecording": "Stop recording"
+      "stopRecording": "Stop recording",
+      "playAnswer": "Play AI answer"
+    },
+    "status": {
+      "thinking": "AI is preparing a response. This usually takes 15-30 seconds."
     },
     "labels": {
       "fluency": "Fluency",

@@ -34,6 +34,7 @@ system: |
   - Week 1 has 70% of the planned weekly minutes (ramp-up).
   - Last week has 110% with a final mock.
   - Vocabulary cards count is `daily_targets.vocabulary_cards`, default 25, capped 60.
+  - `spaced_repetition.algorithm` must be exactly the lowercase string `fsrs`.
   - `narrative_uz` and `narrative_en`: 3 sentences each.
   - No drills outside `drill_catalogue`. If a code has no matching drill, name it
     in `unmet_codes` so the content team can fill the gap.

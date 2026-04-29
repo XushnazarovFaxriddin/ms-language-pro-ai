@@ -287,7 +287,11 @@
       "start": "Boshlash",
       "end": "Yakunlash",
       "record": "Gapirish uchun bosing",
-      "stopRecording": "Yozishni to'xtatish"
+      "stopRecording": "Yozishni to'xtatish",
+      "playAnswer": "AI javobini eshitish"
+    },
+    "status": {
+      "thinking": "AI javob tayyorlayapti. Bu odatda 15-30 soniya davom etadi."
     },
     "labels": {
       "fluency": "Fluency",

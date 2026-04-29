@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { api, ConversationSessionOut, ConversationTurnOut } from "@/lib/api";
-import { Mic, Square, Loader2, PlayCircle, StopCircle, CheckCircle, AlertTriangle } from "lucide-react";
+import { Mic, Square, Loader2, PlayCircle, StopCircle, CheckCircle, AlertTriangle, Volume2 } from "lucide-react";
 
 export function ConversationClient() {
   const t = useTranslations("Conversation");
@@ -20,6 +20,7 @@ export function ConversationClient() {
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const audioSamples = useRef<Float32Array[]>([]);
   const sampleRateRef = useRef(44100);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const cleanupRecorder = async () => {
     processorRef.current?.disconnect();
@@ -37,9 +38,14 @@ export function ConversationClient() {
   useEffect(() => {
     return () => {
       isRecordingRef.current = false;
+      window.speechSynthesis?.cancel();
       void cleanupRecorder();
     };
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [turns, loading]);
 
   const startSession = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,6 +69,7 @@ export function ConversationClient() {
     if (!session) return;
     try {
       await api.conversation.endSession(session.id);
+      window.speechSynthesis?.cancel();
       setSession(null);
       setTurns([]);
     } catch (err: any) {
@@ -72,6 +79,7 @@ export function ConversationClient() {
 
   const startRecording = async () => {
     try {
+      window.speechSynthesis?.cancel();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const AudioContextCtor =
         window.AudioContext ||
@@ -133,6 +141,7 @@ export function ConversationClient() {
         audio_format: audioFormat,
       });
       setTurns(prev => [...prev, turn]);
+      speakAgentResponse(turn.agent_response_text);
     } catch (err: any) {
       setError(err.message || t("errors.submitAudio"));
     } finally {
@@ -196,15 +205,15 @@ export function ConversationClient() {
                 <p className="text-sm">{turn.user_transcript}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase">
-                    {t("labels.fluency")}: {turn.feedback.fluency_band_estimate}
+                  {t("labels.fluency")}: {turn.feedback.fluency_band_estimate}
                   </span>
-                  {turn.feedback.grammar_issues.length === 0 ? (
+                  {(turn.feedback.grammar_issues?.length ?? 0) === 0 ? (
                     <span className="flex items-center gap-1 rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase">
                       <CheckCircle className="h-3 w-3" /> {t("labels.noGrammarIssues")}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 rounded bg-orange-400/80 px-2 py-0.5 text-[10px] font-bold uppercase">
-                      <AlertTriangle className="h-3 w-3" /> {t("labels.grammarIssues", { count: turn.feedback.grammar_issues.length })}
+                      <AlertTriangle className="h-3 w-3" /> {t("labels.grammarIssues", { count: turn.feedback.grammar_issues?.length ?? 0 })}
                     </span>
                   )}
                 </div>
@@ -217,6 +226,14 @@ export function ConversationClient() {
                 <p className="text-sm font-medium leading-relaxed text-[var(--color-fg)]">
                   {turn.agent_response_text}
                 </p>
+                <button
+                  type="button"
+                  onClick={() => speakAgentResponse(turn.agent_response_text)}
+                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)]/50 px-3 py-1.5 text-xs font-bold text-[var(--color-muted-fg)] transition-colors hover:bg-[var(--color-muted)]/30 hover:text-[var(--color-fg)]"
+                >
+                  <Volume2 className="h-3.5 w-3.5" />
+                  {t("actions.playAnswer")}
+                </button>
                 <div className="mt-4 border-t border-[var(--color-border)]/50 pt-3">
                   <p className="text-xs font-bold text-[var(--color-primary)]">{t("labels.suggestion")}</p>
                   <p className="text-xs text-[var(--color-muted-fg)] mt-1">{turn.feedback.encouragement_uz}</p>
@@ -226,10 +243,12 @@ export function ConversationClient() {
           </div>
         ))}
         {loading && (
-          <div className="flex justify-center p-4">
+          <div className="flex flex-col items-center justify-center gap-3 p-4 text-center text-sm text-[var(--color-muted-fg)]">
             <Loader2 className="h-6 w-6 animate-spin text-[var(--color-primary)]" />
+            <span>{t("status.thinking")}</span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       <div className="p-4 border-t border-[var(--color-border)]/50 bg-[var(--color-bg)] flex justify-center">
@@ -291,6 +310,18 @@ function writeAscii(view: DataView, offset: number, text: string) {
   for (let i = 0; i < text.length; i += 1) {
     view.setUint8(offset + i, text.charCodeAt(i));
   }
+}
+
+function speakAgentResponse(text: string) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
