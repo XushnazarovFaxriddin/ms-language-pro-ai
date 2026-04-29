@@ -109,7 +109,7 @@ async def add_turn(
                     variables={
                         "topic": session.topic,
                         "prior_turns": prior_turns,
-                        "user_locale": "uz",
+                        "user_locale": body.user_locale,
                         "cefr_level": session.cefr_level,
                     },
                     audio_input=audio_bytes,

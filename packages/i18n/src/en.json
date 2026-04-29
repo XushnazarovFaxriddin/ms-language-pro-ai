@@ -241,6 +241,38 @@
     "questionNumber": "Question #",
     "ieltsBand": "IELTS Band"
   },
+  "Certificate": {
+    "title": "Official Certificate",
+    "subtitle": "Issue, download and share your tamper-proof LanguagePro AI certificate.",
+    "issue": "Issue Certificate",
+    "issuing": "Issuing…",
+    "download": "Download PDF",
+    "verify": "Open Verify Page",
+    "copyVerify": "Copy Verify URL",
+    "copied": "Copied",
+    "publicId": "Public ID",
+    "sha256": "SHA-256",
+    "overallBand": "Overall Band",
+    "cefr": "CEFR Level",
+    "alreadyIssued": "This certificate was already issued for this attempt.",
+    "error": "Could not issue certificate. Please try again."
+  },
+  "Verify": {
+    "validTitle": "Certificate verified",
+    "invalidTitle": "Certificate not valid",
+    "validSubtitle": "This certificate was issued by LanguagePro AI and has not been tampered with.",
+    "name": "Holder",
+    "exam": "Exam",
+    "overallBand": "Overall band",
+    "cefr": "CEFR level",
+    "publicId": "Public ID",
+    "sha256": "SHA-256",
+    "issuedAt": "Issued at",
+    "reasonRevoked": "This certificate was revoked.",
+    "reasonNotFound": "No certificate found with this ID.",
+    "reasonLookupError": "Could not look up this certificate. Please try again.",
+    "reasonGeneric": "We could not validate this certificate."
+  },
   "Roadmap": {
     "title": "Personal roadmap",
     "description": "Daily and weekly study plan tailored to your target.",
@@ -262,6 +294,7 @@
       "minutesUnit": "{count} min"
     },
     "recommendation": "Recommendation:",
+    "regenerate": "Regenerate",
     "setup": {
       "title": "Create a personal roadmap",
       "description": "Enter your goal and available study time. AI will build an optimal preparation strategy for you.",
@@ -271,6 +304,10 @@
       "weeksLeft": "Weeks left",
       "focusSkill": "Main focus (Skill)",
       "submit": "Create roadmap",
+      "submitRegenerate": "Regenerate roadmap",
+      "regenerateTitle": "Update your roadmap",
+      "regenerateDescription": "Adjust your target and AI will rebuild a fresh study plan.",
+      "cancel": "Cancel",
       "error": "Something went wrong"
     }
   },

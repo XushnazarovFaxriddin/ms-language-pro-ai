@@ -418,18 +418,31 @@ async def submit_response(
     # ── Grade objective items synchronously; defer writing/speaking to async ──
     is_correct: bool | None = None
     raw_answer: dict[str, Any] = {}
+    # All these item types reduce to a single-choice grading via answer_key.correct_option_id
     objective = item_type in {
         "mcq_single",
         "mcq_multi",
         "true_false_ng",
         "yes_no_ng",
+        "matching_information",
+        "matching_features",
+        "matching_headings",
+        "matching_sentence_endings",
+        "sentence_completion",
+        "summary_completion",
+        "note_completion",
+        "table_completion",
+        "short_answer",
     }
 
     if objective:
         if not mcq_choice_id:
             raise ValidationError(f"mcq_choice_id required for {item_type}")
         key = await de.get_answer_key(item_id)
-        is_correct = mcq_choice_id == key.get("correct_option_id")
+        # Tolerant matching for completion-style items: case + whitespace
+        expected = str(key.get("correct_option_id", "")).strip().lower()
+        given = str(mcq_choice_id).strip().lower()
+        is_correct = bool(expected) and given == expected
         raw_answer = {"mcq_choice_id": mcq_choice_id}
     elif text_answer is not None:
         raw_answer = {"text_answer": text_answer}

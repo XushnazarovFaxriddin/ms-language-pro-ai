@@ -241,6 +241,38 @@
     "questionNumber": "Savol #",
     "ieltsBand": "IELTS Band"
   },
+  "Certificate": {
+    "title": "Rasmiy Sertifikat",
+    "subtitle": "LanguagePro AI sertifikatingizni rasmiylashtiring, yuklab oling va ulashing.",
+    "issue": "Sertifikat olish",
+    "issuing": "Tayyorlanmoqda…",
+    "download": "PDF yuklab olish",
+    "verify": "Tekshirish sahifasi",
+    "copyVerify": "Tekshirish havolasini nusxalash",
+    "copied": "Nusxalandi",
+    "publicId": "Ommaviy ID",
+    "sha256": "SHA-256",
+    "overallBand": "Umumiy Band",
+    "cefr": "CEFR daraja",
+    "alreadyIssued": "Ushbu urinish uchun sertifikat avval berilgan.",
+    "error": "Sertifikatni rasmiylashtirib bo'lmadi. Qayta urinib ko'ring."
+  },
+  "Verify": {
+    "validTitle": "Sertifikat haqiqiy",
+    "invalidTitle": "Sertifikat haqiqiy emas",
+    "validSubtitle": "Ushbu sertifikat LanguagePro AI tomonidan berilgan va o'zgartirilmagan.",
+    "name": "Egasi",
+    "exam": "Imtihon",
+    "overallBand": "Umumiy band",
+    "cefr": "CEFR daraja",
+    "publicId": "Ommaviy ID",
+    "sha256": "SHA-256",
+    "issuedAt": "Berilgan vaqti",
+    "reasonRevoked": "Ushbu sertifikat bekor qilingan.",
+    "reasonNotFound": "Bunday ID bo'yicha sertifikat topilmadi.",
+    "reasonLookupError": "Sertifikatni tekshirib bo'lmadi. Qayta urinib ko'ring.",
+    "reasonGeneric": "Sertifikatni tasdiqlay olmadik."
+  },
   "Roadmap": {
     "title": "Shaxsiy reja (Roadmap)",
     "description": "Sizning maqsadingizga moslashtirilgan kunlik va haftalik mashg'ulotlar rejasi.",
@@ -262,6 +294,7 @@
       "minutesUnit": "{count} min"
     },
     "recommendation": "Tavsiya:",
+    "regenerate": "Qaytadan yaratish",
     "setup": {
       "title": "Shaxsiy reja yarating",
       "description": "Maqsadingiz va bo'sh vaqtingizni kiriting. AI siz uchun eng optimal tayyorgarlik strategiyasini ishlab chiqadi.",
@@ -271,6 +304,10 @@
       "weeksLeft": "Necha hafta qoldi?",
       "focusSkill": "Asosiy e'tibor (Skill)",
       "submit": "Rejani shakllantirish",
+      "submitRegenerate": "Rejani yangilash",
+      "regenerateTitle": "Rejani yangilang",
+      "regenerateDescription": "Maqsadingizni o'zgartiring — AI siz uchun yangi tayyorgarlik rejasini tuzadi.",
+      "cancel": "Bekor qilish",
       "error": "Xatolik yuz berdi"
     }
   },

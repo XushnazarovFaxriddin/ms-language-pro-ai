@@ -24,6 +24,12 @@ type FetchOpts = {
   api: "auth" | "data";
 };
 
+function readCookie(name: string): string | undefined {
+  if (!isBrowser) return undefined;
+  const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return match && match[1] ? decodeURIComponent(match[1]) : undefined;
+}
+
 async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   const base = opts.api === "auth" ? AUTH_API : DATA_API;
   const headers: Record<string, string> = {
@@ -31,8 +37,13 @@ async function call<T>(path: string, opts: FetchOpts): Promise<T> {
     ...opts.headers,
   };
   if (opts.cookieHeader) headers.Cookie = opts.cookieHeader;
+  const method = opts.method ?? "GET";
+  if (isBrowser && method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const csrf = readCookie("lp_csrf");
+    if (csrf) headers["X-CSRF-Token"] = csrf;
+  }
   const res = await fetch(`${base}${path}`, {
-    method: opts.method ?? "GET",
+    method,
     headers,
     credentials: "include",
     cache: "no-store",

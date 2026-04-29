@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { api, ConversationSessionOut, ConversationTurnOut } from "@/lib/api";
 import { Mic, Square, Loader2, PlayCircle, StopCircle, CheckCircle, AlertTriangle, Volume2 } from "lucide-react";
 
 export function ConversationClient() {
   const t = useTranslations("Conversation");
+  const locale = (useLocale() === "en" ? "en" : "uz") as "en" | "uz";
   const [session, setSession] = useState<ConversationSessionOut | null>(null);
   const [turns, setTurns] = useState<ConversationTurnOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -139,9 +140,10 @@ export function ConversationClient() {
       const turn = await api.conversation.submitTurn(session.id, {
         audio_base64: base64data,
         audio_format: audioFormat,
+        user_locale: locale,
       });
       setTurns(prev => [...prev, turn]);
-      speakAgentResponse(turn.agent_response_text);
+      void speakAgentResponse(turn.agent_response_text);
     } catch (err: any) {
       setError(err.message || t("errors.submitAudio"));
     } finally {
@@ -228,7 +230,7 @@ export function ConversationClient() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => speakAgentResponse(turn.agent_response_text)}
+                  onClick={() => void speakAgentResponse(turn.agent_response_text)}
                   className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)]/50 px-3 py-1.5 text-xs font-bold text-[var(--color-muted-fg)] transition-colors hover:bg-[var(--color-muted)]/30 hover:text-[var(--color-fg)]"
                 >
                   <Volume2 className="h-3.5 w-3.5" />
@@ -236,7 +238,11 @@ export function ConversationClient() {
                 </button>
                 <div className="mt-4 border-t border-[var(--color-border)]/50 pt-3">
                   <p className="text-xs font-bold text-[var(--color-primary)]">{t("labels.suggestion")}</p>
-                  <p className="text-xs text-[var(--color-muted-fg)] mt-1">{turn.feedback.encouragement_uz}</p>
+                  <p className="text-xs text-[var(--color-muted-fg)] mt-1">
+                    {locale === "en"
+                      ? (turn.feedback.encouragement_en ?? turn.feedback.encouragement_uz)
+                      : (turn.feedback.encouragement_uz ?? turn.feedback.encouragement_en)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -312,16 +318,47 @@ function writeAscii(view: DataView, offset: number, text: string) {
   }
 }
 
-function speakAgentResponse(text: string) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+async function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
+  const synth = window.speechSynthesis;
+  let voices = synth.getVoices();
+  if (voices.length > 0) return voices;
+  return await new Promise((resolve) => {
+    const timeout = setTimeout(() => resolve(synth.getVoices()), 1500);
+    synth.addEventListener(
+      "voiceschanged",
+      () => {
+        clearTimeout(timeout);
+        resolve(synth.getVoices());
+      },
+      { once: true },
+    );
+  });
+}
+
+async function speakAgentResponse(text: string): Promise<void> {
+  if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) {
     return;
   }
-  window.speechSynthesis.cancel();
+  const synth = window.speechSynthesis;
+  // Calling cancel() then immediately speak() on Chrome can swallow the utterance.
+  // Cancel + small tick fixes that.
+  synth.cancel();
+  await new Promise((r) => setTimeout(r, 50));
+
+  const voices = await ensureVoicesLoaded();
+  const englishVoice =
+    voices.find((v) => v.lang.toLowerCase().startsWith("en") && /natural|google|samantha|daniel/i.test(v.name)) ??
+    voices.find((v) => v.lang.toLowerCase().startsWith("en")) ??
+    null;
+
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   utterance.rate = 0.95;
   utterance.pitch = 1;
-  window.speechSynthesis.speak(utterance);
+  if (englishVoice) utterance.voice = englishVoice;
+  // Resume any paused queue (Chrome on macOS sometimes pauses on tab blur).
+  if (synth.paused) synth.resume();
+  synth.speak(utterance);
 }
 
 function blobToBase64(blob: Blob): Promise<string> {

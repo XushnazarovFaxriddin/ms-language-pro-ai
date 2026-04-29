@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { getCookieHeader } from "@/lib/auth-server";
 import { api, ApiError, type RoadmapOut } from "@/lib/api";
 import { RoadmapSetupForm } from "./RoadmapSetupForm";
+import { RoadmapRegenerateButton } from "./RoadmapRegenerateButton";
 import { Map, Target, Calendar, Clock, Award, Zap } from "lucide-react";
 
 export default async function RoadmapPage() {
@@ -29,16 +30,33 @@ export default async function RoadmapPage() {
   const p90 = roadmap.predicted_band_at_target?.p90?.toFixed(1) || "-";
   const narrative = locale === "en" ? roadmap.plan.narrative_en : roadmap.plan.narrative_uz;
 
+  const focusSkill = (roadmap.plan.milestones[0]?.skill_focus[0] ?? "writing") as
+    | "listening"
+    | "reading"
+    | "writing"
+    | "speaking";
+
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
-          <Map className="h-8 w-8 text-[var(--color-primary)]" />
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-[var(--color-muted-fg)]">
-          {t("description")}
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+            <Map className="h-8 w-8 text-[var(--color-primary)]" />
+            {t("title")}
+          </h1>
+          <p className="mt-2 text-[var(--color-muted-fg)]">
+            {t("description")}
+          </p>
+        </div>
+        <RoadmapRegenerateButton
+          initial={{
+            target_band: roadmap.target_band,
+            target_date: roadmap.target_date,
+            weekly_hours: roadmap.weekly_hours,
+            weeks_until_target: roadmap.plan.milestones.length || 8,
+            focus_skill: focusSkill,
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

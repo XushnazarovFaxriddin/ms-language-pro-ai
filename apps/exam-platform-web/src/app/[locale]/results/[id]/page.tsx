@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { CheckCircle2, Clock, Trophy, ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { FeedbackSection } from "./FeedbackSection";
+import { CertificatePanel } from "./CertificatePanel";
 
 export default async function ResultsPage({
   params,
@@ -98,6 +99,12 @@ export default async function ResultsPage({
         <div className="mt-12">
           <FeedbackSection attemptId={id} initialFeedback={feedback} />
         </div>
+
+        {attempt.state === "completed" && (
+          <div className="mt-8">
+            <CertificatePanel attemptId={id} />
+          </div>
+        )}
 
       </main>
     </>

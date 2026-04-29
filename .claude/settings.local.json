@@ -47,7 +47,10 @@
       "Bash(PGPASSWORD=changeme psql -h localhost -U languagepro -d languagepro -c \"SELECT count\\(*\\) FROM data_engine.questions;\")",
       "Bash(curl -sS -o /dev/null -w \"exam: %{http_code}\\\\n\" http://localhost:8001/healthz)",
       "Bash(curl -sS -o /dev/null -w \"data: %{http_code}\\\\n\" http://localhost:8000/healthz)",
-      "Bash(curl -sS -o /dev/null -w \"auth: %{http_code}\\\\n\" http://localhost:8002/healthz)"
+      "Bash(curl -sS -o /dev/null -w \"auth: %{http_code}\\\\n\" http://localhost:8002/healthz)",
+      "Bash(uv add *)",
+      "Bash(lsof -iTCP:8001 -iTCP:8002 -iTCP:8003 -sTCP:LISTEN)",
+      "Bash(pnpm exec *)"
     ]
   }
 }

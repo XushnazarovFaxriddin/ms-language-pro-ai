@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, CheckCircle2, XCircle } from "lucide-react";
 import { ApiError, api, type AttemptOut, type ItemView, type SubmitResponseIn } from "@/lib/api";
+import { createAntiCheatTracker } from "@/lib/anti-cheat";
 import { MCQItem } from "./items/MCQItem";
 import { ListeningItem } from "./items/ListeningItem";
 import { WritingItem } from "./items/WritingItem";
@@ -121,6 +122,18 @@ export function ExamRunner({
     setFeedback(null);
     setItemStartTime(Date.now());
   }, [item?.id]);
+
+  // Anti-cheat tracker — registers DOM listeners for focus loss / paste / etc
+  // and batches events to /v1/anti-cheat/events. Lives for the duration of the
+  // attempt (i.e. as long as ExamRunner is mounted).
+  useEffect(() => {
+    if (!attemptId) return;
+    const tracker = createAntiCheatTracker(attemptId);
+    tracker.start();
+    return () => {
+      tracker.stop();
+    };
+  }, [attemptId]);
 
   const progress = useMemo(
     () => itemsAnsweredInSection / Math.max(1, totalItemsInSection),

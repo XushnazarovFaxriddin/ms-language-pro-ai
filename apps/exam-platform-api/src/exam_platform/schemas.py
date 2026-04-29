@@ -428,6 +428,7 @@ class ConversationTurnCreate(BaseModel):
     audio_base64: str
     audio_format: str = "webm"
     user_audio_s3_key: str | None = None
+    user_locale: Literal["uz", "en"] = "uz"
 
 
 class ConversationTurnOut(BaseModel):

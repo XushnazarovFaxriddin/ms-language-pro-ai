@@ -29,6 +29,12 @@ type FetchOpts = {
   api: "auth" | "exam";
 };
 
+function readCookie(name: string): string | undefined {
+  if (!isBrowser) return undefined;
+  const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return match && match[1] ? decodeURIComponent(match[1]) : undefined;
+}
+
 async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   const base = opts.api === "auth" ? AUTH_API : EXAM_API;
   const headers: Record<string, string> = {
@@ -38,8 +44,13 @@ async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   if (opts.cookieHeader) {
     headers.Cookie = opts.cookieHeader;
   }
+  const method = opts.method ?? "GET";
+  if (isBrowser && method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const csrf = readCookie("lp_csrf");
+    if (csrf) headers["X-CSRF-Token"] = csrf;
+  }
   const res = await fetch(`${base}${path}`, {
-    method: opts.method ?? "GET",
+    method,
     headers,
     credentials: "include",
     cache: "no-store",
@@ -129,10 +140,29 @@ export const api = {
   },
   conversation: {
     startSession: (body: { topic: string; topic_id?: string; cefr_level?: string; mode?: "async" | "realtime" }) => call<ConversationSessionOut>("/v1/practice/conversation/sessions", { api: "exam", method: "POST", body }),
-    submitTurn: (sessionId: string, body: { audio_base64: string; audio_format?: string }) => call<ConversationTurnOut>(`/v1/practice/conversation/sessions/${sessionId}/turns`, { api: "exam", method: "POST", body }),
+    submitTurn: (sessionId: string, body: { audio_base64: string; audio_format?: string; user_locale?: "uz" | "en" }) => call<ConversationTurnOut>(`/v1/practice/conversation/sessions/${sessionId}/turns`, { api: "exam", method: "POST", body }),
     endSession: (sessionId: string) => call<ConversationSessionOut>(`/v1/practice/conversation/sessions/${sessionId}/end`, { api: "exam", method: "POST" }),
   },
 };
+
+// Augment the api.exam namespace with anti-cheat + certificate calls.
+// (Kept here to preserve the single-source-of-truth fetch wrapper.)
+type AntiCheatEvent = {
+  attempt_id: string;
+  event_type: string;
+  section_index?: number;
+  item_id?: string;
+  payload?: Record<string, unknown>;
+};
+
+(api.exam as any).recordAntiCheat = (events: AntiCheatEvent[]) =>
+  call<void>("/v1/anti-cheat/events", { api: "exam", method: "POST", body: { events } });
+
+(api.exam as any).issueCertificate = (attemptId: string) =>
+  call<any>(`/v1/attempts/${attemptId}/certificate`, { api: "exam", method: "POST" });
+
+(api.exam as any).verifyCertificate = (publicId: string) =>
+  call<any>(`/v1/verify/${publicId}`, { api: "exam" });
 
 // ----- Types (mirror packages/contracts; inlined for simplicity) -----
 export type User = {

@@ -211,11 +211,27 @@ WRITING_QUESTIONS = [
     },
 ]
 
-# Speaking: Part 2 cue card
-SPEAKING_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000004{i:02d}") for i in range(1, 2)]
+# Speaking: Part 1 (interview), Part 2 (cue card), Part 3 (discussion)
+SPEAKING_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000004{i:02d}") for i in range(1, 4)]
 SPEAKING_QUESTIONS = [
     {
         "id": SPEAKING_Q_IDS[0],
+        "type_": "speaking_part1_question",
+        "part": 1,
+        "prompt": (
+            "Let's talk about your hometown.\n"
+            "  • Where are you from?\n"
+            "  • What do you like most about your hometown?\n"
+            "  • Has it changed much in recent years?"
+        ),
+        "preparation_seconds": 0,
+        "speaking_seconds": 60,
+        "difficulty_b": -0.6,
+        "cefr": "A2",
+    },
+    {
+        "id": SPEAKING_Q_IDS[1],
+        "type_": "speaking_part2_cue_card",
         "part": 2,
         "prompt": (
             "Describe a memorable trip you took. You should say:\n"
@@ -227,6 +243,113 @@ SPEAKING_QUESTIONS = [
         "preparation_seconds": 60,
         "speaking_seconds": 120,
         "difficulty_b": 0.0,
+        "cefr": "B1",
+    },
+    {
+        "id": SPEAKING_Q_IDS[2],
+        "type_": "speaking_part3_question",
+        "part": 3,
+        "prompt": (
+            "Let's discuss travel and tourism more broadly.\n"
+            "  • How has tourism changed in your country over the last decade?\n"
+            "  • Some people argue that international travel harms local cultures. Do you agree?\n"
+            "  • What balance should governments strike between promoting tourism and protecting heritage?"
+        ),
+        "preparation_seconds": 0,
+        "speaking_seconds": 90,
+        "difficulty_b": 0.6,
+        "cefr": "B2",
+    },
+]
+
+# Writing Task 1 (Academic — graph description)
+WRITING_TASK1_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000005{i:02d}") for i in range(1, 2)]
+WRITING_TASK1_QUESTIONS = [
+    {
+        "id": WRITING_TASK1_Q_IDS[0],
+        "task_type": "task1_academic",
+        "type_": "writing_task1_academic",
+        "prompt": (
+            "The chart below shows the percentage of households in three Central Asian "
+            "countries that owned a personal computer between 2000 and 2024.\n\n"
+            "Summarise the information by selecting and reporting the main features, "
+            "and make comparisons where relevant. Write at least 150 words."
+        ),
+        "word_limit_min": 150,
+        "word_limit_max": 250,
+        "time_limit_minutes": 20,
+        "difficulty_b": 0.2,
+        "cefr": "B2",
+    },
+]
+
+# Reading: True/False/Not Given + Matching + Sentence Completion
+READING_EXTRA_Q_IDS = [UUID(f"00000000-0000-4000-a000-0000000006{i:02d}") for i in range(1, 4)]
+READING_EXTRA_QUESTIONS = [
+    {
+        "id": READING_EXTRA_Q_IDS[0],
+        "type_": "true_false_ng",
+        "passage": (
+            "The honeybee, Apis mellifera, has been kept by humans for at least 8,000 "
+            "years. Beekeepers harvest honey, beeswax, propolis and royal jelly. While "
+            "honey is consumed worldwide, beeswax has industrial applications ranging "
+            "from cosmetics to electronics. Recent declines in bee populations have "
+            "raised concerns among ecologists, although the precise causes remain "
+            "debated."
+        ),
+        "prompt": "Beekeeping has been practised for over five millennia.",
+        "options": [
+            {"id": "A", "label": "True"},
+            {"id": "B", "label": "False"},
+            {"id": "C", "label": "Not Given"},
+        ],
+        "correct_option_id": "A",
+        "distractor_rationale": "The passage states 'at least 8,000 years', which exceeds 5,000.",
+        "difficulty_b": -0.2,
+        "cefr": "B1",
+    },
+    {
+        "id": READING_EXTRA_Q_IDS[1],
+        "type_": "matching_information",
+        "passage": (
+            "(A) The first electric streetcars began running in 1881. "
+            "(B) By 1920 most major cities had electric tram networks. "
+            "(C) Buses gradually replaced trams in the mid-20th century due to lower "
+            "infrastructure costs. "
+            "(D) Modern light rail systems revive many of the principles of early trams."
+        ),
+        "prompt": "Which paragraph mentions the year electric streetcars first ran?",
+        "options": [
+            {"id": "A", "label": "Paragraph A"},
+            {"id": "B", "label": "Paragraph B"},
+            {"id": "C", "label": "Paragraph C"},
+            {"id": "D", "label": "Paragraph D"},
+        ],
+        "correct_option_id": "A",
+        "distractor_rationale": "Only paragraph A names the year (1881).",
+        "difficulty_b": 0.1,
+        "cefr": "B2",
+    },
+    {
+        "id": READING_EXTRA_Q_IDS[2],
+        "type_": "sentence_completion",
+        "passage": (
+            "The Aral Sea, once the world's fourth-largest lake, has shrunk to a "
+            "fraction of its former size since the 1960s. Soviet-era irrigation projects "
+            "diverted the Amu Darya and Syr Darya rivers to grow cotton, leaving the "
+            "sea starved of inflow. Today the lakebed is a salt-encrusted desert known "
+            "as the Aralkum."
+        ),
+        "prompt": "The shrinking of the Aral Sea began in the ____.",
+        "options": [
+            {"id": "A", "label": "1940s"},
+            {"id": "B", "label": "1960s"},
+            {"id": "C", "label": "1980s"},
+            {"id": "D", "label": "2000s"},
+        ],
+        "correct_option_id": "B",
+        "distractor_rationale": "The passage explicitly says 'since the 1960s'.",
+        "difficulty_b": -0.4,
         "cefr": "B1",
     },
 ]
@@ -514,13 +637,13 @@ async def main() -> None:
                 w_count += 1
         print(f"   ✅ {w_count} writing questions seeded (of {len(WRITING_QUESTIONS)} total)")
 
-        # Speaking
+        # Speaking — Parts 1, 2, 3
         s_count = 0
         for q in SPEAKING_QUESTIONS:
             inserted = await _ensure_question(
                 q["id"],
                 skill_code="speaking",
-                type_="speaking_part2_cue_card",
+                type_=q["type_"],
                 payload={
                     "prompt": q["prompt"],
                     "part": q["part"],
@@ -528,7 +651,7 @@ async def main() -> None:
                     "speaking_seconds": q["speaking_seconds"],
                 },
                 answer_key={
-                    "rubric_ref": "ielts_speaking_part2_v1",
+                    "rubric_ref": f"ielts_speaking_part{q['part']}_v1",
                 },
                 cefr=q["cefr"],
                 b=q["difficulty_b"],
@@ -537,6 +660,53 @@ async def main() -> None:
             if inserted:
                 s_count += 1
         print(f"   ✅ {s_count} speaking questions seeded (of {len(SPEAKING_QUESTIONS)} total)")
+
+        # Writing — Task 1 (Academic graph)
+        w1_count = 0
+        for q in WRITING_TASK1_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="writing",
+                type_=q["type_"],
+                payload={
+                    "prompt": q["prompt"],
+                    "task_type": q["task_type"],
+                    "word_limit_min": q["word_limit_min"],
+                    "word_limit_max": q["word_limit_max"],
+                    "time_limit_minutes": q["time_limit_minutes"],
+                },
+                answer_key={"rubric_ref": "ielts_writing_task1_v1"},
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=q["time_limit_minutes"] * 60,
+            )
+            if inserted:
+                w1_count += 1
+        print(f"   ✅ {w1_count} writing-task1 seeded (of {len(WRITING_TASK1_QUESTIONS)} total)")
+
+        # Reading — extra question types (T/F/NG, matching, completion)
+        r2_count = 0
+        for q in READING_EXTRA_QUESTIONS:
+            inserted = await _ensure_question(
+                q["id"],
+                skill_code="reading",
+                type_=q["type_"],
+                payload={
+                    "passage": q["passage"],
+                    "prompt": q["prompt"],
+                    "options": q["options"],
+                },
+                answer_key={
+                    "correct_option_id": q["correct_option_id"],
+                    "distractor_rationale": q["distractor_rationale"],
+                },
+                cefr=q["cefr"],
+                b=q["difficulty_b"],
+                est_seconds=70,
+            )
+            if inserted:
+                r2_count += 1
+        print(f"   ✅ {r2_count} extra reading types seeded (of {len(READING_EXTRA_QUESTIONS)} total)")
 
         # ── 4. Seed/update blueprints (UPSERT so section structure stays fresh) ──
         from sqlalchemy import update as sa_update
