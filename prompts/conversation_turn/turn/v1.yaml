@@ -1,10 +1,11 @@
-purpose: score_speaking
-sub_purpose: conversation_turn
+purpose: conversation_turn
+sub_purpose: turn
 version: 1
 status: active
 description: |
   One turn of an AI conversation partner. Transcribes user audio, evaluates fluency
   and grammar, asks a relevant follow-up question, and produces TTS-ready agent text.
+  Runs on Gemini 2.5 Flash for low latency (~3-5x faster than Pro).
 
 variables_schema:
   topic: { type: string }

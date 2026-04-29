@@ -36,6 +36,9 @@ class LLMSettings(BaseAppSettings):
     LLM_PROFILE_SCORE_WRITING: str = "gemini-2.5-pro:0.0"
     LLM_PROFILE_SCORE_WRITING_FALLBACK: str = "gemini-2.0-pro:0.0"
     LLM_PROFILE_SCORE_SPEAKING: str = "gemini-2.5-pro:0.0"
+    # Conversation partner: Flash for low latency. Quality good enough for
+    # informal practice; the high-stakes IELTS speaking exam still uses Pro.
+    LLM_PROFILE_CONVERSATION_TURN: str = "gemini-2.5-flash:0.4"
     LLM_PROFILE_FEEDBACK_UZ: str = "gemini-2.5-pro:0.4"
     LLM_PROFILE_FEEDBACK_EN: str = "gemini-2.5-pro:0.4"
     LLM_PROFILE_EMBED: str = "gemini-embedding-001"

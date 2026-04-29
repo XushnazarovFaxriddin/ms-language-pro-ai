@@ -142,6 +142,16 @@ export const api = {
     startSession: (body: { topic: string; topic_id?: string; cefr_level?: string; mode?: "async" | "realtime" }) => call<ConversationSessionOut>("/v1/practice/conversation/sessions", { api: "exam", method: "POST", body }),
     submitTurn: (sessionId: string, body: { audio_base64: string; audio_format?: string; user_locale?: "uz" | "en" }) => call<ConversationTurnOut>(`/v1/practice/conversation/sessions/${sessionId}/turns`, { api: "exam", method: "POST", body }),
     endSession: (sessionId: string) => call<ConversationSessionOut>(`/v1/practice/conversation/sessions/${sessionId}/end`, { api: "exam", method: "POST" }),
+    getActiveSession: (cookieHeader?: string) =>
+      call<{ session: ConversationSessionOut; turns: ConversationTurnOut[] } | null>(
+        "/v1/practice/conversation/sessions/active",
+        { api: "exam", cookieHeader },
+      ),
+    getSession: (sessionId: string, cookieHeader?: string) =>
+      call<{ session: ConversationSessionOut; turns: ConversationTurnOut[] }>(
+        `/v1/practice/conversation/sessions/${sessionId}`,
+        { api: "exam", cookieHeader },
+      ),
   },
 };
 

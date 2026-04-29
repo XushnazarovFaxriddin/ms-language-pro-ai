@@ -133,18 +133,48 @@
   },
   "Dashboard": {
     "title": "Mavjud imtihonlar",
-    "description": "Bitta imtihonni tanlang va boshlang. Adaptive: javoblaringizga qarab keyingi savollar tanlanadi.",
+    "description": "Quyidagi testlardan birini tanlang — javoblaringizga qarab AI keyingi savollarni adaptiv tanlaydi.",
     "empty": "Hozircha imtihonlar yo'q.",
     "goHome": "Bosh sahifa",
     "blueprint": "Blueprint: ",
     "startAttempt": "Boshlash",
     "starting": "Boshlanmoqda…",
-    "welcome": "Xush kelibsiz, {name}!",
-    "welcomeSub": "Bugun bilimizni sinab ko'rishga tayyormisiz?",
+    "welcome": "Xush kelibsiz, {name} 👋",
+    "welcomeSub": "Quyidagi testlardan birini tanlang — AI javoblaringizga qarab keyingi savollarni adaptiv tanlaydi.",
+    "popular": "Mashhur",
+    "examCount": "{count} ta test",
+    "sections": "{count} ta bo'lim",
+    "minutes": "~{count} daqiqa",
+    "recentTitle": "Oxirgi natijalar",
+    "recentBand": "Band",
+    "viewAll": "Hammasi",
+    "skills": {
+      "listening": "Tinglash",
+      "reading": "O'qish",
+      "writing": "Yozish",
+      "speaking": "Gapirish"
+    },
+    "blueprintDesc": {
+      "default": "Adaptiv til testi — AI baholash bilan.",
+      "ielts_full_mock": "To'liq IELTS Academic mock — to'rt ko'nikma, adaptiv savol tanlash, yozma va og'zaki javoblarni AI baholaydi.",
+      "ielts_reading_mini": "20 daqiqalik tezkor reading testi — kunlik mashq uchun juda qulay.",
+      "mini-reading": "Tezkor mashq uchun qisqa reading testi.",
+      "cefr_multilevel": "A1 → C2 darajalarini qamrab oladigan CEFR multilevel skriner."
+    },
+    "hero": {
+      "eyebrow": "Shaxsiy AI repetitor",
+      "resume": "Davom ettirish",
+      "subtitleWithStats": "Hozirgacha o'rtacha bandingiz: {band}. Keyingi pog'onaga chiqish uchun yana bitta testni tanlang."
+    },
     "stats": {
       "totalExams": "Topshirilgan imtihonlar",
-      "avgScore": "O'rtacha natija",
-      "certificates": "Sertifikatlar"
+      "avgScore": "O'rtacha band",
+      "certificates": "Sertifikatlar",
+      "firstAttemptHint": "Birinchi imtihonni topshirib, taraqqiyotni kuzatishni boshlang.",
+      "bandLabel": "barcha tugatilgan testlar bo'yicha",
+      "noScoresYet": "O'rtachani ko'rish uchun avval imtihonni yakunlang.",
+      "certHint": "Istalgan to'liq imtihonni yakunlang — sertifikat olasiz.",
+      "certEarned": "Har bir natija sahifasidan yuklab olish mumkin."
     },
     "nav": {
       "dashboard": "Asosiy",
@@ -410,7 +440,8 @@
       "end": "Yakunlash",
       "record": "Gapirish uchun bosing",
       "stopRecording": "Yozishni to'xtatish",
-      "playAnswer": "AI javobini eshitish"
+      "playAnswer": "AI javobini eshitish",
+      "stopAnswer": "To'xtatish"
     },
     "status": {
       "thinking": "AI javob tayyorlayapti. Bu odatda 15-30 soniya davom etadi."
@@ -427,7 +458,9 @@
       "endSession": "Sessiyani tugatib bo'lmadi",
       "microphone": "Mikrofonga ruxsat berilmadi yoki xatolik yuz berdi.",
       "noAudio": "Audio yozilmadi. Qayta urinib ko'ring.",
-      "submitAudio": "Audioni yuborib bo'lmadi"
+      "submitAudio": "Audioni yuborib bo'lmadi",
+      "ttsUnsupported": "Brauzeringiz ovozli ijroni qo'llab-quvvatlamaydi. Iltimos, eng so'nggi Chrome ishlating.",
+      "ttsFailed": "AI ovozini ijro etib bo'lmadi"
     }
   },
   "Feedback": {

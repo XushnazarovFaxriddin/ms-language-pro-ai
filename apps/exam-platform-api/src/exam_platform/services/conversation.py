@@ -104,8 +104,8 @@ async def add_turn(
         try:
             resp = await router.complete(
                 LLMRequest(
-                    purpose="score_speaking",
-                    prompt_id="score_speaking/conversation_turn",
+                    purpose="conversation_turn",
+                    prompt_id="conversation_turn/turn",
                     variables={
                         "topic": session.topic,
                         "prior_turns": prior_turns,
@@ -237,6 +237,52 @@ def _fallback_turn(
             "Your audio was saved. In the next response, expand your idea with 2-3 reasons."
         ),
     )
+
+
+async def get_session_with_turns(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+    session_id: UUID,
+) -> tuple[ConversationSessionOut, list[ConversationTurnOut]]:
+    session = await _get_session(db, user_id=user_id, session_id=session_id)
+    rows = (
+        await db.execute(
+            select(ConversationTurnRecord)
+            .where(ConversationTurnRecord.session_id == session.id)
+            .order_by(ConversationTurnRecord.turn_index.asc())
+        )
+    ).scalars().all()
+    return _session_out(session), [_turn_out(r) for r in rows]
+
+
+async def get_active_session(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+) -> tuple[ConversationSessionOut, list[ConversationTurnOut]] | None:
+    """Most recent active session for the user, with all of its turns."""
+    session = (
+        await db.execute(
+            select(ConversationSession)
+            .where(
+                ConversationSession.user_id == user_id,
+                ConversationSession.status == "active",
+            )
+            .order_by(ConversationSession.started_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    if session is None:
+        return None
+    rows = (
+        await db.execute(
+            select(ConversationTurnRecord)
+            .where(ConversationTurnRecord.session_id == session.id)
+            .order_by(ConversationTurnRecord.turn_index.asc())
+        )
+    ).scalars().all()
+    return _session_out(session), [_turn_out(r) for r in rows]
 
 
 def _session_out(row: ConversationSession) -> ConversationSessionOut:

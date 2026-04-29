@@ -133,18 +133,48 @@
   },
   "Dashboard": {
     "title": "Available Exams",
-    "description": "Select an exam to begin. Adaptive: subsequent questions are chosen based on your answers.",
+    "description": "Pick a test below — items are chosen adaptively as you answer.",
     "empty": "No exams available at the moment.",
     "goHome": "Home",
     "blueprint": "Blueprint: ",
-    "startAttempt": "Start Attempt",
+    "startAttempt": "Start",
     "starting": "Starting…",
-    "welcome": "Welcome, {name}!",
-    "welcomeSub": "Ready to test your knowledge today?",
+    "welcome": "Welcome, {name} 👋",
+    "welcomeSub": "Pick a test below and AI will adaptively choose the next questions based on your answers.",
+    "popular": "Popular",
+    "examCount": "{count} tests",
+    "sections": "{count} sections",
+    "minutes": "~{count} min",
+    "recentTitle": "Recent results",
+    "recentBand": "Band",
+    "viewAll": "View all",
+    "skills": {
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "blueprintDesc": {
+      "default": "Adaptive language assessment with AI-graded scoring.",
+      "ielts_full_mock": "Full IELTS Academic mock with all four skills, adaptive item selection and AI-graded writing & speaking.",
+      "ielts_reading_mini": "Quick 20-minute reading-only test — great for a daily warm-up.",
+      "mini-reading": "A short reading test for a quick warm-up.",
+      "cefr_multilevel": "CEFR multilevel screener (A1 → C2) covering all four skills."
+    },
+    "hero": {
+      "eyebrow": "Personal AI tutor",
+      "resume": "Resume in progress",
+      "subtitleWithStats": "Your average band so far: {band}. Pick a test below to keep climbing."
+    },
     "stats": {
       "totalExams": "Exams Taken",
-      "avgScore": "Average Score",
-      "certificates": "Certificates"
+      "avgScore": "Average Band",
+      "certificates": "Certificates",
+      "firstAttemptHint": "Take your first exam to start tracking progress.",
+      "bandLabel": "across all completed exams",
+      "noScoresYet": "Complete an exam to see your average.",
+      "certHint": "Earn a certificate by finishing any full exam.",
+      "certEarned": "Available for download on each result page."
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -410,7 +440,8 @@
       "end": "End",
       "record": "Press to speak",
       "stopRecording": "Stop recording",
-      "playAnswer": "Play AI answer"
+      "playAnswer": "Play AI answer",
+      "stopAnswer": "Stop"
     },
     "status": {
       "thinking": "AI is preparing a response. This usually takes 15-30 seconds."
@@ -427,7 +458,9 @@
       "endSession": "Could not end the session",
       "microphone": "Microphone permission was denied or an error occurred.",
       "noAudio": "No audio was recorded. Please try again.",
-      "submitAudio": "Could not submit the audio"
+      "submitAudio": "Could not submit the audio",
+      "ttsUnsupported": "Your browser does not support speech playback. Please use the latest Chrome.",
+      "ttsFailed": "Could not play the AI voice"
     }
   },
   "Feedback": {

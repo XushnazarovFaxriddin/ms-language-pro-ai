@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -22,6 +22,37 @@ from exam_platform.services import conversation as conversation_svc
 from exam_platform.services.router_factory import get_router
 
 router = APIRouter(tags=["conversation"])
+
+
+@router.get("/practice/conversation/sessions/active")
+async def active_session(
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+) -> dict[str, Any] | None:
+    """Most recent active session + its turns. Returns null if none."""
+    result = await conversation_svc.get_active_session(db, user_id=user.id)
+    if result is None:
+        return None
+    session, turns = result
+    return {
+        "session": session.model_dump(mode="json"),
+        "turns": [t.model_dump(mode="json") for t in turns],
+    }
+
+
+@router.get("/practice/conversation/sessions/{session_id}")
+async def get_session_with_turns(
+    session_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+) -> dict[str, Any]:
+    session, turns = await conversation_svc.get_session_with_turns(
+        db, user_id=user.id, session_id=session_id
+    )
+    return {
+        "session": session.model_dump(mode="json"),
+        "turns": [t.model_dump(mode="json") for t in turns],
+    }
 
 
 @router.post(

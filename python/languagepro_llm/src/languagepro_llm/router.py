@@ -35,6 +35,7 @@ Purpose = Literal[
     "feedback",
     "embed",
     "stt",
+    "conversation_turn",
 ]
 
 

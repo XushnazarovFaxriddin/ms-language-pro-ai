@@ -12,6 +12,7 @@ export function ConversationClient() {
   const [turns, setTurns] = useState<ConversationTurnOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [speakingTurn, setSpeakingTurn] = useState<number | null>(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const isRecordingRef = useRef(false);
@@ -22,6 +23,85 @@ export function ConversationClient() {
   const audioSamples = useRef<Float32Array[]>([]);
   const sampleRateRef = useRef(44100);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+
+  // Pre-warm voices: browsers return [] from getVoices() until they finish
+  // loading. Listen for voiceschanged once on mount so the click handler can
+  // call speak() synchronously (preserves the user-gesture context).
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const synth = window.speechSynthesis;
+    voicesRef.current = synth.getVoices();
+    const onVoices = () => {
+      voicesRef.current = synth.getVoices();
+    };
+    synth.addEventListener("voiceschanged", onVoices);
+    // Some Chromium builds need a kick to populate voices
+    if (voicesRef.current.length === 0) {
+      try {
+        synth.getVoices();
+      } catch {
+        /* noop */
+      }
+    }
+    return () => synth.removeEventListener("voiceschanged", onVoices);
+  }, []);
+
+  function speakAgentResponse(text: string, turnIdx: number) {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) {
+      setError(t("errors.ttsUnsupported"));
+      return;
+    }
+    const synth = window.speechSynthesis;
+    // Must run synchronously inside the click handler — no awaits before speak().
+    synth.cancel();
+    if (synth.paused) synth.resume();
+
+    const voices = voicesRef.current.length ? voicesRef.current : synth.getVoices();
+    const englishVoice =
+      voices.find(
+        (v) =>
+          v.lang.toLowerCase().startsWith("en") &&
+          /natural|google|samantha|daniel|aria|jenny/i.test(v.name),
+      ) ??
+      voices.find((v) => v.lang.toLowerCase().startsWith("en")) ??
+      null;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = englishVoice?.lang ?? "en-US";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    if (englishVoice) utterance.voice = englishVoice;
+    utterance.onstart = () => setSpeakingTurn(turnIdx);
+    utterance.onend = () => setSpeakingTurn((cur) => (cur === turnIdx ? null : cur));
+    utterance.onerror = (e: SpeechSynthesisErrorEvent) => {
+      setSpeakingTurn((cur) => (cur === turnIdx ? null : cur));
+      // "interrupted" / "canceled" are expected when user clicks again
+      if (e.error !== "interrupted" && e.error !== "canceled") {
+        setError(`${t("errors.ttsFailed")} (${e.error})`);
+      }
+    };
+
+    // Chrome bug: long utterances stop ~15s in. Re-poke the synth periodically.
+    const keepAlive = window.setInterval(() => {
+      if (!synth.speaking) {
+        window.clearInterval(keepAlive);
+        return;
+      }
+      synth.pause();
+      synth.resume();
+    }, 12_000);
+    utterance.addEventListener("end", () => window.clearInterval(keepAlive));
+    utterance.addEventListener("error", () => window.clearInterval(keepAlive));
+
+    synth.speak(utterance);
+  }
+
+  function stopSpeaking() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    setSpeakingTurn(null);
+  }
 
   const cleanupRecorder = async () => {
     processorRef.current?.disconnect();
@@ -41,6 +121,26 @@ export function ConversationClient() {
       isRecordingRef.current = false;
       window.speechSynthesis?.cancel();
       void cleanupRecorder();
+    };
+  }, []);
+
+  // Restore the most recent active session + its turns so history persists
+  // across reloads. Runs once on mount; if there's no active session we just
+  // show the "Start a new conversation" card as before.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const restored = await api.conversation.getActiveSession();
+        if (cancelled || !restored) return;
+        setSession(restored.session);
+        setTurns(restored.turns);
+      } catch {
+        // ignore — first-time users have no active session
+      }
+    })();
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -142,8 +242,14 @@ export function ConversationClient() {
         audio_format: audioFormat,
         user_locale: locale,
       });
-      setTurns(prev => [...prev, turn]);
-      void speakAgentResponse(turn.agent_response_text);
+      setTurns((prev) => {
+        const nextTurns = [...prev, turn];
+        // Auto-play the agent response. Browsers usually allow this because
+        // the call chain originates from the user's "Stop recording" gesture,
+        // but if it gets blocked the user can hit the Play button.
+        speakAgentResponse(turn.agent_response_text, nextTurns.length - 1);
+        return nextTurns;
+      });
     } catch (err: any) {
       setError(err.message || t("errors.submitAudio"));
     } finally {
@@ -230,11 +336,28 @@ export function ConversationClient() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => void speakAgentResponse(turn.agent_response_text)}
-                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)]/50 px-3 py-1.5 text-xs font-bold text-[var(--color-muted-fg)] transition-colors hover:bg-[var(--color-muted)]/30 hover:text-[var(--color-fg)]"
+                  onClick={() =>
+                    speakingTurn === i
+                      ? stopSpeaking()
+                      : speakAgentResponse(turn.agent_response_text, i)
+                  }
+                  className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                    speakingTurn === i
+                      ? "border-[var(--color-primary)]/40 bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                      : "border-[var(--color-border)]/50 text-[var(--color-muted-fg)] hover:bg-[var(--color-muted)]/30 hover:text-[var(--color-fg)]"
+                  }`}
                 >
-                  <Volume2 className="h-3.5 w-3.5" />
-                  {t("actions.playAnswer")}
+                  {speakingTurn === i ? (
+                    <>
+                      <StopCircle className="h-3.5 w-3.5" />
+                      {t("actions.stopAnswer")}
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="h-3.5 w-3.5" />
+                      {t("actions.playAnswer")}
+                    </>
+                  )}
                 </button>
                 <div className="mt-4 border-t border-[var(--color-border)]/50 pt-3">
                   <p className="text-xs font-bold text-[var(--color-primary)]">{t("labels.suggestion")}</p>
@@ -316,49 +439,6 @@ function writeAscii(view: DataView, offset: number, text: string) {
   for (let i = 0; i < text.length; i += 1) {
     view.setUint8(offset + i, text.charCodeAt(i));
   }
-}
-
-async function ensureVoicesLoaded(): Promise<SpeechSynthesisVoice[]> {
-  const synth = window.speechSynthesis;
-  let voices = synth.getVoices();
-  if (voices.length > 0) return voices;
-  return await new Promise((resolve) => {
-    const timeout = setTimeout(() => resolve(synth.getVoices()), 1500);
-    synth.addEventListener(
-      "voiceschanged",
-      () => {
-        clearTimeout(timeout);
-        resolve(synth.getVoices());
-      },
-      { once: true },
-    );
-  });
-}
-
-async function speakAgentResponse(text: string): Promise<void> {
-  if (typeof window === "undefined" || !("speechSynthesis" in window) || !text) {
-    return;
-  }
-  const synth = window.speechSynthesis;
-  // Calling cancel() then immediately speak() on Chrome can swallow the utterance.
-  // Cancel + small tick fixes that.
-  synth.cancel();
-  await new Promise((r) => setTimeout(r, 50));
-
-  const voices = await ensureVoicesLoaded();
-  const englishVoice =
-    voices.find((v) => v.lang.toLowerCase().startsWith("en") && /natural|google|samantha|daniel/i.test(v.name)) ??
-    voices.find((v) => v.lang.toLowerCase().startsWith("en")) ??
-    null;
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  if (englishVoice) utterance.voice = englishVoice;
-  // Resume any paused queue (Chrome on macOS sometimes pauses on tab blur).
-  if (synth.paused) synth.resume();
-  synth.speak(utterance);
 }
 
 function blobToBase64(blob: Blob): Promise<string> {
