@@ -30,6 +30,88 @@ class ItemOut(BaseModel):
     estimated_seconds: int
 
 
+class ItemAdminOut(ItemOut):
+    """Research/admin view of an item with audit, IRT, and curation metadata."""
+
+    status: str
+    bank_id: UUID
+    ielts_band_target: float | None = None
+    difficulty_b: float
+    discrimination_a: float
+    guessing_c: float
+    n_responses: int
+    source_license: str
+    generated_by_model: str | None = None
+    prompt_version_id: str | None = None
+    generation_run_id: UUID | None = None
+    quality_flags: list[str] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+
+class ItemBankSummaryOut(BaseModel):
+    """Aggregate quality-control snapshot for Content Studio."""
+
+    total: int
+    by_status: dict[str, int] = Field(default_factory=dict)
+    by_skill: dict[str, int] = Field(default_factory=dict)
+    by_cefr: dict[str, int] = Field(default_factory=dict)
+    export_ready: int
+    review_backlog: int
+    generated_items: int
+    missing_answer_key: int
+    missing_prompt: int
+    missing_provenance: int
+    low_response_items: int
+    avg_difficulty_b: float | None = None
+    avg_discrimination_a: float | None = None
+
+
+class NLPRecentValidationOut(BaseModel):
+    id: UUID
+    question_id: UUID
+    skill: str
+    cefr_level: str
+    verdict: str
+    juror_model: str
+    criteria_scores: dict[str, Any] = Field(default_factory=dict)
+    reasoning_excerpt: str
+    created_at: datetime
+
+
+class NLPOverviewOut(BaseModel):
+    """Research-facing NLP quality-control dashboard payload."""
+
+    total_items: int
+    validated_items: int
+    validation_results: int
+    semantic_embeddings: int
+    verdicts: dict[str, int] = Field(default_factory=dict)
+    criteria_averages: dict[str, float] = Field(default_factory=dict)
+    quality_gates: dict[str, int] = Field(default_factory=dict)
+    coverage_by_skill: dict[str, int] = Field(default_factory=dict)
+    coverage_by_cefr: dict[str, int] = Field(default_factory=dict)
+    recent_validations: list[NLPRecentValidationOut] = Field(default_factory=list)
+
+
+class AutoJuryItemDecision(BaseModel):
+    question_id: UUID
+    decision: Literal["approved", "rejected", "skipped"]
+    reason: str
+    approve_votes: int
+    reject_votes: int
+    borderline_votes: int
+    avg_criteria_score: float | None = None
+
+
+class AutoJuryReviewOut(BaseModel):
+    reviewed: int
+    approved: int
+    rejected: int
+    skipped: int
+    decisions: list[AutoJuryItemDecision] = Field(default_factory=list)
+
+
 class NextItemOut(BaseModel):
     item: ItemOut
     selection_metadata: dict[str, Any] = Field(default_factory=dict)

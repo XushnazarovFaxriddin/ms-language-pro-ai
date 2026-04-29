@@ -17,11 +17,13 @@ export function PracticeCatalogueTabs({
   initialDrills,
   initialTopics,
   copy,
+  locale,
 }: {
   initialTaxonomy: ErrorTaxonomy[];
   initialDrills: Drill[];
   initialTopics: ConversationTopic[];
   copy: AdminCopy["catalogue"];
+  locale: "uz" | "en";
 }) {
   const [activeTab, setActiveTab] = useState<TabId>("taxonomy");
   const [taxonomy, setTaxonomy] = useState(initialTaxonomy);
@@ -217,10 +219,10 @@ export function PracticeCatalogueTabs({
 
         <div className="overflow-x-auto">
           {activeTab === "taxonomy" && (
-            <TaxonomyTable rows={filteredTaxonomy} copy={copy} onEdit={openEdit} />
+            <TaxonomyTable rows={filteredTaxonomy} copy={copy} locale={locale} onEdit={openEdit} />
           )}
           {activeTab === "drills" && <DrillsTable rows={filteredDrills} copy={copy} onEdit={openEdit} />}
-          {activeTab === "topics" && <TopicsTable rows={filteredTopics} copy={copy} onEdit={openEdit} />}
+          {activeTab === "topics" && <TopicsTable rows={filteredTopics} copy={copy} locale={locale} onEdit={openEdit} />}
         </div>
       </div>
 
@@ -240,7 +242,17 @@ export function PracticeCatalogueTabs({
   );
 }
 
-function TaxonomyTable({ rows, copy, onEdit }: { rows: ErrorTaxonomy[]; copy: AdminCopy["catalogue"]; onEdit: (row: ErrorTaxonomy) => void }) {
+function TaxonomyTable({
+  rows,
+  copy,
+  locale,
+  onEdit,
+}: {
+  rows: ErrorTaxonomy[];
+  copy: AdminCopy["catalogue"];
+  locale: "uz" | "en";
+  onEdit: (row: ErrorTaxonomy) => void;
+}) {
   return (
     <table className="w-full border-collapse text-left">
       <thead>
@@ -262,8 +274,11 @@ function TaxonomyTable({ rows, copy, onEdit }: { rows: ErrorTaxonomy[]; copy: Ad
             <td className="px-6 py-4"><Badge tone="blue">{item.skill}</Badge></td>
             <td className="px-6 py-4"><SeverityBadge severity={item.severity} /></td>
             <td className="px-6 py-4">
-              <p className="max-w-md truncate text-sm font-medium text-slate-700 dark:text-slate-300" title={item.explanation_uz}>
-                {item.explanation_uz}
+              <p
+                className="max-w-md truncate text-sm font-medium text-slate-700 dark:text-slate-300"
+                title={locale === "en" ? item.explanation_en : item.explanation_uz}
+              >
+                {locale === "en" ? item.explanation_en : item.explanation_uz}
               </p>
             </td>
             <td className="px-6 py-4 text-right">
@@ -309,7 +324,9 @@ function DrillsTable({ rows, copy, onEdit }: { rows: Drill[]; copy: AdminCopy["c
               </div>
             </td>
             <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-              {drill.duration_minutes} min / {drill.variant_count} vars
+              {copy.meta.durationVariants
+                .replace("{minutes}", String(drill.duration_minutes))
+                .replace("{variants}", String(drill.variant_count))}
             </td>
             <td className="px-6 py-4 text-right">
               <IconButton label={copy.edit} onClick={() => onEdit(drill)} />
@@ -322,7 +339,17 @@ function DrillsTable({ rows, copy, onEdit }: { rows: Drill[]; copy: AdminCopy["c
   );
 }
 
-function TopicsTable({ rows, copy, onEdit }: { rows: ConversationTopic[]; copy: AdminCopy["catalogue"]; onEdit: (row: ConversationTopic) => void }) {
+function TopicsTable({
+  rows,
+  copy,
+  locale,
+  onEdit,
+}: {
+  rows: ConversationTopic[];
+  copy: AdminCopy["catalogue"];
+  locale: "uz" | "en";
+  onEdit: (row: ConversationTopic) => void;
+}) {
   return (
     <table className="w-full border-collapse text-left">
       <thead>
@@ -339,7 +366,9 @@ function TopicsTable({ rows, copy, onEdit }: { rows: ConversationTopic[]; copy: 
           <tr key={topic.id} className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/20">
             <td className="px-6 py-4 font-mono text-sm font-bold text-slate-900 dark:text-slate-200">{topic.code}</td>
             <td className="px-6 py-4">
-              <div className="text-sm font-bold text-slate-900 dark:text-slate-200">{topic.title_uz}</div>
+              <div className="text-sm font-bold text-slate-900 dark:text-slate-200">
+                {locale === "en" ? topic.title_en : topic.title_uz}
+              </div>
               <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-500">{topic.kind}</div>
             </td>
             <td className="px-6 py-4"><Badge tone="indigo">{topic.cefr_level}</Badge></td>
@@ -461,16 +490,16 @@ function DrillFields({ row, copy }: { row: Drill | null; copy: AdminCopy["catalo
 function TopicFields({ row, copy }: { row: ConversationTopic | null; copy: AdminCopy["catalogue"] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <TextField name="code" label={copy.fields.code} required defaultValue={row?.code ?? "speaking.university-life.b2"} />
-      <TextField name="title_uz" label={copy.fields.titleUz} required defaultValue={row?.title_uz ?? "Universitet hayoti"} />
-      <TextField name="title_en" label={copy.fields.titleEn} required defaultValue={row?.title_en ?? "University life"} />
+      <TextField name="code" label={copy.fields.code} required defaultValue={row?.code ?? copy.defaults.topicCode} />
+      <TextField name="title_uz" label={copy.fields.titleUz} required defaultValue={row?.title_uz ?? copy.defaults.topicTitleUz} />
+      <TextField name="title_en" label={copy.fields.titleEn} required defaultValue={row?.title_en ?? copy.defaults.topicTitleEn} />
       <SelectField name="cefr_level" label={copy.fields.cefr} defaultValue={row?.cefr_level ?? "B2"} options={CEFR_LEVELS} />
       <TextField name="kind" label={copy.fields.kind} required defaultValue={row?.kind ?? "ielts_part_3"} />
       <label className="flex items-center gap-2 pt-8 text-sm font-bold text-slate-700 dark:text-slate-300">
         <input name="is_active" type="checkbox" defaultChecked={row?.is_active ?? true} className="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" />
         {copy.fields.active}
       </label>
-      <TextArea name="prompt" label={copy.fields.prompt} required defaultValue={row?.prompt ?? "Discuss how university life affects students' independence and career planning."} className="sm:col-span-2" />
+      <TextArea name="prompt" label={copy.fields.prompt} required defaultValue={row?.prompt ?? copy.defaults.topicPrompt} className="sm:col-span-2" />
     </div>
   );
 }

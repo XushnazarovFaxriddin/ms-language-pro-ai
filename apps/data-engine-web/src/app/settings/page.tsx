@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { getAdminCopy } from "@/lib/admin-i18n";
-import { Settings, Shield, Bell, Cpu, Globe, Lock } from "lucide-react";
+import { Settings, Shield, Bell, Cpu, Globe, Lock, Languages } from "lucide-react";
 
 export default async function SettingsPage() {
   const user = await requireAdmin("/settings");
@@ -22,6 +23,20 @@ export default async function SettingsPage() {
         </div>
 
         <div className="grid gap-8 max-w-4xl">
+          <section className="space-y-6">
+            <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
+              <Languages className="h-5 w-5 text-emerald-400" />
+              {copy.interface}
+            </h2>
+            <div className="flex items-center justify-between gap-4 p-6 rounded-3xl border border-slate-800/60 bg-black/40 backdrop-blur-xl">
+              <div>
+                <h3 className="font-bold text-slate-200">{copy.languageTitle}</h3>
+                <p className="text-xs text-slate-500 mt-1">{copy.languageDescription}</p>
+              </div>
+              <LanguageSwitcher locale={user.locale} copy={getAdminCopy(user.locale).shell} />
+            </div>
+          </section>
+
           <section className="space-y-6">
             <h2 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
               <Cpu className="h-5 w-5 text-emerald-400" />

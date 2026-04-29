@@ -1,5 +1,7 @@
 import "@languagepro/ui/styles";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { adminLocale } from "@/lib/admin-i18n";
 
 export const metadata: Metadata = {
   title: "LanguagePro AI — Content Studio",
@@ -8,9 +10,12 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const locale = adminLocale(cookieStore.get("admin_locale")?.value);
+
   return (
-    <html lang="uz" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="bg-white dark:bg-[#050505] text-slate-900 dark:text-slate-100 antialiased min-h-screen transition-colors duration-300" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

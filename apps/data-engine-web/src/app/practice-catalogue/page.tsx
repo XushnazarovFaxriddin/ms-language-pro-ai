@@ -37,6 +37,7 @@ export default async function PracticeCataloguePage() {
           initialDrills={drills} 
           initialTopics={conversationTopics} 
           copy={copy.catalogue}
+          locale={user.locale}
         />
       </div>
     </AdminShell>

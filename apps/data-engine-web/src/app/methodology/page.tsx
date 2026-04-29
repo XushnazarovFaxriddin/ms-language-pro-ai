@@ -19,6 +19,15 @@ const PIPELINE = [
     icon: Database,
   },
   {
+    icon: ScrollText,
+  },
+  {
+    icon: BrainCircuit,
+  },
+  {
+    icon: FlaskConical,
+  },
+  {
     icon: BrainCircuit,
   },
   {
@@ -57,7 +66,7 @@ export default async function MethodologyPage() {
             </p>
           </header>
 
-          <section className="grid gap-4 lg:grid-cols-5">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {pipeline.map((step, index) => (
               <div key={step.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800/60 dark:bg-black/40">
                 <div className="mb-4 flex items-center justify-between">

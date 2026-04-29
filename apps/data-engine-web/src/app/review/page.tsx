@@ -2,7 +2,9 @@ import { requireAdmin, getCookieHeader } from "@/lib/auth-server";
 import { AdminShell } from "@/components/AdminShell";
 import { api } from "@/lib/api";
 import { getAdminCopy } from "@/lib/admin-i18n";
-import { ClipboardCheck, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
+import { AutoJuryButton } from "./AutoJuryButton";
+import { ReviewDecisionButtons } from "./ReviewDecisionButtons";
 
 export default async function ReviewPage() {
   const user = await requireAdmin("/review");
@@ -15,21 +17,24 @@ export default async function ReviewPage() {
   return (
     <AdminShell user={user}>
       <div className="p-6 sm:p-10">
-        <div className="mb-10">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
-            <ClipboardCheck className="h-8 w-8 text-yellow-400" />
-            {copy.pageTitle}
-          </h1>
-          <p className="mt-2 text-slate-400">
-            {copy.pageDescription}
-          </p>
+        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="flex items-center gap-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              <ClipboardCheck className="h-8 w-8 text-yellow-500 dark:text-yellow-400" />
+              {copy.pageTitle}
+            </h1>
+            <p className="mt-2 max-w-3xl text-slate-600 dark:text-slate-400">
+              {copy.pageDescription}
+            </p>
+          </div>
+          <AutoJuryButton copy={copy} />
         </div>
 
         <div className="grid gap-6">
           {items.map((item) => (
             <div 
               key={item.id}
-              className="group relative overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-6 backdrop-blur-xl transition-all hover:border-yellow-500/30"
+              className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-yellow-500/30 dark:border-slate-800/60 dark:bg-black/40"
             >
               <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                 {/* Content Preview */}
@@ -44,7 +49,7 @@ export default async function ReviewPage() {
                   <div className="space-y-2">
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{copy.passagePrompt}</h3>
                     <p className="text-slate-200 line-clamp-3 leading-relaxed">
-                      {item.payload.passage || item.payload.prompt}
+                      {item.payload.passage || item.payload.prompt || copy.noPrompt}
                     </p>
                   </div>
 
@@ -60,21 +65,7 @@ export default async function ReviewPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex flex-row lg:flex-col gap-2 shrink-0">
-                  <button className="flex-1 lg:w-40 flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-3 text-sm font-black text-white hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/10">
-                    <CheckCircle2 className="h-4 w-4" />
-                    {copy.approve}
-                  </button>
-                  <button className="flex-1 lg:w-40 flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-sm font-black text-slate-300 hover:bg-slate-700 transition-all border border-slate-700">
-                    <Eye className="h-4 w-4" />
-                    {copy.view}
-                  </button>
-                  <button className="flex-1 lg:w-40 flex items-center justify-center gap-2 rounded-xl bg-red-500/10 px-4 py-3 text-sm font-black text-red-500 hover:bg-red-500/20 transition-all border border-red-500/20">
-                    <XCircle className="h-4 w-4" />
-                    {copy.reject}
-                  </button>
-                </div>
+                <ReviewDecisionButtons itemId={item.id} copy={copy} />
               </div>
             </div>
           ))}

@@ -6,7 +6,17 @@ import { ApiError, api } from "@/lib/api";
 import type { AdminCopy } from "@/lib/admin-i18n";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
 
-export function LoginForm({ returnTo, copy }: { returnTo: string; copy: AdminCopy["login"] }) {
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+export function LoginForm({
+  returnTo,
+  copy,
+  locale,
+}: {
+  returnTo: string;
+  copy: AdminCopy["login"];
+  locale: "uz" | "en";
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("admin@aiexam.uz");
   const [password, setPassword] = useState("admin12345");
@@ -21,6 +31,9 @@ export function LoginForm({ returnTo, copy }: { returnTo: string; copy: AdminCop
         setPending(true);
         try {
           await api.auth.login(email, password);
+          await api.auth.updateMe({ locale });
+          document.cookie = `admin_locale=${locale}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+          document.documentElement.lang = locale;
           router.push(returnTo);
           router.refresh();
         } catch (err) {

@@ -18,7 +18,7 @@ export async function tryGetUser(): Promise<User | null> {
   }
 }
 
-const ADMIN_ROLES = new Set(["content_admin", "superadmin"]);
+const ADMIN_ROLES = new Set(["content_admin", "researcher", "superadmin"]);
 
 export async function requireAdmin(returnTo?: string): Promise<User> {
   const user = await tryGetUser();

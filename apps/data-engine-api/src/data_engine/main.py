@@ -42,11 +42,13 @@ register_error_handlers(app)
 
 from data_engine.api.v1 import (  # noqa: E402
     blueprints,
+    exports,
     generation,
     items,
     llm_usage,
     practice_catalogue,
     practice_content,
+    research,
 )
 
 app.include_router(items.router, prefix="/v1")
@@ -55,6 +57,8 @@ app.include_router(generation.router, prefix="/v1")
 app.include_router(llm_usage.router, prefix="/v1")
 app.include_router(practice_content.router, prefix="/v1")
 app.include_router(practice_catalogue.router, prefix="/v1")
+app.include_router(exports.router, prefix="/v1")
+app.include_router(research.router, prefix="/v1")
 
 
 @app.get("/healthz")

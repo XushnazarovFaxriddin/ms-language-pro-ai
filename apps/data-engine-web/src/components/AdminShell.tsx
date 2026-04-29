@@ -6,8 +6,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@/lib/api";
 import { getAdminCopy } from "@/lib/admin-i18n";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { LogoutButton } from "./LogoutButton";
-import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon, BookOpen, FlaskConical, ScrollText } from "lucide-react";
+import { LayoutDashboard, BrainCircuit, Activity, Menu, Sparkles, ChevronRight, Database, ClipboardCheck, Settings, Sun, Moon, BookOpen, FlaskConical, ScrollText, FileDown, Microscope } from "lucide-react";
 
 const NAV = [
   { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
@@ -15,9 +16,11 @@ const NAV = [
   { href: "/generation/practice", labelKey: "practiceGeneration", icon: FlaskConical },
   { href: "/items", labelKey: "items", icon: Database },
   { href: "/practice-catalogue", labelKey: "practiceCatalogue", icon: BookOpen },
+  { href: "/nlp-lab", labelKey: "nlpLab", icon: Microscope },
   { href: "/methodology", labelKey: "methodology", icon: ScrollText },
   { href: "/review", labelKey: "review", icon: ClipboardCheck },
   { href: "/llm-usage", labelKey: "usage", icon: Activity },
+  { href: "/exports", labelKey: "exports", icon: FileDown },
   { href: "/settings", labelKey: "settings", icon: Settings },
 ] as const;
 
@@ -95,7 +98,7 @@ export function AdminShell({
             </div>
           </div>
           <div className="mt-2 flex justify-end px-2">
-            <LogoutButton />
+            <LogoutButton label={copy.shell.logout} />
           </div>
         </div>
       </aside>
@@ -115,9 +118,12 @@ export function AdminShell({
           </div>
           
           <div className="flex items-center gap-4">
+            <LanguageSwitcher locale={user.locale} copy={copy.shell} />
              {/* Theme Toggle */}
              <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              aria-label={copy.shell.themeToggle}
+              title={copy.shell.themeToggle}
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800/60 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
             >
               {mounted && (theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />)}

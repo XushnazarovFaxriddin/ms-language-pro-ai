@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 
-export function LogoutButton() {
+export function LogoutButton({ label }: { label: string }) {
   const router = useRouter();
   return (
     <button
@@ -19,7 +19,7 @@ export function LogoutButton() {
       }}
       className="mt-2 text-xs underline hover:text-[var(--color-fg)]"
     >
-      Chiqish
+      {label}
     </button>
   );
 }

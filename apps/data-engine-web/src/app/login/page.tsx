@@ -8,14 +8,20 @@ import { Sparkles, ShieldCheck } from "lucide-react";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ returnTo?: string }>;
+  searchParams: Promise<{ returnTo?: string; lang?: string }>;
 }) {
   const sp = await searchParams;
   const user = await tryGetUser();
   if (user) redirect(sp.returnTo ?? "/dashboard");
   const headerStore = await headers();
-  const locale = adminLocale(headerStore.get("accept-language")?.toLowerCase().startsWith("en") ? "en" : "uz");
+  const locale = adminLocale(sp.lang ?? (headerStore.get("accept-language")?.toLowerCase().startsWith("en") ? "en" : "uz"));
   const copy = getAdminCopy(locale).login;
+  const returnTo = sp.returnTo ?? "/dashboard";
+  const langHref = (lang: "uz" | "en") => {
+    const params = new URLSearchParams({ lang });
+    if (sp.returnTo) params.set("returnTo", sp.returnTo);
+    return `/login?${params.toString()}`;
+  };
   
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-[#0a0a0a] p-6 text-slate-200">
@@ -39,7 +45,23 @@ export default async function LoginPage({
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-2xl backdrop-blur-2xl">
-          <LoginForm returnTo={sp.returnTo ?? "/dashboard"} copy={copy} />
+          <div className="mb-6 flex justify-center gap-2">
+            {(["uz", "en"] as const).map((lang) => (
+              <a
+                key={lang}
+                href={langHref(lang)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-black transition-colors ${
+                  locale === lang
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                    : "border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white"
+                }`}
+              >
+                {lang === "uz" ? copy.languageUz : copy.languageEn}
+              </a>
+            ))}
+          </div>
+
+          <LoginForm returnTo={returnTo} copy={copy} locale={locale} />
           
           <div className="mt-8 space-y-4 rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
@@ -48,11 +70,11 @@ export default async function LoginPage({
             </div>
             <div className="space-y-1.5 font-mono text-xs text-slate-400">
               <div className="flex justify-between">
-                <span>Admin:</span>
+                <span>{copy.adminLabel}:</span>
                 <span className="text-slate-200">admin@aiexam.uz / admin12345</span>
               </div>
               <div className="flex justify-between">
-                <span>Content:</span>
+                <span>{copy.contentLabel}:</span>
                 <span className="text-slate-200">bobomurod@aiexam.uz / content12345</span>
               </div>
             </div>

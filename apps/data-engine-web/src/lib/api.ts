@@ -53,6 +53,21 @@ async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   return (await res.json()) as T;
 }
 
+function queryString(params: Record<string, string | number | undefined | null>): string {
+  const sp = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      sp.set(key, String(value));
+    }
+  }
+  const query = sp.toString();
+  return query ? `?${query}` : "";
+}
+
+function dataDownloadUrl(path: string, params: Record<string, string | number | undefined | null> = {}): string {
+  return `/api/data${path}${queryString(params)}`;
+}
+
 // ---------------------------------------------------------------- types
 export type User = {
   id: string;
@@ -122,6 +137,8 @@ export type LLMCallRow = {
 export type Item = {
   id: string;
   type: string;
+  status: string;
+  bank_id: string;
   skill: string;
   cefr_level: string;
   payload: {
@@ -131,6 +148,75 @@ export type Item = {
     audio_url?: string;
   };
   estimated_seconds: number;
+  ielts_band_target?: number | null;
+  difficulty_b: number;
+  discrimination_a: number;
+  guessing_c: number;
+  n_responses: number;
+  source_license: string;
+  generated_by_model?: string | null;
+  prompt_version_id?: string | null;
+  generation_run_id?: string | null;
+  quality_flags: string[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ItemBankSummary = {
+  total: number;
+  by_status: Record<string, number>;
+  by_skill: Record<string, number>;
+  by_cefr: Record<string, number>;
+  export_ready: number;
+  review_backlog: number;
+  generated_items: number;
+  missing_answer_key: number;
+  missing_prompt: number;
+  missing_provenance: number;
+  low_response_items: number;
+  avg_difficulty_b: number | null;
+  avg_discrimination_a: number | null;
+};
+
+export type NLPRecentValidation = {
+  id: string;
+  question_id: string;
+  skill: string;
+  cefr_level: string;
+  verdict: string;
+  juror_model: string;
+  criteria_scores: Record<string, number | string | boolean>;
+  reasoning_excerpt: string;
+  created_at: string;
+};
+
+export type NLPOverview = {
+  total_items: number;
+  validated_items: number;
+  validation_results: number;
+  semantic_embeddings: number;
+  verdicts: Record<string, number>;
+  criteria_averages: Record<string, number>;
+  quality_gates: Record<string, number>;
+  coverage_by_skill: Record<string, number>;
+  coverage_by_cefr: Record<string, number>;
+  recent_validations: NLPRecentValidation[];
+};
+
+export type AutoJuryReviewResult = {
+  reviewed: number;
+  approved: number;
+  rejected: number;
+  skipped: number;
+  decisions: {
+    question_id: string;
+    decision: "approved" | "rejected" | "skipped";
+    reason: string;
+    approve_votes: number;
+    reject_votes: number;
+    borderline_votes: number;
+    avg_criteria_score: number | null;
+  }[];
 };
 
 export type ErrorTaxonomy = {
@@ -189,6 +275,8 @@ export const api = {
       call<{ user: User }>("/v1/login", { api: "auth", method: "POST", body: { email, password } }),
     logout: () => call<void>("/v1/logout", { api: "auth", method: "POST" }),
     me: (cookieHeader?: string) => call<User>("/v1/me", { api: "auth", cookieHeader }),
+    updateMe: (body: Partial<Pick<User, "display_name" | "locale" | "theme">>) =>
+      call<User>("/v1/me", { api: "auth", method: "PATCH", body }),
   },
   generation: {
     create: (body: { skill: string; cefr_level: string; topic: string; count: number }) =>
@@ -223,15 +311,29 @@ export const api = {
   },
   items: {
     list: (params: { status?: string; skill?: string; cefr?: string; limit?: number; offset?: number } = {}, cookieHeader?: string) => {
-      const sp = new URLSearchParams();
-      if (params.status) sp.set("status", params.status);
-      if (params.skill) sp.set("skill", params.skill);
-      if (params.cefr) sp.set("cefr", params.cefr);
-      if (params.limit) sp.set("limit", String(params.limit));
-      if (params.offset) sp.set("offset", String(params.offset));
-      const query = sp.toString() ? `?${sp.toString()}` : "";
+      const query = queryString(params);
       return call<Item[]>(`/v1/items${query}`, { api: "data", cookieHeader });
     },
+    summary: (params: { status?: string; skill?: string; cefr?: string } = {}, cookieHeader?: string) =>
+      call<ItemBankSummary>(`/v1/items/summary${queryString(params)}`, { api: "data", cookieHeader }),
+    autoJuryReview: () =>
+      call<AutoJuryReviewResult>("/v1/items/review/auto-jury", { api: "data", method: "POST" }),
+    approve: (id: string) =>
+      call<Item>(`/v1/items/${id}/approve`, { api: "data", method: "POST" }),
+    reject: (id: string) =>
+      call<Item>(`/v1/items/${id}/reject`, { api: "data", method: "POST" }),
+  },
+  exports: {
+    questionsCsvUrl: (params: { status?: string; skill?: string; cefr?: string } = {}) =>
+      dataDownloadUrl("/v1/exports/questions.csv", params),
+    validationResultsCsvUrl: () => dataDownloadUrl("/v1/exports/validation-results.csv"),
+    generationJobsCsvUrl: () => dataDownloadUrl("/v1/exports/generation-jobs.csv"),
+    llmCallsCsvUrl: (period: "24h" | "7d" | "30d" = "7d") =>
+      dataDownloadUrl("/v1/exports/llm-calls.csv", { period }),
+  },
+  research: {
+    nlpOverview: (cookieHeader?: string) =>
+      call<NLPOverview>("/v1/research/nlp-overview", { api: "data", cookieHeader }),
   },
   usage: {
     summary: (period: "24h" | "7d" | "30d" = "7d", cookieHeader?: string) =>

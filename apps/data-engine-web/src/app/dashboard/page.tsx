@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { getCookieHeader, requireAdmin } from "@/lib/auth-server";
 import { getAdminCopy } from "@/lib/admin-i18n";
 import { AdminShell } from "@/components/AdminShell";
-import { DollarSign, Activity, Zap, BrainCircuit, BarChart3, ChevronRight, BookOpen, ScrollText } from "lucide-react";
+import { DollarSign, Activity, Zap, BrainCircuit, BarChart3, ChevronRight, BookOpen, ScrollText, FileDown, Microscope } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await requireAdmin("/dashboard");
@@ -78,11 +78,25 @@ export default async function DashboardPage() {
               color="amber"
             />
             <ActionCard
+              href="/nlp-lab"
+              title={copy.dashboard.nlpLabTitle}
+              desc={copy.dashboard.nlpLabDesc}
+              icon={Microscope}
+              color="blue"
+            />
+            <ActionCard
               href="/llm-usage"
               title={copy.dashboard.usageTitle}
               desc={copy.dashboard.usageDesc}
               icon={BarChart3}
               color="teal"
+            />
+            <ActionCard
+              href="/exports"
+              title={copy.dashboard.exportsTitle}
+              desc={copy.dashboard.exportsDesc}
+              icon={FileDown}
+              color="emerald"
             />
           </section>
         </div>
