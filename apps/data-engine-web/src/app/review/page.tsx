@@ -47,20 +47,20 @@ export default async function ReviewPage() {
                   </div>
                   
                   <div className="space-y-2">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">{copy.passagePrompt}</h3>
-                    <p className="text-slate-200 line-clamp-3 leading-relaxed">
+                    <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{copy.passagePrompt}</h3>
+                    <p className="text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed">
                       {item.payload.passage || item.payload.prompt || copy.noPrompt}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-6">
                     <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{copy.skill}</p>
-                      <p className="text-sm font-bold text-white uppercase">{item.skill}</p>
+                      <p className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase tracking-widest">{copy.skill}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white uppercase">{item.skill}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{copy.cefr}</p>
-                      <p className="text-sm font-bold text-white uppercase">{item.cefr_level}</p>
+                      <p className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase tracking-widest">{copy.cefr}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-white uppercase">{item.cefr_level}</p>
                     </div>
                   </div>
                 </div>
@@ -72,11 +72,11 @@ export default async function ReviewPage() {
 
           {items.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="h-20 w-20 rounded-full bg-slate-900 flex items-center justify-center text-slate-600 mb-4 border border-slate-800">
+              <div className="h-20 w-20 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-400 dark:text-slate-600 mb-4 border border-slate-200 dark:border-slate-800">
                 <ClipboardCheck className="h-10 w-10" />
               </div>
-              <h2 className="text-xl font-bold text-white">{copy.emptyTitle}</h2>
-              <p className="mt-2 text-slate-500 max-w-sm">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{copy.emptyTitle}</h2>
+              <p className="mt-2 text-slate-600 dark:text-slate-500 max-w-sm">
                 {copy.emptyDesc}
               </p>
             </div>

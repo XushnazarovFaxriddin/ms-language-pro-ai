@@ -45,7 +45,7 @@ export function LoginForm({
       className="space-y-5"
     >
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-300 ml-1">{copy.email}</label>
+        <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{copy.email}</label>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
             <Mail className="h-5 w-5" />
@@ -56,14 +56,14 @@ export function LoginForm({
             placeholder="admin@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 py-3 pl-12 pr-4 text-white placeholder-slate-600 outline-none ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none ring-offset-white dark:ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between ml-1">
-          <label className="text-sm font-semibold text-slate-300">{copy.password}</label>
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{copy.password}</label>
         </div>
         <div className="relative group">
           <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors">
@@ -75,7 +75,7 @@ export function LoginForm({
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 py-3 pl-12 pr-4 text-white placeholder-slate-600 outline-none ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
+            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none ring-offset-white dark:ring-offset-black transition-all focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
       </div>

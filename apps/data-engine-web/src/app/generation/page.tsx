@@ -14,19 +14,19 @@ export default async function GenerationPage() {
         <div className="absolute top-0 right-0 h-96 w-96 -translate-y-1/2 translate-x-1/2 rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-4xl space-y-10">
-          <div className="flex items-center gap-4 border-b border-slate-800/60 pb-6">
+          <div className="flex items-center gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-6">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/5 text-emerald-400 border border-emerald-500/20 shadow-inner">
               <BrainCircuit className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{copy.pageTitle}</h1>
-              <p className="mt-2 text-lg text-slate-400">
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">{copy.pageTitle}</h1>
+              <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
                 {copy.pageDescription}
               </p>
             </div>
           </div>
           
-          <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+          <div className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-8 shadow-xl backdrop-blur-xl">
             <GenerationForm copy={copy} />
           </div>
         </div>

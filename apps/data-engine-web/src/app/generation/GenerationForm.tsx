@@ -47,17 +47,17 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
     >
       <div className="grid gap-6 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
             <Zap className="h-4 w-4 text-emerald-400" />
             {copy.fields.skill}
           </label>
           <select 
             value={skill} 
             onChange={(e) => setSkill(e.target.value)} 
-            className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all appearance-none cursor-pointer"
+            className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-4 py-3 text-slate-900 dark:text-white outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all appearance-none cursor-pointer"
           >
             {SKILLS.map((s) => (
-              <option key={s.v} value={s.v} className="bg-slate-900">
+              <option key={s.v} value={s.v} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                 {s.l}
               </option>
             ))}
@@ -65,7 +65,7 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
         </div>
 
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+          <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
             <Layers className="h-4 w-4 text-emerald-400" />
             {copy.fields.cefr}
           </label>
@@ -78,7 +78,7 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
                 className={`flex-1 rounded-xl border px-3 py-2.5 text-sm font-bold transition-all ${
                   cefr === l
                     ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20"
-                    : "bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700"
+                    : "bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                 }`}
               >
                 {l}
@@ -89,7 +89,7 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
       </div>
 
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
           <BookOpen className="h-4 w-4 text-emerald-400" />
           {copy.fields.topic}
         </label>
@@ -99,12 +99,12 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
           placeholder={copy.topicPlaceholder}
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          className="w-full rounded-2xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-white placeholder-slate-600 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 outline-none focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/20 transition-all"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-sm font-semibold text-slate-300 ml-1">
+        <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">
           <Target className="h-4 w-4 text-emerald-400" />
           {copy.fields.count}
         </label>
@@ -118,7 +118,7 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
             onChange={(e) => setCount(Number(e.target.value))}
             className="flex-1 accent-emerald-500"
           />
-          <span className="flex h-12 w-16 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-lg font-black text-emerald-400">
+          <span className="flex h-12 w-16 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-lg font-black text-emerald-600 dark:text-emerald-400">
             {count}
           </span>
         </div>
@@ -145,7 +145,7 @@ export function GenerationForm({ copy }: { copy: AdminCopy["generation"] }) {
         )}
       </button>
 
-      <div className="rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10 text-xs text-slate-400 leading-relaxed">
+      <div className="rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
         <span className="font-bold text-emerald-400 uppercase tracking-widest block mb-1">{copy.noteTitle}</span>
         {copy.note}
       </div>

@@ -36,7 +36,7 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Status Card */}
-      <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-slate-900/40 p-6 backdrop-blur-xl">
+      <div className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/40 p-6 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${job.status === "done" ? "bg-emerald-500/20" : "bg-emerald-500/10"}`}>
@@ -44,7 +44,7 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-slate-500">{copy.jobStatus}</p>
-              <h3 className="text-xl font-black text-white capitalize">{job.status}</h3>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white capitalize">{job.status}</h3>
             </div>
           </div>
           <div className="text-right">
@@ -53,7 +53,7 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
           </div>
         </div>
 
-        <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-800 shadow-inner">
+        <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800 shadow-inner">
           <div
             className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(16,185,129,0.4)]"
             style={{ width: `${pct}%` }}
@@ -68,16 +68,16 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Parameters */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-400">
+          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             <Settings2 className="h-4 w-4" />
             {copy.parameters}
           </div>
-          <div className="rounded-3xl border border-slate-800/60 bg-black/40 p-6 font-mono text-sm">
+          <div className="rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-black/40 p-6 font-mono text-sm">
             <div className="grid grid-cols-2 gap-4">
               {Object.entries(job.params || {}).map(([k, v]) => (
                 <div key={k} className="space-y-1">
                   <p className="text-[10px] text-slate-500 uppercase font-bold">{k}</p>
-                  <p className="text-slate-200 truncate">{String(v)}</p>
+                  <p className="text-slate-800 dark:text-slate-200 truncate">{String(v)}</p>
                 </div>
               ))}
             </div>
@@ -86,7 +86,7 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
 
         {/* Breakdown */}
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-400">
+          <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400">
             <BarChart3 className="h-4 w-4" />
             {copy.resultBreakdown}
           </div>
@@ -101,7 +101,7 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
             ]).map(({ key, label, color }) => (
               <div
                 key={key}
-                className="group relative overflow-hidden rounded-2xl border border-slate-800/60 bg-black/40 p-4 transition-all hover:border-emerald-500/30"
+                className="group relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-slate-800/60 bg-white dark:bg-black/40 p-4 transition-all hover:border-emerald-500/30"
               >
                 <div className="absolute -right-4 -top-4 h-12 w-12 rounded-full bg-white/5 opacity-0 transition-opacity group-hover:opacity-100" />
                 <p className="text-[10px] font-bold uppercase tracking-tighter text-slate-500">{label}</p>
@@ -118,8 +118,8 @@ export function JobPoller({ jobId, initial, copy }: { jobId: string; initial: Ge
             <CheckCircle2 className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">{copy.doneTitle}</p>
-            <p className="text-xs text-slate-400">{copy.doneDesc}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-white">{copy.doneTitle}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-400">{copy.doneDesc}</p>
           </div>
           <button 
             onClick={() => window.location.href = "/items"}

@@ -50,8 +50,8 @@ export function AdminShell({
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform flex-col border-r border-slate-200 dark:border-slate-800/60 bg-white dark:bg-black/50 backdrop-blur-2xl transition-transform duration-300 ease-in-out sm:translate-x-0 sm:flex sm:static ${isMobileMenuOpen ? "translate-x-0 flex" : "-translate-x-full hidden"}`}>
-        <div className="flex h-16 items-center px-6 border-b border-slate-200 dark:border-slate-800/60">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transform flex-col border-r border-slate-200 dark:border-slate-800/60 bg-white dark:bg-black/50 backdrop-blur-2xl transition-transform duration-300 ease-in-out sm:translate-x-0 sm:flex sm:sticky sm:top-0 sm:h-screen ${isMobileMenuOpen ? "translate-x-0 flex" : "-translate-x-full hidden"}`}>
+        <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-200 dark:border-slate-800/60">
           <Link href="/dashboard" className="font-extrabold tracking-tight text-xl flex items-center gap-2 group">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
               <Sparkles className="h-4 w-4" />
@@ -60,7 +60,7 @@ export function AdminShell({
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1.5">
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 custom-scrollbar">
           {NAV.map((n) => {
             const isActive = pathname === n.href;
             return (

@@ -38,8 +38,8 @@ export default async function LLMUsagePage({
                 <Activity className="h-8 w-8" />
               </div>
               <div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">{copy.pageTitle}</h1>
-                <p className="mt-2 text-lg text-slate-400">
+                <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl">{copy.pageTitle}</h1>
+                <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
                   {copy.pageDescription}
                 </p>
               </div>
@@ -58,19 +58,19 @@ export default async function LLMUsagePage({
             <Stat title={copy.avgLatency} value={summary ? `${summary.avg_latency_ms} ms` : "—"} color="teal" />
           </section>
 
-          <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-            <h2 className="text-xl font-bold text-white mb-6">{copy.timeseries.replace("{period}", period)}</h2>
+          <section className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{copy.timeseries.replace("{period}", period)}</h2>
             <div className="h-72">
               <TimeseriesChart data={timeseries} noDataLabel={copy.noData} locale={locale} />
             </div>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
-            <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-              <h2 className="text-xl font-bold text-white mb-6">{copy.byPurpose}</h2>
+            <div className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{copy.byPurpose}</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="border-b border-slate-800/60 text-xs uppercase tracking-wider text-slate-400 font-semibold bg-black/20">
+                  <thead className="border-b border-slate-200 dark:border-slate-800/60 text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold bg-slate-50 dark:bg-black/20">
                     <tr>
                       <th className="px-4 py-3 rounded-tl-xl">{copy.table.purpose}</th>
                       <th className="px-4 py-3 text-right">{copy.calls}</th>
@@ -80,13 +80,13 @@ export default async function LLMUsagePage({
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {byPurpose.map((p) => (
-                      <tr key={p.purpose} className="hover:bg-slate-800/20 transition-colors">
-                        <td className="px-4 py-3 font-mono text-xs text-emerald-400">{p.purpose}</td>
-                        <td className="px-4 py-3 text-right text-slate-300">{p.calls}</td>
-                        <td className="px-4 py-3 text-right text-xs text-slate-400">
+                      <tr key={p.purpose} className="hover:bg-slate-50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="px-4 py-3 font-mono text-xs text-emerald-600 dark:text-emerald-400">{p.purpose}</td>
+                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">{p.calls}</td>
+                        <td className="px-4 py-3 text-right text-xs text-slate-600 dark:text-slate-400">
                           {p.tokens_in.toLocaleString()} / {p.tokens_out.toLocaleString()}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-semibold text-white">${Number(p.cost_usd).toFixed(4)}</td>
+                        <td className="px-4 py-3 text-right font-mono font-semibold text-slate-900 dark:text-white">${Number(p.cost_usd).toFixed(4)}</td>
                       </tr>
                     ))}
                     {byPurpose.length === 0 && (
@@ -101,17 +101,17 @@ export default async function LLMUsagePage({
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-              <h2 className="text-xl font-bold text-white mb-6">{copy.byModel}</h2>
+            <div className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{copy.byModel}</h2>
               <div className="h-64">
                 <ModelBreakdownChart data={byModel} noDataLabel={copy.noData} />
               </div>
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-8 shadow-xl backdrop-blur-xl">
-            <h2 className="text-xl font-bold text-white mb-6">{copy.recentCalls}</h2>
-            <div className="rounded-xl overflow-hidden border border-slate-800/60">
+          <section className="overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-8 shadow-xl backdrop-blur-xl">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{copy.recentCalls}</h2>
+            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/60">
               <CallsTable rows={calls} copy={copy} locale={locale} />
             </div>
           </section>
@@ -130,9 +130,9 @@ function Stat({ title, value, color }: { title: string; value: string; color: "e
   };
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-slate-800/60 bg-black/40 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-center">
+    <div className="relative overflow-hidden rounded-3xl border border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-black/40 p-6 shadow-xl backdrop-blur-xl flex flex-col justify-center">
       <div className={`absolute -right-6 -bottom-6 h-24 w-24 rounded-full bg-gradient-to-br ${colorMap[color].split(" ")[0]} blur-2xl opacity-40`} />
-      <p className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">{title}</p>
+      <p className="text-xs uppercase tracking-wider text-slate-600 dark:text-slate-400 font-semibold mb-2">{title}</p>
       <p className={`text-3xl font-black tracking-tight ${colorMap[color].split(" ")[2]}`}>{value}</p>
     </div>
   );
@@ -140,7 +140,7 @@ function Stat({ title, value, color }: { title: string; value: string; color: "e
 
 function PeriodPicker({ current }: { current: string }) {
   return (
-    <div className="flex bg-black/50 p-1.5 rounded-xl border border-slate-800/60 backdrop-blur-md">
+    <div className="flex bg-white/50 dark:bg-black/50 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800/60 backdrop-blur-md">
       {(["24h", "7d", "30d"] as const).map((p) => (
         <a
           key={p}
@@ -148,7 +148,7 @@ function PeriodPicker({ current }: { current: string }) {
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
             p === current
               ? "bg-emerald-500 text-white shadow-md shadow-emerald-500/20"
-              : "text-slate-400 hover:text-white hover:bg-slate-800"
+              : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
           }`}
         >
           {p}
