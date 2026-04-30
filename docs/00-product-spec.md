@@ -10,7 +10,7 @@ In Uzbekistan a single official IELTS sitting costs **$255+** and books months o
 
 1. **Cheap, fast feedback** with a defensible band score and rubric breakdown.
 2. **Adaptive difficulty** so 8 minutes of testing is informative, not exhausting.
-3. **Native-language explanations** (UZ / RU / EN) on what to fix.
+3. **Native-language explanations** (UZ / EN for v1) on what to fix.
 4. **A trustworthy interface** — clean, professional, and free of cheating shortcuts when the user has skin in the game.
 
 LanguagePro AI delivers all four with Gemini-powered grading at a fraction of the cost, and certifies progress with shareable PDF certificates and a lifetime score history.
@@ -47,13 +47,14 @@ LanguagePro AI delivers all four with Gemini-powered grading at a fraction of th
 
 ## 4. Feature set (what's in the product)
 
-### Phase 1 — MVP (free + Starter)
+### Phase 1 — MVP (free public beta + tariffs visible)
 
 - Sign up / log in (email + Google OAuth)
 - Pick exam: **IELTS Reading Mini**, **CEFR Quick Placement**
 - Take adaptive Reading section (5–30 items)
 - See band per skill + overall + UZ/EN feedback
-- Free: 1 attempt / month · Starter: 5 / month
+- Free beta: 1 attempt / month
+- Starter / Pro / Team tariffs visible on pricing, but checkout stays disabled until Phase 4
 - Profile, history, score timeline
 - Modern landing page with pricing & FAQ
 
@@ -149,7 +150,7 @@ The product is launch-ready when **all** of the following are true:
 - [ ] Landing page on `aiexam.uz` passes Lighthouse Performance ≥ 90 mobile.
 - [ ] A new user can sign up, take an IELTS Reading Mini, see results — under 5 minutes total.
 - [ ] At least 50 admin-curated AI-generated questions in the bank, all `status='approved'`.
-- [ ] Pricing page live at `aiexam.uz/pricing`; Stripe checkout working in test mode.
+- [ ] Pricing page live at `aiexam.uz/pricing`; paid checkout clearly marked "coming soon" until Phase 4.
 - [ ] Privacy Policy + ToS published in UZ + EN.
 - [ ] Error monitoring (Sentry) capturing FE + BE in production.
 - [ ] DB backups configured and tested (restore from a 24h-old dump succeeds).

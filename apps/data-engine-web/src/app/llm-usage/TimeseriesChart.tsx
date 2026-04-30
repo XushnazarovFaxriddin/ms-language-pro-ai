@@ -16,9 +16,9 @@ type Row = { bucket: string; [purpose: string]: number | string };
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6"];
 
-export function TimeseriesChart({ data }: { data: UsageTimeBucket[] }) {
+export function TimeseriesChart({ data, noDataLabel, locale }: { data: UsageTimeBucket[]; noDataLabel: string; locale: string }) {
   if (data.length === 0) {
-    return <p className="py-12 text-center text-sm text-[var(--color-muted-fg)]">Ma&apos;lumot yo&apos;q</p>;
+    return <p className="py-12 text-center text-sm text-[var(--color-muted-fg)]">{noDataLabel}</p>;
   }
   const purposes = Array.from(new Set(data.map((d) => d.purpose))).sort();
   const buckets = Array.from(new Set(data.map((d) => d.bucket))).sort();
@@ -40,12 +40,12 @@ export function TimeseriesChart({ data }: { data: UsageTimeBucket[] }) {
         <XAxis
           dataKey="bucket"
           tick={{ fontSize: 11 }}
-          tickFormatter={(v: string) => new Date(v).toLocaleDateString("uz-UZ", { month: "short", day: "numeric" })}
+          tickFormatter={(v: string) => new Date(v).toLocaleDateString(locale, { month: "short", day: "numeric" })}
         />
         <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `$${v.toFixed(3)}`} />
         <Tooltip
           formatter={(v: number) => `$${v.toFixed(4)}`}
-          labelFormatter={(v: string) => new Date(v).toLocaleString("uz-UZ")}
+          labelFormatter={(v: string) => new Date(v).toLocaleString(locale)}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         {purposes.map((p, i) => (

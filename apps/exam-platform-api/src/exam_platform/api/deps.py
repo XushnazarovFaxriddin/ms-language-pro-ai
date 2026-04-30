@@ -5,10 +5,10 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import Cookie, Request
+from languagepro_common.auth import AUTH_COOKIE_ACCESS, CurrentUser, make_get_current_user
 
 from exam_platform.adapters.data_engine.client import DataEngineClient
 from exam_platform.settings import settings
-from languagepro_common.auth import CurrentUser, make_get_current_user
 
 _get_user = make_get_current_user(
     secret=settings.AUTH_JWT_SECRET,
@@ -21,7 +21,7 @@ _get_user = make_get_current_user(
 # Re-export so route files can `Depends(get_current_user)` directly.
 async def get_current_user(
     request: Request,
-    access_token: Annotated[str | None, Cookie(alias="__Host-lp_access")] = None,
+    access_token: Annotated[str | None, Cookie(alias=AUTH_COOKIE_ACCESS)] = None,
 ) -> CurrentUser:
     return await _get_user(request, access_token)
 

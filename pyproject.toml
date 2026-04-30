@@ -10,6 +10,8 @@ dependencies = [
     "languagepro-common",
     "languagepro-llm",
     "languagepro-irt",
+    "reportlab>=4.5.0",
+    "redis>=5.3.1",
 ]
 
 [tool.uv.workspace]
@@ -62,5 +64,19 @@ plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["tests"]
-addopts = "-v --strict-markers --cov-report=term-missing"
+testpaths = ["apps/exam-platform-api/tests", "apps/data-engine-api/tests", "apps/auth-api/tests"]
+addopts = "-v --strict-markers"
+pythonpath = [
+    "apps/auth-api/src",
+    "apps/data-engine-api/src",
+    "apps/exam-platform-api/src",
+    "python/languagepro_common/src",
+    "python/languagepro_llm/src",
+    "python/languagepro_irt/src",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+]

@@ -7,13 +7,15 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from fastapi import Cookie, Depends, HTTPException, Request, status
+from fastapi import Cookie, HTTPException, Request, status
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
 from languagepro_common.errors import ForbiddenError, UnauthorizedError
 
-AUTH_COOKIE_ACCESS = "__Host-lp_access"
+AUTH_COOKIE_ACCESS = "lp_access"
+AUTH_COOKIE_REFRESH = "lp_refresh"
+AUTH_COOKIE_CSRF = "lp_csrf"
 
 Role = Literal["student", "examiner", "content_admin", "researcher", "superadmin"]
 
@@ -69,10 +71,13 @@ def require_role(*allowed: Role):
         @router.get("/admin", dependencies=[Depends(require_role("content_admin"))])
     """
 
-    async def _check(current_user: CurrentUser = Depends(lambda: None)) -> None:
+    async def _check() -> None:
         # NOTE: real wiring done in service-side `deps.py` because get_current_user
         # is constructed from settings. See apps/*/api/deps.py.
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "wire require_role in service deps.py")
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "wire require_role in service deps.py",
+        )
 
     return _check
 

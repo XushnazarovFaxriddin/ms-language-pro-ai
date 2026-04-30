@@ -1,8 +1,15 @@
 // Universal fetch wrapper. Works in RSC, Server Actions, and Client Components.
-// Includes credentials so cookies cross between localhost:3001 ↔ localhost:8001/8002.
+// Includes credentials so cookies cross app.localhost/admin.localhost/api.localhost.
 
-const AUTH_API = process.env.NEXT_PUBLIC_AUTH_API ?? "http://localhost:8002";
-const EXAM_API = process.env.NEXT_PUBLIC_EXAM_API ?? "http://localhost:8001";
+const isBrowser = typeof window !== "undefined";
+
+const AUTH_API = isBrowser 
+  ? "/api/auth" 
+  : (process.env.NEXT_PUBLIC_AUTH_API ?? "http://api.localhost/auth");
+
+const EXAM_API = isBrowser 
+  ? "/api/exam" 
+  : (process.env.NEXT_PUBLIC_EXAM_API ?? "http://api.localhost/exam");
 
 export class ApiError extends Error {
   constructor(
@@ -22,6 +29,12 @@ type FetchOpts = {
   api: "auth" | "exam";
 };
 
+function readCookie(name: string): string | undefined {
+  if (!isBrowser) return undefined;
+  const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+  return match && match[1] ? decodeURIComponent(match[1]) : undefined;
+}
+
 async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   const base = opts.api === "auth" ? AUTH_API : EXAM_API;
   const headers: Record<string, string> = {
@@ -31,8 +44,13 @@ async function call<T>(path: string, opts: FetchOpts): Promise<T> {
   if (opts.cookieHeader) {
     headers.Cookie = opts.cookieHeader;
   }
+  const method = opts.method ?? "GET";
+  if (isBrowser && method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const csrf = readCookie("lp_csrf");
+    if (csrf) headers["X-CSRF-Token"] = csrf;
+  }
   const res = await fetch(`${base}${path}`, {
-    method: opts.method ?? "GET",
+    method,
     headers,
     credentials: "include",
     cache: "no-store",
@@ -82,6 +100,10 @@ export const api = {
       }),
     getAttempt: (id: string, cookieHeader?: string) =>
       call<AttemptOut>(`/v1/attempts/${id}`, { api: "exam", cookieHeader }),
+    listAttempts: (cookieHeader?: string) =>
+      call<AttemptListItem[]>(`/v1/attempts`, { api: "exam", cookieHeader }),
+    getNextItem: (id: string) =>
+      call<NextItemResponse>(`/v1/attempts/${id}/next-item`, { api: "exam" }),
     submitResponse: (
       attemptId: string,
       body: SubmitResponseIn,
@@ -92,7 +114,65 @@ export const api = {
         body,
       }),
   },
+  feedback: {
+    getAttemptFeedback: (attemptId: string, cookieHeader?: string) => call<AttemptFeedbackOut>(`/v1/attempts/${attemptId}/feedback`, { api: "exam", cookieHeader }),
+    generateOverview: (attemptId: string, body: { target_band?: number } = {}, cookieHeader?: string) => call<FeedbackArtifactOut>(`/v1/attempts/${attemptId}/feedback/overview`, { api: "exam", method: "POST", body, cookieHeader }),
+    getRecent: (cookieHeader?: string) => call<AttemptFeedbackOut[]>("/v1/me/feedback/recent", { api: "exam", cookieHeader }),
+    getResponseFeedback: (responseId: string) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback`, { api: "exam" }),
+    analyseWriting: (responseId: string, body: any) => call<ResponseFeedbackOut>(`/v1/responses/${responseId}/feedback/analyse-writing`, { api: "exam", method: "POST", body }),
+    getTextAnalysis: (responseId: string) => call<any>(`/v1/responses/${responseId}/text-analysis`, { api: "exam" }),
+    getSentenceFeedback: (responseId: string) => call<any>(`/v1/responses/${responseId}/sentence-feedback`, { api: "exam" }),
+    getWordUpgrades: (responseId: string) => call<any>(`/v1/responses/${responseId}/word-upgrades`, { api: "exam" }),
+    getPhonemeFeedback: (responseId: string) => call<any>(`/v1/responses/${responseId}/phoneme-feedback`, { api: "exam" }),
+  },
+  roadmap: {
+    get: (cookieHeader?: string) => call<RoadmapOut>("/v1/me/roadmap", { api: "exam", cookieHeader }),
+    regenerate: (body: { target_band: number; target_date: string; weekly_hours: number; focus_skill: string; weeks_until_target: number }) => call<RoadmapOut>("/v1/me/roadmap/regenerate", { api: "exam", method: "POST", body }),
+    getToday: (cookieHeader?: string) => call<any>("/v1/me/roadmap/today", { api: "exam", cookieHeader }),
+  },
+  practice: {
+    getSRSQueue: (cookieHeader?: string) => call<SRSCardOut[]>("/v1/me/srs/queue", { api: "exam", cookieHeader }),
+    gradeSRS: (body: { card_id: string; grade: "again" | "hard" | "good" | "easy" }) => call<any>("/v1/me/srs/grade", { api: "exam", method: "POST", body }),
+    getMastery: (cookieHeader?: string) => call<MasteryOut[]>("/v1/me/mastery", { api: "exam", cookieHeader }),
+    startDrill: (drillId: string, body: { items_total?: number } = {}) => call<DrillAttemptOut>(`/v1/practice/drills/${drillId}/attempts`, { api: "exam", method: "POST", body }),
+    submitDrillItem: (drillId: string, attemptId: string, body: { correct: boolean; target_codes?: string[] }) => call<any>(`/v1/practice/drills/${drillId}/attempts/${attemptId}/items`, { api: "exam", method: "POST", body }),
+    completeDrill: (drillId: string, attemptId: string, body: { duration_ms: number }) => call<DrillAttemptOut>(`/v1/practice/drills/${drillId}/attempts/${attemptId}/complete`, { api: "exam", method: "POST", body }),
+  },
+  conversation: {
+    startSession: (body: { topic: string; topic_id?: string; cefr_level?: string; mode?: "async" | "realtime" }) => call<ConversationSessionOut>("/v1/practice/conversation/sessions", { api: "exam", method: "POST", body }),
+    submitTurn: (sessionId: string, body: { audio_base64: string; audio_format?: string; user_locale?: "uz" | "en" }) => call<ConversationTurnOut>(`/v1/practice/conversation/sessions/${sessionId}/turns`, { api: "exam", method: "POST", body }),
+    endSession: (sessionId: string) => call<ConversationSessionOut>(`/v1/practice/conversation/sessions/${sessionId}/end`, { api: "exam", method: "POST" }),
+    getActiveSession: (cookieHeader?: string) =>
+      call<{ session: ConversationSessionOut; turns: ConversationTurnOut[] } | null>(
+        "/v1/practice/conversation/sessions/active",
+        { api: "exam", cookieHeader },
+      ),
+    getSession: (sessionId: string, cookieHeader?: string) =>
+      call<{ session: ConversationSessionOut; turns: ConversationTurnOut[] }>(
+        `/v1/practice/conversation/sessions/${sessionId}`,
+        { api: "exam", cookieHeader },
+      ),
+  },
 };
+
+// Augment the api.exam namespace with anti-cheat + certificate calls.
+// (Kept here to preserve the single-source-of-truth fetch wrapper.)
+type AntiCheatEvent = {
+  attempt_id: string;
+  event_type: string;
+  section_index?: number;
+  item_id?: string;
+  payload?: Record<string, unknown>;
+};
+
+(api.exam as any).recordAntiCheat = (events: AntiCheatEvent[]) =>
+  call<void>("/v1/anti-cheat/events", { api: "exam", method: "POST", body: { events } });
+
+(api.exam as any).issueCertificate = (attemptId: string) =>
+  call<any>(`/v1/attempts/${attemptId}/certificate`, { api: "exam", method: "POST" });
+
+(api.exam as any).verifyCertificate = (publicId: string) =>
+  call<any>(`/v1/verify/${publicId}`, { api: "exam" });
 
 // ----- Types (mirror packages/contracts; inlined for simplicity) -----
 export type User = {
@@ -101,6 +181,7 @@ export type User = {
   display_name: string | null;
   roles: string[];
   locale: "uz" | "en";
+  theme: "system" | "light" | "dark";
   created_at: string;
 };
 
@@ -121,13 +202,23 @@ export type ItemView = {
     prompt?: string;
     options?: { id: string; label: string }[];
     audio_url?: string;
+    transcript?: string;
+    // Writing
+    task_type?: "task1_academic" | "task1_general" | "task2";
+    word_limit_min?: number;
+    word_limit_max?: number;
+    time_limit_minutes?: number;
+    // Speaking
+    part?: 1 | 2 | 3;
+    preparation_seconds?: number;
+    speaking_seconds?: number;
   };
   estimated_seconds: number;
 };
 
 export type StartAttemptResponse = {
   attempt_id: string;
-  blueprint_snapshot: { sections: { skill: string; name_uz?: string; name_en?: string; item_count?: number; time_limit_seconds: number }[] };
+  blueprint_snapshot: { name_uz?: string; name_en?: string; sections: { skill: string; name_uz?: string; name_en?: string; item_count?: number; time_limit_seconds: number }[] };
   current_section_index: number;
   current_item: ItemView | null;
 };
@@ -136,9 +227,28 @@ export type AttemptOut = {
   id: string;
   state: string;
   blueprint_snapshot: StartAttemptResponse["blueprint_snapshot"];
+  current_section_index: number;
+  current_item: ItemView | null;
   theta_estimates: Record<string, number>;
   started_at: string;
   finished_at: string | null;
+};
+
+export type AttemptListItem = {
+  id: string;
+  exam_id: string;
+  exam_name_uz: string;
+  exam_name_en: string;
+  blueprint_code: string;
+  state: string;
+  score?: number;
+  started_at: string;
+  finished_at: string | null;
+};
+
+export type NextItemResponse = {
+  current_section_index: number;
+  current_item: ItemView | null;
 };
 
 export type SubmitResponseIn = {
@@ -147,6 +257,8 @@ export type SubmitResponseIn = {
   mcq_choice_id?: string;
   text_answer?: string;
   audio_s3_key?: string;
+  audio_base64?: string;
+  audio_format?: string;
   time_ms: number;
 };
 
@@ -157,4 +269,104 @@ export type SubmitResponseOut = {
   next_item: ItemView | null;
   section_complete: boolean;
   attempt_complete: boolean;
+  next_section_index: number | null;
+  next_skill: string | null;
+};
+
+// ----- New DTOs -----
+export type AttemptFeedbackOut = {
+  attempt_id: string;
+  artifacts: FeedbackArtifactOut[];
+};
+
+export type FeedbackArtifactOut = {
+  id: string;
+  attempt_id: string;
+  response_id: string | null;
+  layer: string;
+  skill: string;
+  payload: Record<string, any>;
+  source: string;
+  model?: string | null;
+  prompt_version_id?: string | null;
+  created_at: string;
+};
+
+export type ResponseFeedbackOut = {
+  response_id: string;
+  artifacts: any[];
+};
+
+export type RoadmapMilestone = {
+  week: number;
+  theme: string;
+  skill_focus: string[];
+  expected_band_lift: number;
+  items: any[];
+};
+
+export type RoadmapOut = {
+  id: string;
+  target_band: number;
+  target_date: string;
+  weekly_hours: number;
+  current_band_estimate?: number | null;
+  predicted_band_at_target: Record<string, any>;
+  plan: { milestones: RoadmapMilestone[]; daily_targets: any; spaced_repetition: any; unmet_codes: string[]; narrative_uz: string; narrative_en: string; };
+  status: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SRSCardOut = {
+  id: string;
+  ref_type: string;
+  ref_id: string;
+  payload: Record<string, any>;
+  stability: number;
+  difficulty: number;
+  due_at: string;
+  reps: number;
+  lapses: number;
+  last_grade?: string | null;
+};
+
+export type MasteryOut = {
+  code: string;
+  mastery: number;
+  last_practiced_at: string;
+};
+
+export type DrillAttemptOut = {
+  id: string;
+  drill_id: string;
+  items_correct: number;
+  items_total: number;
+  duration_ms?: number | null;
+  started_at: string;
+  completed_at?: string | null;
+};
+
+export type ConversationSessionOut = {
+  id: string;
+  topic_id?: string | null;
+  topic: string;
+  cefr_level: string;
+  mode: string;
+  status: string;
+  started_at: string;
+  ended_at?: string | null;
+};
+
+export type ConversationTurnOut = {
+  id: string;
+  session_id: string;
+  turn_index: number;
+  user_audio_s3_key?: string | null;
+  user_transcript: string;
+  agent_response_text: string;
+  agent_audio_url?: string | null;
+  feedback: any;
+  model?: string | null;
+  created_at: string;
 };

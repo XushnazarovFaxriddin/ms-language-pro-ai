@@ -1,5 +1,15 @@
 name: aiexam-dev
 
+x-api-env: &api-env
+  AUTH_API_URL: http://auth-api:8000
+  DATA_ENGINE_API_URL: http://data-engine-api:8000
+  EXAM_PLATFORM_API_URL: http://exam-platform-api:8000
+  DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-languagepro}:${POSTGRES_PASSWORD:-changeme}@postgres:5432/${POSTGRES_DB:-languagepro}
+  REDIS_URL: redis://redis:6379/0
+  S3_ENDPOINT: http://minio:9000
+  PROMPTS_DIR: /app/prompts
+  AUTH_REFRESH_COOKIE_PATH: /auth/v1/refresh
+
 services:
   postgres:
     image: pgvector/pgvector:pg17
@@ -89,8 +99,6 @@ services:
         SERVICE_MODULE: auth_api
     restart: unless-stopped
     env_file: ../../.env
-    environment:
-      SERVICE_NAME: auth-api
     depends_on:
       postgres:
         condition: service_healthy
@@ -101,6 +109,9 @@ services:
     volumes:
       - ../../apps/auth-api:/app/apps/auth-api
       - ../../python:/app/python
+    environment:
+      <<: *api-env
+      SERVICE_NAME: auth-api
 
   data-engine-api:
     build:
@@ -112,6 +123,7 @@ services:
     restart: unless-stopped
     env_file: ../../.env
     environment:
+      <<: *api-env
       SERVICE_NAME: data-engine-api
     depends_on:
       postgres:
@@ -136,6 +148,7 @@ services:
     command: ["uv", "run", "arq", "data_engine.jobs.WorkerSettings"]
     env_file: ../../.env
     environment:
+      <<: *api-env
       SERVICE_NAME: data-engine-worker
     depends_on:
       postgres:
@@ -157,6 +170,7 @@ services:
     restart: unless-stopped
     env_file: ../../.env
     environment:
+      <<: *api-env
       SERVICE_NAME: exam-platform-api
     depends_on:
       postgres:
@@ -181,6 +195,7 @@ services:
     command: ["uv", "run", "arq", "exam_platform.jobs.WorkerSettings"]
     env_file: ../../.env
     environment:
+      <<: *api-env
       SERVICE_NAME: exam-platform-worker
     depends_on:
       postgres:

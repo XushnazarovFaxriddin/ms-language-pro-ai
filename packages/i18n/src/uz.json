@@ -1,4 +1,8 @@
 {
+  "Meta": {
+    "title": "LanguagePro AI — Imtihon platformasi",
+    "description": "IELTS va CEFR onlayn imtihon platformasi"
+  },
   "Common": {
     "appName": "LanguagePro AI",
     "tagline": "Sun'iy intellekt yordamida IELTS va CEFR onlayn baholash",
@@ -13,6 +17,509 @@
       "login": "Kirish",
       "logout": "Chiqish",
       "register": "Ro'yxatdan o'tish"
+    },
+    "nav": {
+      "pricing": "Ta'riflar",
+      "features": "Imkoniyatlar"
+    }
+  },
+  "Landing": {
+    "hero": {
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "IELTS va CEFR darajangizni sun'iy intellekt yordamida, soniyalar ichida aniqlang. Adaptiv testlar va professional tahlil.",
+      "startFree": "Bepul boshlash",
+      "watchDemo": "Demo ko'rish",
+      "socialProof": "50+ muvaffaqiyatli topshiruvchilar",
+      "mission": "Bilim — bu kuch, AI — bu imkoniyat."
+    },
+    "howItWorks": {
+      "title": "Qanday ishlaydi?",
+      "subtitle": "Atigi 3 qadamda xalqaro sertifikatga ega bo'ling",
+      "step1": {
+        "title": "Imtihon topshirish",
+        "description": "Haqiqiy IELTS/CEFR muhitida, adaptiv savollar orqali bilimingizni sinang."
+      },
+      "step2": {
+        "title": "AI Tahlili",
+        "description": "Sizning Speaking va Writing ishlaringiz 30 soniya ichida tahlil qilinadi."
+      },
+      "step3": {
+        "title": "Sertifikat",
+        "description": "Rasmiy darajangizni tasdiqlovchi sertifikatni lahzada qo'lga kiting."
+      }
+    },
+    "faq": {
+      "title": "Ko'p so'raladigan savollar",
+      "q1": "Sertifikatlar qayerda amal qiladi?",
+      "a1": "Bizning sertifikatlarimiz xalqaro standartlarga javob beradi va ko'plab oliygohlar hamda tashkilotlar tomonidan tan olinadi.",
+      "q2": "AI qanchalik aniq baholaydi?",
+      "a2": "Bizning AI modellarimiz real IELTS ekspertlari bilan ±0.5 band score aniqligida ishlaydi.",
+      "q3": "Test qancha vaqt davom etadi?",
+      "a3": "Adaptiv tizim tufayli test 30-45 daqiqa davom etadi, bu an'anaviy testlardan 2 barobar tezroq."
+    },
+    "cta": {
+      "title": "Bilimingizni hoziroq sinab ko'ring",
+      "subtitle": "Hech qanday kutishlarsiz, lahzalik natija va professional tahlilga ega bo'ling.",
+      "button": "Bepul boshlash"
+    },
+    "stats": {
+      "exams": "Muvaffaqiyatli imtihonlar",
+      "accuracy": "Aniq daraja aniqlash",
+      "partners": "Hamkor o'quv markazlari"
+    },
+    "footer": {
+      "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Buxoro Davlat Universiteti · Dastur guvohnomasi: LanguagePro AI"
+    }
+  },
+  "Pricing": {
+    "title": "Ta'riflar",
+    "description": "O'zingizga mos tarifni tanlang",
+    "yearlyToggle": "Yillik (-17% chegirma)",
+    "monthlyToggle": "Oylik",
+    "currencyUZS": "UZS",
+    "currencyUSD": "USD",
+    "perMonth": "/oy",
+    "perYear": "/yil",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "0 so'm",
+        "priceUSD": "$0",
+        "features": {
+          "0": "1 ta test/oy",
+          "1": "Faqat Reading/Listening",
+          "2": "Sertifikat mavjud emas"
+        },
+        "cta": "Boshlash"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "49 000",
+        "priceUSD": "$4",
+        "features": {
+          "0": "5 ta test/oy",
+          "1": "4 ta ko'nikma (Speaking/Writing)",
+          "2": "AI fikr-mulohaza"
+        },
+        "cta": "Tanlash"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Eng mashhur",
+        "price": "119 000",
+        "priceUSD": "$10",
+        "features": {
+          "0": "Cheksiz testlar",
+          "1": "Rasmiy sertifikat",
+          "2": "To'liq natijalar tahlili",
+          "3": "Priority support"
+        },
+        "cta": "Tanlash"
+      },
+      "team": {
+        "name": "Team",
+        "price": "Aloqa",
+        "priceUSD": "Contact",
+        "features": {
+          "0": "10+ o'rin (seats)",
+          "1": "Brending",
+          "2": "CSV eksport",
+          "3": "SSO"
+        },
+        "cta": "Biz bilan aloqa"
+      }
+    }
+  },
+  "Dashboard": {
+    "title": "Mavjud imtihonlar",
+    "description": "Quyidagi testlardan birini tanlang — javoblaringizga qarab AI keyingi savollarni adaptiv tanlaydi.",
+    "empty": "Hozircha imtihonlar yo'q.",
+    "goHome": "Bosh sahifa",
+    "blueprint": "Blueprint: ",
+    "startAttempt": "Boshlash",
+    "starting": "Boshlanmoqda…",
+    "welcome": "Xush kelibsiz, {name} 👋",
+    "welcomeSub": "Quyidagi testlardan birini tanlang — AI javoblaringizga qarab keyingi savollarni adaptiv tanlaydi.",
+    "popular": "Mashhur",
+    "examCount": "{count} ta test",
+    "sections": "{count} ta bo'lim",
+    "minutes": "~{count} daqiqa",
+    "recentTitle": "Oxirgi natijalar",
+    "recentBand": "Band",
+    "viewAll": "Hammasi",
+    "skills": {
+      "listening": "Tinglash",
+      "reading": "O'qish",
+      "writing": "Yozish",
+      "speaking": "Gapirish"
+    },
+    "blueprintDesc": {
+      "default": "Adaptiv til testi — AI baholash bilan.",
+      "ielts_full_mock": "To'liq IELTS Academic mock — to'rt ko'nikma, adaptiv savol tanlash, yozma va og'zaki javoblarni AI baholaydi.",
+      "ielts_reading_mini": "20 daqiqalik tezkor reading testi — kunlik mashq uchun juda qulay.",
+      "mini-reading": "Tezkor mashq uchun qisqa reading testi.",
+      "cefr_multilevel": "A1 → C2 darajalarini qamrab oladigan CEFR multilevel skriner."
+    },
+    "hero": {
+      "eyebrow": "Shaxsiy AI repetitor",
+      "resume": "Davom ettirish",
+      "subtitleWithStats": "Hozirgacha o'rtacha bandingiz: {band}. Keyingi pog'onaga chiqish uchun yana bitta testni tanlang."
+    },
+    "stats": {
+      "totalExams": "Topshirilgan imtihonlar",
+      "avgScore": "O'rtacha band",
+      "certificates": "Sertifikatlar",
+      "firstAttemptHint": "Birinchi imtihonni topshirib, taraqqiyotni kuzatishni boshlang.",
+      "bandLabel": "barcha tugatilgan testlar bo'yicha",
+      "noScoresYet": "O'rtachani ko'rish uchun avval imtihonni yakunlang.",
+      "certHint": "Istalgan to'liq imtihonni yakunlang — sertifikat olasiz.",
+      "certEarned": "Har bir natija sahifasidan yuklab olish mumkin."
+    },
+    "nav": {
+      "dashboard": "Asosiy",
+      "results": "Mening natijalarim",
+      "certificates": "Sertifikatlar",
+      "analytics": "Analitika va O'sish",
+      "studyMaterials": "O'quv materiallari",
+      "payments": "To'lovlar tarixi",
+      "settings": "Sozlamalar",
+      "roadmap": "Shaxsiy reja",
+      "practice": "Amaliyot",
+      "conversation": "Suhbat",
+      "feedback": "Fikr-mulohaza"
+    },
+    "futurePlan": "Kelajakdagi rejalar",
+    "demoDisclaimer": "Bu bo'lim hozircha demo rejimida ishlamoqda. Haqiqiy ishga tushirilganda bu yerda sizning shaxsiy ma'lumotlaringiz aks etadi.",
+    "resultsPage": {
+      "title": "Mening natijalarim",
+      "description": "Barcha topshirgan imtihonlaringiz va ularning natijalari tarixi.",
+      "emptyTitle": "Siz hali imtihon topshirmadingiz",
+      "emptyDesc": "Bilimingizni sinash uchun birinchi imtihonni hoziroq boshlang.",
+      "startExam": "Imtihonlarni ko'rish",
+      "tableExam": "Imtihon",
+      "tableDate": "Sana",
+      "tableStatus": "Holati",
+      "tableScore": "Natija",
+      "tableAction": "Amal",
+      "ieltsBand": "IELTS Band",
+      "viewResult": "Ko'rish",
+      "completed": "Tugallangan",
+      "inProgress": "Jarayonda",
+      "overall": "Umumiy"
+    },
+    "analyticsPage": {
+      "title": "Analitika va O'sish",
+      "description": "Sizning o'sish dinamikangiz va kuchsiz tomonlaringiz tahlili.",
+      "growthTitle": "Baho o'sish dinamikasi",
+      "growthDesc": "Oy davomida Writing va Speaking ko'nikmalari <growth>15%</growth> ga yaxshilangan. Muntazam mashg'ulotlar o'z natijasini bermoqda.",
+      "strengthTitle": "Kuchli va kuchsiz tomonlar",
+      "strengthDesc": "Grammar Range ko'rsatkichi <level>B1</level> darajada, Lexical Resource esa ajoyib <level>B2</level> darajada."
+    },
+    "certificatesPage": {
+      "title": "Sertifikatlar",
+      "description": "Sizning rasmiy elektron sertifikatlaringiz va yutuqlaringiz.",
+      "issued": "Berilgan sana: {date}",
+      "verified": "Tasdiqlangan",
+      "downloadPdf": "PDF yuklab olish"
+    },
+    "paymentsPage": {
+      "title": "To'lovlar tarixi",
+      "description": "Ta'riflar, to'lovlar tarixi va kvitansiyalar.",
+      "activePlan": "PRO Ta'rifi (Aktiv)",
+      "planDesc": "Sizda cheksiz imtihonlar mavjud. Keyingi to'lov: 12 May 2026",
+      "historyTitle": "To'lovlar tarixi",
+      "tableDate": "Sana",
+      "tableAmount": "Summa",
+      "tableStatus": "Holati",
+      "paid": "To'langan"
+    },
+    "studyMaterialsPage": {
+      "title": "O'quv materiallari",
+      "description": "Kuchsiz tomonlaringizni kuchaytirish uchun maxsus materiallar.",
+      "card1Title": "IELTS Speaking Task 2",
+      "card1Desc": "15 daqiqalik masterklass. Band 7.0+ uchun strategiyalar.",
+      "card2Title": "Grammar Focus: B2",
+      "card2Desc": "PDF qo'llanma va qoidalar toplami. Interfaol mashqlar.",
+      "card3Title": "Vocabulary: Academic",
+      "card3Desc": "100 ta eng kerakli akademik so'zlar ro'yxati."
+    },
+    "settingsPage": {
+      "title": "Sozlamalar",
+      "description": "Shaxsiy profilingiz va tizim sozlamalarini boshqaring.",
+      "nameLabel": "Ism va Familiya",
+      "emailLabel": "Email",
+      "langLabel": "Tizim Tili",
+      "save": "Saqlash"
+    }
+  },
+  "Exam": {
+    "loading": "Yuklanmoqda…",
+    "errorNotFound": "Keyingi savol topilmadi.",
+    "backToExams": "Imtihonlarga qaytish",
+    "question": "Savol",
+    "skill": "Skill",
+    "submit": "Yuborish",
+    "correct": "To'g'ri",
+    "incorrect": "Noto'g'ri",
+    "submitted": "Yuborildi",
+    "section": "Bo'lim {current} / {total}",
+    "skills": {
+      "listening": "Tinglash",
+      "reading": "O'qish",
+      "writing": "Yozish",
+      "speaking": "Gapirish"
+    },
+    "skillDesc": {
+      "listening": "Audio bir martagina ijro etiladi. Tayyor bo'lganingizda Play tugmasini bosing.",
+      "reading": "Matnni diqqat bilan o'qing va savollarga javob bering.",
+      "writing": "Berilgan mavzuda kamida 250 so'zli insho yozing.",
+      "speaking": "Cue card asosida gapirib bering. 1 daqiqa tayyorgarlik + 2 daqiqa gapirish."
+    },
+    "transition": {
+      "previousDone": "{skill} bo'limi tugadi",
+      "continue": "Boshlash"
+    },
+    "listening": {
+      "label": "Listening · bir martagina",
+      "play": "Audioni boshlash",
+      "playing": "Ijro etilmoqda… (qayta ko'chirish mumkin emas)",
+      "finished": "Audio tugadi",
+      "singlePlayHint": "Audio bir martagina ijro etiladi. Tinglashni boshlash uchun Play tugmasini bosing.",
+      "noAudio": "Bu savolda audio topilmadi, javob berishni davom ettirishingiz mumkin."
+    },
+    "writing": {
+      "label": "Writing · {task}",
+      "limits": "{min}–{max} so'z · {minutes} daqiqa",
+      "placeholder": "Insho matnini shu yerga yozing…",
+      "wordCount": "{count} so'z",
+      "needMore": "(kamida {min} kerak)",
+      "tooMany": "(eng ko'pi {max})",
+      "ok": "✓",
+      "pasteBlocked": "Paste bloklangan — matnni o'zingiz yozing."
+    },
+    "speaking": {
+      "label": "Speaking · Part {part}",
+      "timing": "{prep}s tayyorgarlik · {speak}s gapirish",
+      "startPrep": "Tayyorgarlikni boshlash",
+      "preparing": "Tayyorgarlik · {seconds}s",
+      "startNow": "Hozir boshlash",
+      "recording": "Yozilmoqda · {seconds}s",
+      "stop": "To'xtatish",
+      "processing": "Audio tayyorlanmoqda…",
+      "ready": "Yozuv tayyor — pastdagi Yuborish tugmasini bosing",
+      "denied": "Mikrofon uchun ruxsat berilmadi. Brauzer sozlamalaridan ruxsat bering.",
+      "errorGeneric": "Audio yozuvni tayyorlashda xatolik yuz berdi.",
+      "retry": "Qayta urinib ko'rish",
+      "unsupported": "Brauzeringiz audio yozishni qo'llab-quvvatlamaydi. Chrome ishlating."
+    }
+  },
+  "Results": {
+    "title": "Imtihon Natijalari",
+    "score": "To'g'ri javoblar",
+    "timeTaken": "Sarflangan vaqt",
+    "backToDashboard": "Bosh sahifaga qaytish",
+    "questionDetails": "Savollar tahlili",
+    "correct": "To'g'ri",
+    "incorrect": "Noto'g'ri",
+    "questionNumber": "Savol #",
+    "ieltsBand": "IELTS Band"
+  },
+  "Certificate": {
+    "title": "Rasmiy Sertifikat",
+    "subtitle": "LanguagePro AI sertifikatingizni rasmiylashtiring, yuklab oling va ulashing.",
+    "issue": "Sertifikat olish",
+    "issuing": "Tayyorlanmoqda…",
+    "download": "PDF yuklab olish",
+    "verify": "Tekshirish sahifasi",
+    "copyVerify": "Tekshirish havolasini nusxalash",
+    "copied": "Nusxalandi",
+    "publicId": "Ommaviy ID",
+    "sha256": "SHA-256",
+    "overallBand": "Umumiy Band",
+    "cefr": "CEFR daraja",
+    "alreadyIssued": "Ushbu urinish uchun sertifikat avval berilgan.",
+    "error": "Sertifikatni rasmiylashtirib bo'lmadi. Qayta urinib ko'ring."
+  },
+  "Verify": {
+    "validTitle": "Sertifikat haqiqiy",
+    "invalidTitle": "Sertifikat haqiqiy emas",
+    "validSubtitle": "Ushbu sertifikat LanguagePro AI tomonidan berilgan va o'zgartirilmagan.",
+    "name": "Egasi",
+    "exam": "Imtihon",
+    "overallBand": "Umumiy band",
+    "cefr": "CEFR daraja",
+    "publicId": "Ommaviy ID",
+    "sha256": "SHA-256",
+    "issuedAt": "Berilgan vaqti",
+    "reasonRevoked": "Ushbu sertifikat bekor qilingan.",
+    "reasonNotFound": "Bunday ID bo'yicha sertifikat topilmadi.",
+    "reasonLookupError": "Sertifikatni tekshirib bo'lmadi. Qayta urinib ko'ring.",
+    "reasonGeneric": "Sertifikatni tasdiqlay olmadik."
+  },
+  "Practice": {
+    "title": "Amaliyot",
+    "description": "Xato qilgan savollaringizni takrorlash va vaqt o'tishi bilan ko'nikma darajangizni kuzatish.",
+    "intro": "Har imtihondan so'ng xato qilgan savollaringiz shu yerga tushadi. Ularni takrorlasangiz, eslab qolasiz — keyingi takrorlash vaqtini tizim avtomatik belgilaydi.",
+    "empty": {
+      "title": "Hozircha takrorlash uchun savol yo'q",
+      "hint": "Birorta imtihon topshiring — xato qilgan savolingiz avtomatik shu sahifaga tushadi va to'g'ri javob esda qolguncha takrorlash imkoni bo'ladi.",
+      "cta": "Imtihonlarga o'tish"
+    },
+    "doneTitle": "Hammasi takrorlandi — zo'r!",
+    "progress": "{current}/{total}-karta",
+    "noPrompt": "(savol matni mavjud emas)",
+    "yourAnswer": "Sizning javobingiz",
+    "correctAnswer": "To'g'ri javob",
+    "showAnswer": "Javobni ko'rsatish",
+    "hideAnswer": "Javobni yashirish",
+    "mastery": {
+      "title": "Ko'nikma darajasi",
+      "empty": "Ko'nikma kuzatuvi uchun avval imtihon topshiring."
+    },
+    "grade": {
+      "again": "Qaytadan",
+      "againSub": "Esimda yo'q",
+      "hard": "Qiyin",
+      "hardSub": "+6 soat",
+      "good": "Yaxshi",
+      "goodSub": "+1 kun",
+      "easy": "Oson",
+      "easySub": "Bir necha kun"
+    }
+  },
+  "Roadmap": {
+    "title": "Shaxsiy reja (Roadmap)",
+    "description": "Sizning maqsadingizga moslashtirilgan kunlik va haftalik mashg'ulotlar rejasi.",
+    "stats": {
+      "target": "Maqsad",
+      "date": "Sana",
+      "weeklyTime": "Haftalik vaqt",
+      "forecast": "Prognoz (P50)",
+      "hours": "{count} soat"
+    },
+    "weeklyMilestones": "Haftalik bosqichlar",
+    "expectedGrowth": "Kutilayotgan o'sish: +{value} band",
+    "dailyTasks": "Kunlik vazifalar",
+    "daily": {
+      "vocabulary": "Lug'at kartochkalari",
+      "drills": "Drill mashqlari",
+      "mock": "Mock savollar",
+      "cardsUnit": "{count} ta",
+      "minutesUnit": "{count} min"
+    },
+    "recommendation": "Tavsiya:",
+    "regenerate": "Qaytadan yaratish",
+    "setup": {
+      "title": "Shaxsiy reja yarating",
+      "description": "Maqsadingiz va bo'sh vaqtingizni kiriting. AI siz uchun eng optimal tayyorgarlik strategiyasini ishlab chiqadi.",
+      "targetBand": "Maqsad (IELTS Band)",
+      "examDate": "Imtihon sanasi",
+      "weeklyHours": "Haftalik ajratiladigan vaqt (soat)",
+      "weeksLeft": "Necha hafta qoldi?",
+      "focusSkill": "Asosiy e'tibor (Skill)",
+      "submit": "Rejani shakllantirish",
+      "submitRegenerate": "Rejani yangilash",
+      "regenerateTitle": "Rejani yangilang",
+      "regenerateDescription": "Maqsadingizni o'zgartiring — AI siz uchun yangi tayyorgarlik rejasini tuzadi.",
+      "cancel": "Bekor qilish",
+      "error": "Xatolik yuz berdi"
+    }
+  },
+  "Conversation": {
+    "title": "Suhbat (Conversation)",
+    "description": "AI bilan ovozli suhbatlashing. Fluency, Grammar va Pronunciation bo'yicha real vaqtda fikr-mulohaza oling.",
+    "startCard": {
+      "title": "Yangi suhbat boshlash",
+      "topicLabel": "Suhbat mavzusi",
+      "defaultTopic": "Universitet hayoti",
+      "cefrLabel": "CEFR darajasi"
+    },
+    "actions": {
+      "start": "Boshlash",
+      "end": "Yakunlash",
+      "record": "Gapirish uchun bosing",
+      "stopRecording": "Yozishni to'xtatish",
+      "playAnswer": "AI javobini eshitish",
+      "stopAnswer": "To'xtatish"
+    },
+    "status": {
+      "thinking": "AI javob tayyorlayapti. Bu odatda 15-30 soniya davom etadi."
+    },
+    "labels": {
+      "fluency": "Fluency",
+      "noGrammarIssues": "Grammar xatosi yo'q",
+      "grammarIssues": "{count} ta grammar xatosi",
+      "suggestion": "Tavsiya:"
+    },
+    "empty": "Mikrofonni bosib gapirishni boshlang. AI sizga javob qaytaradi.",
+    "errors": {
+      "generic": "Xatolik yuz berdi",
+      "endSession": "Sessiyani tugatib bo'lmadi",
+      "microphone": "Mikrofonga ruxsat berilmadi yoki xatolik yuz berdi.",
+      "noAudio": "Audio yozilmadi. Qayta urinib ko'ring.",
+      "submitAudio": "Audioni yuborib bo'lmadi",
+      "ttsUnsupported": "Brauzeringiz ovozli ijroni qo'llab-quvvatlamaydi. Iltimos, eng so'nggi Chrome ishlating.",
+      "ttsFailed": "AI ovozini ijro etib bo'lmadi"
+    }
+  },
+  "Feedback": {
+    "title": "AI Fikr-mulohaza",
+    "emptyTitle": "Fikr-mulohaza (Feedback)",
+    "emptyDesc": "Ushbu imtihon uchun AI tomonidan to'liq tahlil va fikr-mulohazalar hozircha mavjud emas. Uni hoziroq generatsiya qilishingiz mumkin.",
+    "progress": {
+      "title": "AI imtihoningizni baholamoqda",
+      "subtitle": "Odatda 30–90 soniya davom etadi. Sahifani yopmang.",
+      "stages": {
+        "reading": "Javoblaringiz o'qilmoqda",
+        "writing": "Yozma insholar baholanmoqda",
+        "speaking": "Speaking audio tahlil qilinmoqda",
+        "composing": "Yakuniy hisobot tuzilmoqda"
+      },
+      "hint": "Haqiqiy IELTS rubrikasi bo'yicha Gemini 2.5 baholaydi — soxta band yo'q.",
+      "errorTitle": "AI baholash hozircha mavjud emas",
+      "errorBody": "Model ushbu imtihonni hozircha baholay olmadi. Soxta band ko'rsatishdan ko'ra, halol xato xabari ma'qul.",
+      "retry": "Qayta urinib ko'rish"
+    },
+    "actions": {
+      "generate": "Tahlilni boshlash",
+      "regenerateAi": "Real AI tahlil yaratish"
+    },
+    "source": {
+      "ai": "AI overview: {model}",
+      "fallback": "Bu hozircha tizim fallback xulosasi. Aniq kamchiliklar va rivojlanish tavsiyalari uchun real AI tahlilni yarating.",
+      "partial": "Overview AI tomonidan yozildi, lekin quyidagi skill baholari hali fallback scoringda: {skills}. To'liq AI speaking scoring uchun yangi WAV yozuvli attempt topshiring.",
+      "unknownModel": "AI model"
+    },
+    "sections": {
+      "overview": "Umumiy xulosa (Overview)",
+      "sentence": "Gap qurilishi (Sentence)",
+      "word": "So'z boyligi (Vocabulary)",
+      "phoneme": "Talaffuz (Pronunciation)"
+    },
+    "skills": {
+      "overall": "Umumiy",
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "mainRecommendation": "Asosiy tavsiya",
+    "nextStep": "Keyingi qadam: {ref}",
+    "biggestOpportunity": "Siz uchun eng katta imkoniyat bu: <code></code> ni yaxshilash.",
+    "counts": {
+      "errors": "{count} ta xato",
+      "suggestions": "{count} ta tavsiya",
+      "words": "{count} ta so'z"
+    },
+    "fallback": {
+      "originalSentence": "Original sentence text",
+      "suggestedRewrite": "Tavsiya qilingan variant"
+    },
+    "replaceWith": "Quyidagilarga almashtiring:",
+    "phonemeDesc": "Siz ushbu so'zlarning talaffuzida xatoliklarga yo'l qo'ygansiz. GOP (Goodness of Pronunciation) ko'rsatkichlari keltirilgan.",
+    "errors": {
+      "generate": "Fikr-mulohaza yaratishda xatolik"
     }
   }
 }

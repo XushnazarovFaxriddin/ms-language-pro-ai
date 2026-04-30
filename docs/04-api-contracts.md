@@ -10,7 +10,7 @@
 |---|---|---|
 | `X-Request-Id` | C ↔ S | ULID; auto-generated if missing |
 | `Idempotency-Key` | C → S | Required on `POST` mutations; 24h TTL in Redis |
-| `X-CSRF-Token` | C → S | Required on mutation when authed via cookie; matches `__Host-lp_csrf` cookie |
+| `X-CSRF-Token` | C → S | Required on mutation when authed via cookie; matches `lp_csrf` cookie |
 | `Accept-Language` | C → S | `uz, en;q=0.8` — affects locale-bound feedback |
 | `Authorization: Bearer <s2s>` | exam-api → data-api | Short-lived S2S JWT |
 | `Authorization: Bearer lp_pk_…` | researcher → data-api | API key |
@@ -123,7 +123,30 @@ Rate limits: `/login` 5/min/IP, `/register` 3/hour/IP, `/refresh` 30/min/user.
 | GET | `/v1/exports/responses.csv` | `analytics:read` | Anonymised empirical data |
 | GET | `/v1/exports/questions.csv` | `analytics:read` | Approved question metadata |
 
-### 3.4 Public (no auth, used by landing + verify)
+### 3.4 Research & Psychometrics ([`18-`](18-research-and-psychometrics.md))
+
+| Method | Path | Role | Purpose |
+|---|---|---|---|
+| GET | `/v1/research/jury-stats` | content_admin+ | κ time series |
+| GET | `/v1/research/calibration/cold-start-correlation` | content_admin+ | LLM-vs-empirical b |
+| GET | `/v1/research/dif` | content_admin+ | DIF flagged items |
+| GET | `/v1/research/irr-studies` | content_admin+ | LLM-vs-human IRR |
+| POST | `/v1/research/experiments` | superadmin | A/B prompt experiment |
+| PATCH | `/v1/research/experiments/{id}` | superadmin | start/stop |
+| GET | `/v1/research/experiments/{id}/results` | content_admin+ | metrics + CI |
+| GET | `/v1/research/experiments` | content_admin+ | list |
+| GET | `/v1/research/exports/responses.parquet` | researcher (api-key) | dataset dump |
+| GET | `/v1/research/exports/questions.parquet` | researcher (api-key) | item metadata dump |
+
+### 3.5 Drills & Error Taxonomy (admin)
+
+| Method | Path | Role |
+|---|---|---|
+| GET/POST/PATCH | `/v1/drills` | content_admin+ |
+| GET/PATCH | `/v1/error-taxonomy` | content_admin+ |
+| GET/POST/PATCH | `/v1/conversation-topics` | content_admin+ |
+
+### 3.6 Public (no auth, used by landing + verify)
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -179,7 +202,61 @@ interface GenerationJobCreate {
 |---|---|---|
 | GET | `/v1/review-queue` | Mirrors data-api `/review-queue` with cross-link to attempt response |
 
-### 4.3 Billing (Phase 4)
+### 4.3 Feedback Engine ([`14-`](14-feedback-engine.md))
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/attempts/{id}/feedback` | Full layered feedback (L1→L5) |
+| GET | `/v1/attempts/{id}/feedback?layer=sentence` | One layer only |
+| GET | `/v1/responses/{id}/feedback` | Per-response artefacts |
+| GET | `/v1/responses/{id}/text-analysis` | Writing analysis (sentences, words, cohesion) |
+| GET | `/v1/responses/{id}/audio` | Signed audio URL (own audio) |
+| GET | `/v1/responses/{id}/transcript` | Speaking transcript |
+| GET | `/v1/responses/{id}/phoneme-feedback` | layer=phoneme |
+| GET | `/v1/responses/{id}/sentence-feedback` | layer=sentence |
+| GET | `/v1/responses/{id}/word-upgrades` | layer=word |
+| GET | `/v1/me/feedback/recent` | Last 5 attempts L1+L2 (dashboard) |
+
+### 4.4 Roadmap ([`15-`](15-learning-roadmap.md))
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/me/roadmap` | Active roadmap |
+| POST | `/v1/me/roadmap/regenerate` | Force fresh plan |
+| GET | `/v1/me/roadmap/today` | Today's tasks |
+| POST | `/v1/me/roadmap/items/{id}/complete` | Mark task done |
+| GET | `/v1/me/srs/queue` | Next FSRS card batch |
+| POST | `/v1/me/srs/grade` | `{card_id, grade}` |
+| GET | `/v1/me/predictions` | Band prediction history |
+| PATCH | `/v1/me/preferences` | `{target_band, target_date, weekly_hours, focus_skill, daily_target_minutes}` |
+
+### 4.5 Practice Mode ([`16-`](16-practice-mode.md))
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/practice/today` | Today's queue (drills + cards + mocks) |
+| GET | `/v1/practice/drills` | List with filters |
+| POST | `/v1/practice/drills/{id}/attempts` | Start a drill attempt |
+| POST | `/v1/practice/drills/{id}/attempts/{aid}/items` | Submit drill item |
+| GET | `/v1/practice/conversation/topics` | Topic catalogue (locale + CEFR filtered) |
+| POST | `/v1/practice/conversation/sessions` | Start `{topic_id, mode}` |
+| POST | `/v1/practice/conversation/sessions/{id}/turns` | Submit user audio + get agent response |
+| POST | `/v1/practice/conversation/sessions/{id}/end` | Finish |
+| GET | `/v1/practice/pronunciation/today` | Today's phoneme + word list |
+| POST | `/v1/practice/pronunciation/attempts` | `{phoneme, word, audio_s3_key}` → GOP |
+
+### 4.6 Analytics ([`17-`](17-analytics-and-insights.md))
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/v1/me/analytics/heatmap` | per-skill × CEFR mastery |
+| GET | `/v1/me/analytics/growth?range=30d|90d|all` | Band over time |
+| GET | `/v1/me/analytics/errors?range=30d` | Top error codes |
+| GET | `/v1/me/analytics/vocabulary` | CEFR + AWL coverage |
+| GET | `/v1/me/analytics/time-spent?range=7d` | Activity breakdown |
+| GET | `/v1/me/analytics/correlation` | Mock-vs-practice scatter |
+
+### 4.7 Billing (Phase 4)
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|

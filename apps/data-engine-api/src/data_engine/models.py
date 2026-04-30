@@ -6,8 +6,10 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID, uuid4
 
+from languagepro_common.db import Base
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    ARRAY,
     Boolean,
     DateTime,
     ForeignKey,
@@ -17,10 +19,9 @@ from sqlalchemy import (
     Text,
     func,
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column
-
-from languagepro_common.db import Base
 
 SCHEMA = "data_engine"
 
@@ -134,6 +135,55 @@ class ValidationResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+# ------------------------------------------------------- practice catalogue
+class ErrorTaxonomy(Base):
+    __tablename__ = "error_taxonomy"
+    __table_args__ = ({"schema": SCHEMA},)
+
+    code: Mapped[str] = mapped_column(String(128), primary_key=True)
+    skill: Mapped[str] = mapped_column(String(16))
+    layer: Mapped[str] = mapped_column(String(16))
+    severity: Mapped[str] = mapped_column(String(16), default="minor")
+    explanation_uz: Mapped[str] = mapped_column(Text)
+    explanation_en: Mapped[str] = mapped_column(Text)
+    example_correct: Mapped[str | None] = mapped_column(Text)
+    example_wrong: Mapped[str | None] = mapped_column(Text)
+    recommended_drill_ids: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+
+
+class Drill(Base):
+    __tablename__ = "drills"
+    __table_args__ = ({"schema": SCHEMA},)
+
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    code: Mapped[str] = mapped_column(String(128), unique=True)
+    skill: Mapped[str] = mapped_column(String(16))
+    target_codes: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    cefr_level: Mapped[str] = mapped_column(String(4))
+    duration_minutes: Mapped[int] = mapped_column(Integer)
+    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    variant_count: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class ConversationTopic(Base):
+    __tablename__ = "conversation_topics"
+    __table_args__ = ({"schema": SCHEMA},)
+
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    code: Mapped[str] = mapped_column(String(128), unique=True)
+    title_uz: Mapped[str] = mapped_column(String(255))
+    title_en: Mapped[str] = mapped_column(String(255))
+    prompt: Mapped[str] = mapped_column(Text)
+    cefr_level: Mapped[str] = mapped_column(String(4))
+    kind: Mapped[str] = mapped_column(String(32), default="daily")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 # ----------------------------------------------------------------- blueprint
 class ExamBlueprint(Base):
     __tablename__ = "exam_blueprints"
@@ -152,7 +202,7 @@ class LLMCall(Base):
     """analytics.llm_calls — written by every LLMRouter call."""
 
     __tablename__ = "llm_calls"
-    __table_args__ = ({"schema": "analytics"},)
+    __table_args__ = ({"schema": "analytics", "extend_existing": True},)
 
     request_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

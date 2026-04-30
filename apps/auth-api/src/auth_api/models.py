@@ -5,11 +5,11 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from languagepro_common.db import Base
+from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 SCHEMA = "auth"
 
@@ -23,7 +23,12 @@ class User(Base):
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     locale: Mapped[str] = mapped_column(String(8), default="uz", nullable=False)
+    theme: Mapped[str] = mapped_column(String(16), default="system", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    email_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -34,7 +39,9 @@ class User(Base):
         nullable=False,
     )
 
-    user_roles: Mapped[list["UserRole"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    user_roles: Mapped[list[UserRole]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class Role(Base):

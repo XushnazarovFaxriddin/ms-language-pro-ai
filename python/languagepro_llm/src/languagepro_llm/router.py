@@ -6,20 +6,20 @@ Single client library, model swap via env (`LLM_PROFILE_<PURPOSE>=<model>:<temp>
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import json
 import time
 from dataclasses import dataclass
 from decimal import Decimal
+from importlib import import_module
 from typing import Any, Literal
 from uuid import UUID, uuid4
 
+from languagepro_common.logging import get_logger
 from openai import APIError, AsyncOpenAI, RateLimitError
 from pydantic import BaseModel
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from languagepro_common.logging import get_logger
 from languagepro_llm.cost import CostLogger, compute_cost
 from languagepro_llm.prompts import PromptRegistry, RenderedPrompt
 from languagepro_llm.settings import LLMSettings
@@ -35,6 +35,7 @@ Purpose = Literal[
     "feedback",
     "embed",
     "stt",
+    "conversation_turn",
 ]
 
 
@@ -42,8 +43,8 @@ Purpose = Literal[
 class LLMProfile:
     model: str
     temperature: float
-    api_key: str | None = None       # default = OPENAI_API_KEY
-    base_url: str | None = None      # default = OPENAI_BASE_URL
+    api_key: str | None = None  # default = OPENAI_API_KEY
+    base_url: str | None = None  # default = OPENAI_BASE_URL
 
     @classmethod
     def parse(cls, raw: str, *, default_api_key: str, default_base_url: str) -> LLMProfile:
@@ -58,7 +59,9 @@ class LLMProfile:
         else:
             model = raw
             temp = 0.0
-        return cls(model=model, temperature=temp, api_key=default_api_key, base_url=default_base_url)
+        return cls(
+            model=model, temperature=temp, api_key=default_api_key, base_url=default_base_url
+        )
 
 
 class TokenUsage(BaseModel):
@@ -117,6 +120,8 @@ class LLMRouter:
         purpose, sub_purpose = self._split_prompt_id(req.prompt_id)
         rendered = self._prompts.render(purpose, sub_purpose, req.variables)
         profile = self._resolve_profile(req)
+        response_schema = req.response_schema or self._schema_from_ref(rendered.response_schema_ref)
+        effective_req = req.model_copy(update={"response_schema": response_schema})
 
         request_id = uuid4()
         log.info(
@@ -129,13 +134,13 @@ class LLMRouter:
 
         t0 = time.perf_counter()
         try:
-            content, usage = await self._do_chat(profile, rendered, req)
+            content, usage = await self._do_chat(profile, rendered, effective_req)
         except Exception as e:
             log.exception("llm_request_failed", request_id=str(request_id), error=str(e))
             raise
         latency_ms = int((time.perf_counter() - t0) * 1000)
 
-        parsed = self._maybe_parse(content, req.response_schema)
+        parsed = self._maybe_parse(content, response_schema)
         cost = compute_cost(profile.model, usage.prompt_tokens, usage.completion_tokens)
         await self._cost_logger.record(
             request_id=request_id,
@@ -183,7 +188,11 @@ class LLMRouter:
         if req.response_schema is not None:
             kwargs["response_format"] = {
                 "type": "json_schema",
-                "json_schema": {"name": "structured_output", "schema": req.response_schema, "strict": True},
+                "json_schema": {
+                    "name": "structured_output",
+                    "schema": req.response_schema,
+                    "strict": True,
+                },
             }
         resp = await self._client.chat.completions.create(**kwargs)
         content = resp.choices[0].message.content or ""
@@ -246,7 +255,7 @@ class LLMRouter:
         return parts[0], parts[1]
 
     @staticmethod
-    def _maybe_parse(content: str, schema: dict | None) -> Any | None:
+    def _maybe_parse(content: str, schema: dict[str, Any] | None) -> Any | None:
         if schema is None:
             return None
         try:
@@ -254,6 +263,17 @@ class LLMRouter:
         except json.JSONDecodeError:
             log.warning("llm_json_parse_failed", content_preview=content[:200])
             return None
+
+    @staticmethod
+    def _schema_from_ref(ref: str | None) -> dict[str, Any] | None:
+        """Resolve `package.module.Model` refs from prompt YAML into JSON Schema."""
+        if not ref:
+            return None
+        module_name, class_name = ref.rsplit(".", 1)
+        model_cls = getattr(import_module(module_name), class_name)
+        if not isinstance(model_cls, type) or not issubclass(model_cls, BaseModel):
+            raise TypeError(f"{ref} must point to a pydantic BaseModel subclass")
+        return model_cls.model_json_schema()
 
     @staticmethod
     def _maybe_inject_audio(
@@ -274,7 +294,11 @@ class LLMRouter:
         return messages
 
     @staticmethod
-    def cache_key(model: str, messages: list[dict], schema: dict | None) -> str:
+    def cache_key(
+        model: str,
+        messages: list[dict[str, Any]],
+        schema: dict[str, Any] | None,
+    ) -> str:
         payload = json.dumps(
             {"m": model, "msgs": messages, "schema": schema}, sort_keys=True, default=str
         )

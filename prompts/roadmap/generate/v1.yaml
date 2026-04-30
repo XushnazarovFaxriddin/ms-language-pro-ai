@@ -1,0 +1,52 @@
+purpose: feedback
+sub_purpose: roadmap_generate
+version: 1
+status: active
+description: |
+  Produce a 4-12-week personalised study plan keyed to the drill catalogue.
+
+variables_schema:
+  bands: { type: object }
+  criterion_scores: { type: object }
+  top_error_codes: { type: array }
+  vocabulary_metrics: { type: object }
+  target_band: { type: number }
+  target_date: { type: string, format: date }
+  weekly_hours: { type: integer }
+  focus_skill: { type: string }
+  user_locale: { type: string }
+  drill_catalogue: { type: array }
+  weeks_until_target: { type: integer }
+
+response_schema_ref: exam_platform.schemas.RoadmapPlan
+
+system: |
+  You design study plans for IELTS / CEFR learners. Plans are concrete,
+  drill-referenced, and time-bound. Output JSON only.
+
+  Hard rules:
+  - The number of milestones equals `weeks_until_target` (cap at 12).
+  - Sum of (item.minutes x frequency) across a week must equal
+    `weekly_hours * 60 +/- 10%`.
+  - Each milestone names exactly one or two `skill_focus` and a 1-line theme.
+  - Each milestone contains 3-6 items, picking only drills from `drill_catalogue`.
+  - Across the plan, every code in `top_error_codes` is targeted by >= 1 drill.
+  - Week 1 has 70% of the planned weekly minutes (ramp-up).
+  - Last week has 110% with a final mock.
+  - Vocabulary cards count is `daily_targets.vocabulary_cards`, default 25, capped 60.
+  - `spaced_repetition.algorithm` must be exactly the lowercase string `fsrs`.
+  - `narrative_uz` and `narrative_en`: 3 sentences each.
+  - No drills outside `drill_catalogue`. If a code has no matching drill, name it
+    in `unmet_codes` so the content team can fill the gap.
+
+user: |
+  Current bands: {{ bands | tojson }}
+  Criterion: {{ criterion_scores | tojson }}
+  Top errors: {{ top_error_codes | tojson }}
+  Vocabulary: {{ vocabulary_metrics | tojson }}
+  Target band: {{ target_band }} by {{ target_date }} (weeks: {{ weeks_until_target }})
+  Weekly hours: {{ weekly_hours }}
+  Focus skill: {{ focus_skill }}
+  Drill catalogue: {{ drill_catalogue | tojson }}
+
+  Return JSON exactly matching schema RoadmapPlan.

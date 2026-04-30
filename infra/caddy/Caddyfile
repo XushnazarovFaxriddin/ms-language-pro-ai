@@ -22,26 +22,28 @@ localhost:80 {
 
 # Exam platform (Faxriddin)
 app.localhost:80 {
+	handle_path /api/auth/* {
+		reverse_proxy auth-api:8000
+	}
+	handle_path /api/exam/* {
+		reverse_proxy exam-platform-api:8000
+	}
 	reverse_proxy host.docker.internal:3001
 }
 
 # Admin / data-engine (Bobomurod)
 admin.localhost:80 {
+	handle_path /api/auth/* {
+		reverse_proxy auth-api:8000
+	}
+	handle_path /api/data/* {
+		reverse_proxy data-engine-api:8000
+	}
 	reverse_proxy host.docker.internal:3002
 }
 
 # All APIs share api.localhost; routed by /service/v1/* prefix
 api.localhost:80 {
-	# CORS for dev (browsers from app.localhost / admin.localhost)
-	@cors {
-		header Origin *
-	}
-	header @cors Access-Control-Allow-Origin "{http.request.header.Origin}"
-	header @cors Access-Control-Allow-Credentials "true"
-	header @cors Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Request-Id, Idempotency-Key"
-	header @cors Access-Control-Allow-Methods "GET, POST, PATCH, DELETE, OPTIONS"
-	header @cors Vary "Origin"
-
 	# Strip /<service>/ prefix; FastAPI already mounts /v1/*
 	handle_path /auth/* {
 		reverse_proxy auth-api:8000
@@ -53,9 +55,6 @@ api.localhost:80 {
 		reverse_proxy exam-platform-api:8000
 	}
 
-	# OPTIONS preflight
-	@options method OPTIONS
-	respond @options 204
 }
 
 # MinIO console (S3-compatible storage UI)

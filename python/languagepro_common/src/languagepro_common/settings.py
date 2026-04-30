@@ -18,7 +18,8 @@ class BaseAppSettings(BaseSettings):
 
     # Domain / cookies
     APP_DOMAIN: str = "localhost"
-    APEX_COOKIE_DOMAIN: str = ".localhost"
+    APEX_COOKIE_DOMAIN: str | None = None
+    AUTH_REFRESH_COOKIE_PATH: str = "/v1/refresh"
 
     # Postgres
     DATABASE_URL: str = Field(
@@ -31,13 +32,13 @@ class BaseAppSettings(BaseSettings):
     REDIS_QUEUE_DB: int = 2
 
     # JWT
-    AUTH_JWT_SECRET: str = "replace_with_64_byte_hex"
+    AUTH_JWT_SECRET: str = "replace_with_64_byte_hex"  # noqa: S105
     AUTH_JWT_ALGORITHM: str = "HS256"
     AUTH_ACCESS_TOKEN_TTL_SECONDS: int = 900
     AUTH_REFRESH_TOKEN_TTL_SECONDS: int = 2_592_000
 
     # S2S
-    S2S_SHARED_SECRET: str = "replace_with_64_byte_hex"
+    S2S_SHARED_SECRET: str = "replace_with_64_byte_hex"  # noqa: S105
     S2S_TOKEN_TTL_SECONDS: int = 300
 
     # Logging

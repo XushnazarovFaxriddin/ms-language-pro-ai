@@ -11,9 +11,9 @@ import {
 } from "recharts";
 import type { UsageByModel } from "@/lib/api";
 
-export function ModelBreakdownChart({ data }: { data: UsageByModel[] }) {
+export function ModelBreakdownChart({ data, noDataLabel }: { data: UsageByModel[]; noDataLabel: string }) {
   if (data.length === 0) {
-    return <p className="py-8 text-center text-sm text-[var(--color-muted-fg)]">Ma&apos;lumot yo&apos;q</p>;
+    return <p className="py-8 text-center text-sm text-[var(--color-muted-fg)]">{noDataLabel}</p>;
   }
   const rows = data.map((d) => ({ model: d.model, cost: Number(d.cost_usd), calls: d.calls }));
   return (

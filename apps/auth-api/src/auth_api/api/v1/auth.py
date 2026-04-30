@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, Request, Response, status
+from languagepro_common.errors import ConflictError, UnauthorizedError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +19,6 @@ from auth_api.db import get_session
 from auth_api.models import Session as SessionModel
 from auth_api.schemas import LoginRequest, LoginResponse, RegisterRequest, UserOut
 from auth_api.services import passwords, tokens, users
-from languagepro_common.errors import ConflictError, UnauthorizedError
 
 router = APIRouter(tags=["auth"])
 
@@ -29,7 +29,8 @@ def _user_out(user) -> UserOut:
         email=user.email,
         display_name=user.display_name,
         roles=users.user_role_codes(user),
-        locale=user.locale,  # type: ignore[arg-type]
+        locale=user.locale,
+        theme=user.theme,
         created_at=user.created_at,
     )
 

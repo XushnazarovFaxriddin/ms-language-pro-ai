@@ -7,9 +7,11 @@ from decimal import Decimal
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Query
+from languagepro_common.auth import CurrentUser
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from data_engine.api.deps import require_roles
 from data_engine.db import get_session
 from data_engine.models import LLMCall
 
@@ -25,6 +27,7 @@ def _period_to_delta(period: str) -> timedelta:
 @router.get("/analytics/llm-usage/summary")
 async def usage_summary(
     db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
     period: Literal["24h", "7d", "30d"] = "7d",
 ) -> dict:
     since = datetime.now(UTC) - _period_to_delta(period)
@@ -52,6 +55,7 @@ async def usage_summary(
 @router.get("/analytics/llm-usage/by-purpose")
 async def usage_by_purpose(
     db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
     period: Literal["24h", "7d", "30d"] = "7d",
 ) -> list[dict]:
     since = datetime.now(UTC) - _period_to_delta(period)
@@ -86,6 +90,7 @@ async def usage_by_purpose(
 @router.get("/analytics/llm-usage/by-model")
 async def usage_by_model(
     db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
     period: Literal["24h", "7d", "30d"] = "7d",
 ) -> list[dict]:
     since = datetime.now(UTC) - _period_to_delta(period)
@@ -111,6 +116,7 @@ async def usage_by_model(
 @router.get("/analytics/llm-usage/timeseries")
 async def usage_timeseries(
     db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
     period: Literal["24h", "7d", "30d"] = "7d",
     granularity: Literal["hour", "day"] = "day",
 ) -> list[dict]:
@@ -138,6 +144,7 @@ async def usage_timeseries(
 @router.get("/analytics/llm-usage/calls")
 async def list_calls(
     db: Annotated[AsyncSession, Depends(get_session)],
+    _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],
     limit: int = Query(50, le=500),
     purpose: str | None = None,
 ) -> list[dict]:

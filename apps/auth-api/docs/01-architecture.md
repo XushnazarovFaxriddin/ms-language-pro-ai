@@ -30,9 +30,9 @@ src/auth_api/
 2. service: lookup user, verify Argon2 hash
 3. service: mint access JWT (HS256, 15min, claims {sub, roles, locale, exp, iat, iss, aud})
 4. service: generate refresh (256-bit hex), store hash in sessions
-5. response: Set-Cookie: __Host-lp_access=...; ...
-              Set-Cookie: __Host-lp_refresh=...; Path=/auth/v1/refresh
-              Set-Cookie: __Host-lp_csrf=...; HttpOnly=false (JS reads it)
+5. response: Set-Cookie: lp_access=...; ...
+              Set-Cookie: lp_refresh=...; Path=/auth/v1/refresh
+              Set-Cookie: lp_csrf=...; HttpOnly=false (JS reads it)
 6. body: {user: {id, email, roles, locale}}
 ```
 
@@ -61,7 +61,7 @@ Other FastAPI services don't call auth-api. They verify JWT locally with shared 
 ```python
 # python/languagepro_common/auth.py
 async def get_current_user(request: Request) -> User:
-    token = request.cookies.get("__Host-lp_access")
+    token = request.cookies.get("lp_access")
     if not token: raise Unauthorized()
     payload = jwt.decode(token, settings.AUTH_JWT_SECRET, algorithms=["HS256"],
                         audience="aiexam.uz", issuer="auth.aiexam.uz")

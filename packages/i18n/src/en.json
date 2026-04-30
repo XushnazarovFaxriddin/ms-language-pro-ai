@@ -1,4 +1,8 @@
 {
+  "Meta": {
+    "title": "LanguagePro AI — Exam Platform",
+    "description": "AI-powered IELTS and CEFR online assessment platform"
+  },
   "Common": {
     "appName": "LanguagePro AI",
     "tagline": "AI-powered IELTS & CEFR online assessment",
@@ -13,6 +17,509 @@
       "login": "Log in",
       "logout": "Log out",
       "register": "Sign up"
+    },
+    "nav": {
+      "pricing": "Pricing",
+      "features": "Features"
+    }
+  },
+  "Landing": {
+    "hero": {
+      "title": "LanguagePro",
+      "titleHighlight": "AI",
+      "description": "Determine your IELTS and CEFR level in seconds using artificial intelligence. Adaptive tests and professional analysis.",
+      "startFree": "Start for Free",
+      "watchDemo": "Watch Demo",
+      "socialProof": "50+ successful candidates",
+      "mission": "Knowledge is power, AI is opportunity."
+    },
+    "howItWorks": {
+      "title": "How it works?",
+      "subtitle": "Get your international certificate in just 3 steps",
+      "step1": {
+        "title": "Take the Exam",
+        "description": "Experience a real-like IELTS/CEFR environment with our adaptive testing system."
+      },
+      "step2": {
+        "title": "AI Analysis",
+        "description": "Your Speaking and Writing tasks are analyzed within 30 seconds."
+      },
+      "step3": {
+        "title": "Certificate",
+        "description": "Get a cryptographically signed certificate instantly."
+      }
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "Where are the certificates recognized?",
+      "a1": "Our certificates meet international standards and are recognized by many universities and organizations.",
+      "q2": "How accurate is the AI grading?",
+      "a2": "Our AI models work with ±0.5 band score accuracy compared to real IELTS examiners.",
+      "q3": "How long does the test take?",
+      "a3": "Thanks to the adaptive system, the test takes 30-45 minutes, which is twice as fast as traditional tests."
+    },
+    "cta": {
+      "title": "Try your knowledge now",
+      "subtitle": "Get instant results and professional analysis without any delays.",
+      "button": "Start for Free"
+    },
+    "stats": {
+      "exams": "Successful exams",
+      "accuracy": "Accurate level detection",
+      "partners": "Partner learning centers"
+    },
+    "footer": {
+      "copyright": "© 2026 Ismatov Bobomurod & Xushnazarov Faxriddin · Bukhara State University · Software Certificate: LanguagePro AI"
+    }
+  },
+  "Pricing": {
+    "title": "Pricing Plans",
+    "description": "Choose the right plan for you",
+    "yearlyToggle": "Yearly (Save 17%)",
+    "monthlyToggle": "Monthly",
+    "currencyUZS": "UZS",
+    "currencyUSD": "USD",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "plans": {
+      "free": {
+        "name": "Free",
+        "price": "0 UZS",
+        "priceUSD": "$0",
+        "features": {
+          "0": "1 test/month",
+          "1": "Reading/Listening only",
+          "2": "No certificate"
+        },
+        "cta": "Start"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "49,000",
+        "priceUSD": "$4",
+        "features": {
+          "0": "5 tests/month",
+          "1": "All 4 skills (Speaking/Writing)",
+          "2": "AI Feedback"
+        },
+        "cta": "Select"
+      },
+      "pro": {
+        "name": "Pro",
+        "badge": "Most Popular",
+        "price": "119,000",
+        "priceUSD": "$10",
+        "features": {
+          "0": "Unlimited tests",
+          "1": "Official Certificate",
+          "2": "Full Results Analysis",
+          "3": "Priority support"
+        },
+        "cta": "Select"
+      },
+      "team": {
+        "name": "Team",
+        "price": "Contact",
+        "priceUSD": "Contact",
+        "features": {
+          "0": "10+ seats",
+          "1": "Branding",
+          "2": "CSV export",
+          "3": "SSO"
+        },
+        "cta": "Contact us"
+      }
+    }
+  },
+  "Dashboard": {
+    "title": "Available Exams",
+    "description": "Pick a test below — items are chosen adaptively as you answer.",
+    "empty": "No exams available at the moment.",
+    "goHome": "Home",
+    "blueprint": "Blueprint: ",
+    "startAttempt": "Start",
+    "starting": "Starting…",
+    "welcome": "Welcome, {name} 👋",
+    "welcomeSub": "Pick a test below and AI will adaptively choose the next questions based on your answers.",
+    "popular": "Popular",
+    "examCount": "{count} tests",
+    "sections": "{count} sections",
+    "minutes": "~{count} min",
+    "recentTitle": "Recent results",
+    "recentBand": "Band",
+    "viewAll": "View all",
+    "skills": {
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "blueprintDesc": {
+      "default": "Adaptive language assessment with AI-graded scoring.",
+      "ielts_full_mock": "Full IELTS Academic mock with all four skills, adaptive item selection and AI-graded writing & speaking.",
+      "ielts_reading_mini": "Quick 20-minute reading-only test — great for a daily warm-up.",
+      "mini-reading": "A short reading test for a quick warm-up.",
+      "cefr_multilevel": "CEFR multilevel screener (A1 → C2) covering all four skills."
+    },
+    "hero": {
+      "eyebrow": "Personal AI tutor",
+      "resume": "Resume in progress",
+      "subtitleWithStats": "Your average band so far: {band}. Pick a test below to keep climbing."
+    },
+    "stats": {
+      "totalExams": "Exams Taken",
+      "avgScore": "Average Band",
+      "certificates": "Certificates",
+      "firstAttemptHint": "Take your first exam to start tracking progress.",
+      "bandLabel": "across all completed exams",
+      "noScoresYet": "Complete an exam to see your average.",
+      "certHint": "Earn a certificate by finishing any full exam.",
+      "certEarned": "Available for download on each result page."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "results": "My Results",
+      "certificates": "Certificates",
+      "analytics": "Analytics & Growth",
+      "studyMaterials": "Study Materials",
+      "payments": "Billing & Payments",
+      "settings": "Settings",
+      "roadmap": "Roadmap",
+      "practice": "Practice",
+      "conversation": "Conversation",
+      "feedback": "Feedback"
+    },
+    "futurePlan": "Future Plans",
+    "demoDisclaimer": "This section is currently running in demo mode. Once fully launched, your actual data will be displayed here.",
+    "resultsPage": {
+      "title": "My Results",
+      "description": "History of all your exams and their results.",
+      "emptyTitle": "You haven't taken any exams yet",
+      "emptyDesc": "Start your first exam now to test your knowledge.",
+      "startExam": "View Exams",
+      "tableExam": "Exam",
+      "tableDate": "Date",
+      "tableStatus": "Status",
+      "tableScore": "Score",
+      "tableAction": "Action",
+      "ieltsBand": "IELTS Band",
+      "viewResult": "View",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "overall": "Overall"
+    },
+    "analyticsPage": {
+      "title": "Analytics & Growth",
+      "description": "Analysis of your growth dynamics and weak points.",
+      "growthTitle": "Score Growth Dynamics",
+      "growthDesc": "Over the month, your Writing and Speaking skills improved by <growth>15%</growth>. Consistent practice yields results.",
+      "strengthTitle": "Strengths & Weaknesses",
+      "strengthDesc": "Your Grammar Range is at <level>B1</level> level, while your Lexical Resource is at an excellent <level>B2</level> level."
+    },
+    "certificatesPage": {
+      "title": "Certificates",
+      "description": "Your official digital certificates and achievements.",
+      "issued": "Date issued: {date}",
+      "verified": "Verified",
+      "downloadPdf": "Download PDF"
+    },
+    "paymentsPage": {
+      "title": "Billing & Payments",
+      "description": "Plans, payment history, and receipts.",
+      "activePlan": "PRO Plan (Active)",
+      "planDesc": "You have unlimited exams. Next billing date: May 12, 2026",
+      "historyTitle": "Payment History",
+      "tableDate": "Date",
+      "tableAmount": "Amount",
+      "tableStatus": "Status",
+      "paid": "Paid"
+    },
+    "studyMaterialsPage": {
+      "title": "Study Materials",
+      "description": "Special materials to help you strengthen your weak points.",
+      "card1Title": "IELTS Speaking Task 2",
+      "card1Desc": "15-minute masterclass. Strategies for Band 7.0+.",
+      "card2Title": "Grammar Focus: B2",
+      "card2Desc": "PDF guide and rulebook. Interactive exercises.",
+      "card3Title": "Vocabulary: Academic",
+      "card3Desc": "Top 100 essential academic words list."
+    },
+    "settingsPage": {
+      "title": "Settings",
+      "description": "Manage your personal profile and system settings.",
+      "nameLabel": "Full Name",
+      "emailLabel": "Email",
+      "langLabel": "System Language",
+      "save": "Save"
+    }
+  },
+  "Exam": {
+    "loading": "Loading…",
+    "errorNotFound": "Next question not found.",
+    "backToExams": "Back to Exams",
+    "question": "Question",
+    "skill": "Skill",
+    "submit": "Submit",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "submitted": "Submitted",
+    "section": "Section {current} of {total}",
+    "skills": {
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "skillDesc": {
+      "listening": "Audio plays only once. Press Play when you're ready to listen.",
+      "reading": "Read the passage carefully and answer the questions.",
+      "writing": "Write an essay of at least 250 words on the given topic.",
+      "speaking": "Speak based on the cue card. 1 minute preparation + 2 minutes speaking."
+    },
+    "transition": {
+      "previousDone": "{skill} section completed",
+      "continue": "Start"
+    },
+    "listening": {
+      "label": "Listening · single play",
+      "play": "Play audio",
+      "playing": "Playing… (cannot seek or replay)",
+      "finished": "Audio finished",
+      "singlePlayHint": "Audio plays only once. Press Play to start listening.",
+      "noAudio": "No audio for this question — you may continue answering."
+    },
+    "writing": {
+      "label": "Writing · {task}",
+      "limits": "{min}–{max} words · {minutes} minutes",
+      "placeholder": "Write your essay here…",
+      "wordCount": "{count} words",
+      "needMore": "(at least {min} required)",
+      "tooMany": "(maximum {max})",
+      "ok": "✓",
+      "pasteBlocked": "Paste is blocked — please type your answer."
+    },
+    "speaking": {
+      "label": "Speaking · Part {part}",
+      "timing": "{prep}s preparation · {speak}s speaking",
+      "startPrep": "Start preparation",
+      "preparing": "Preparing · {seconds}s",
+      "startNow": "Start now",
+      "recording": "Recording · {seconds}s",
+      "stop": "Stop",
+      "processing": "Processing audio…",
+      "ready": "Recording ready — press Submit below",
+      "denied": "Microphone permission was denied. Please grant permission in your browser settings.",
+      "errorGeneric": "Failed to prepare the audio recording.",
+      "retry": "Try again",
+      "unsupported": "Your browser does not support audio recording. Please use Chrome."
+    }
+  },
+  "Results": {
+    "title": "Exam Results",
+    "score": "Correct Answers",
+    "timeTaken": "Time Taken",
+    "backToDashboard": "Back to Dashboard",
+    "questionDetails": "Question Details",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "questionNumber": "Question #",
+    "ieltsBand": "IELTS Band"
+  },
+  "Certificate": {
+    "title": "Official Certificate",
+    "subtitle": "Issue, download and share your tamper-proof LanguagePro AI certificate.",
+    "issue": "Issue Certificate",
+    "issuing": "Issuing…",
+    "download": "Download PDF",
+    "verify": "Open Verify Page",
+    "copyVerify": "Copy Verify URL",
+    "copied": "Copied",
+    "publicId": "Public ID",
+    "sha256": "SHA-256",
+    "overallBand": "Overall Band",
+    "cefr": "CEFR Level",
+    "alreadyIssued": "This certificate was already issued for this attempt.",
+    "error": "Could not issue certificate. Please try again."
+  },
+  "Verify": {
+    "validTitle": "Certificate verified",
+    "invalidTitle": "Certificate not valid",
+    "validSubtitle": "This certificate was issued by LanguagePro AI and has not been tampered with.",
+    "name": "Holder",
+    "exam": "Exam",
+    "overallBand": "Overall band",
+    "cefr": "CEFR level",
+    "publicId": "Public ID",
+    "sha256": "SHA-256",
+    "issuedAt": "Issued at",
+    "reasonRevoked": "This certificate was revoked.",
+    "reasonNotFound": "No certificate found with this ID.",
+    "reasonLookupError": "Could not look up this certificate. Please try again.",
+    "reasonGeneric": "We could not validate this certificate."
+  },
+  "Practice": {
+    "title": "Practice",
+    "description": "Spaced-repetition review of the questions you got wrong, and your skill mastery over time.",
+    "intro": "Every time you finish an exam, the questions you missed are added here. Review them to lock in what you learned — the system schedules the next review for you.",
+    "empty": {
+      "title": "Nothing to review yet",
+      "hint": "Take any exam — when you miss a question, it lands here automatically. Come back to drill it until you remember it.",
+      "cta": "Browse exams"
+    },
+    "doneTitle": "All caught up — great work!",
+    "progress": "Card {current} of {total}",
+    "noPrompt": "(no prompt available)",
+    "yourAnswer": "Your answer",
+    "correctAnswer": "Correct answer",
+    "showAnswer": "Show answer",
+    "hideAnswer": "Hide answer",
+    "mastery": {
+      "title": "Skill mastery",
+      "empty": "Take an exam to start tracking your mastery."
+    },
+    "grade": {
+      "again": "Again",
+      "againSub": "Forgot",
+      "hard": "Hard",
+      "hardSub": "+6 hours",
+      "good": "Good",
+      "goodSub": "+1 day",
+      "easy": "Easy",
+      "easySub": "Several days"
+    }
+  },
+  "Roadmap": {
+    "title": "Personal roadmap",
+    "description": "Daily and weekly study plan tailored to your target.",
+    "stats": {
+      "target": "Target",
+      "date": "Date",
+      "weeklyTime": "Weekly time",
+      "forecast": "Forecast (P50)",
+      "hours": "{count} hours"
+    },
+    "weeklyMilestones": "Weekly milestones",
+    "expectedGrowth": "Expected growth: +{value} band",
+    "dailyTasks": "Daily tasks",
+    "daily": {
+      "vocabulary": "Vocabulary cards",
+      "drills": "Drill practice",
+      "mock": "Mock questions",
+      "cardsUnit": "{count} items",
+      "minutesUnit": "{count} min"
+    },
+    "recommendation": "Recommendation:",
+    "regenerate": "Regenerate",
+    "setup": {
+      "title": "Create a personal roadmap",
+      "description": "Enter your goal and available study time. AI will build an optimal preparation strategy for you.",
+      "targetBand": "Target (IELTS Band)",
+      "examDate": "Exam date",
+      "weeklyHours": "Weekly study time (hours)",
+      "weeksLeft": "Weeks left",
+      "focusSkill": "Main focus (Skill)",
+      "submit": "Create roadmap",
+      "submitRegenerate": "Regenerate roadmap",
+      "regenerateTitle": "Update your roadmap",
+      "regenerateDescription": "Adjust your target and AI will rebuild a fresh study plan.",
+      "cancel": "Cancel",
+      "error": "Something went wrong"
+    }
+  },
+  "Conversation": {
+    "title": "Conversation",
+    "description": "Practice a voice conversation with AI and receive real-time feedback on fluency, grammar, and pronunciation.",
+    "startCard": {
+      "title": "Start a new conversation",
+      "topicLabel": "Conversation topic",
+      "defaultTopic": "University life",
+      "cefrLabel": "CEFR level"
+    },
+    "actions": {
+      "start": "Start",
+      "end": "End",
+      "record": "Press to speak",
+      "stopRecording": "Stop recording",
+      "playAnswer": "Play AI answer",
+      "stopAnswer": "Stop"
+    },
+    "status": {
+      "thinking": "AI is preparing a response. This usually takes 15-30 seconds."
+    },
+    "labels": {
+      "fluency": "Fluency",
+      "noGrammarIssues": "No grammar issues",
+      "grammarIssues": "{count} grammar issues",
+      "suggestion": "Suggestion:"
+    },
+    "empty": "Press the microphone and start speaking. The AI will respond to you.",
+    "errors": {
+      "generic": "Something went wrong",
+      "endSession": "Could not end the session",
+      "microphone": "Microphone permission was denied or an error occurred.",
+      "noAudio": "No audio was recorded. Please try again.",
+      "submitAudio": "Could not submit the audio",
+      "ttsUnsupported": "Your browser does not support speech playback. Please use the latest Chrome.",
+      "ttsFailed": "Could not play the AI voice"
+    }
+  },
+  "Feedback": {
+    "title": "AI Feedback",
+    "emptyTitle": "Feedback",
+    "emptyDesc": "Full AI analysis and feedback are not available for this exam yet. You can generate them now.",
+    "progress": {
+      "title": "AI is grading your exam",
+      "subtitle": "This usually takes 30–90 seconds. You can stay here.",
+      "stages": {
+        "reading": "Reading your responses",
+        "writing": "Scoring writing essays",
+        "speaking": "Analysing speaking audio",
+        "composing": "Composing the final report"
+      },
+      "hint": "Real IELTS-rubric scoring runs through Gemini 2.5 — no shortcuts, real bands.",
+      "errorTitle": "AI grading is temporarily unavailable",
+      "errorBody": "The model could not score this attempt right now. This is honest — we'd rather show you nothing than fake bands.",
+      "retry": "Try again"
+    },
+    "actions": {
+      "generate": "Start analysis",
+      "regenerateAi": "Generate real AI analysis"
+    },
+    "source": {
+      "ai": "AI overview: {model}",
+      "fallback": "This is still the deterministic system fallback. Generate real AI analysis for specific weaknesses and improvement recommendations.",
+      "partial": "The overview was written by AI, but these skill scores still use fallback scoring: {skills}. Submit a new attempt with WAV speaking audio for full AI speaking scoring.",
+      "unknownModel": "AI model"
+    },
+    "sections": {
+      "overview": "Overview",
+      "sentence": "Sentence Structure",
+      "word": "Vocabulary",
+      "phoneme": "Pronunciation"
+    },
+    "skills": {
+      "overall": "Overall",
+      "listening": "Listening",
+      "reading": "Reading",
+      "writing": "Writing",
+      "speaking": "Speaking"
+    },
+    "mainRecommendation": "Main recommendation",
+    "nextStep": "Next step: {ref}",
+    "biggestOpportunity": "Your biggest opportunity is improving: <code></code>.",
+    "counts": {
+      "errors": "{count} errors",
+      "suggestions": "{count} suggestions",
+      "words": "{count} words"
+    },
+    "fallback": {
+      "originalSentence": "Original sentence text",
+      "suggestedRewrite": "Suggested rewrite"
+    },
+    "replaceWith": "Replace with:",
+    "phonemeDesc": "These words need pronunciation practice. GOP (Goodness of Pronunciation) scores are shown below.",
+    "errors": {
+      "generate": "Could not generate feedback"
     }
   }
 }

@@ -346,7 +346,218 @@ Append-only log of every webhook received from any provider, with `processed_at`
 
 ---
 
-## 6. Schema `analytics`
+## 6. Schema `exam_platform` — extended (cross-ref 13–17)
+
+These tables support practice mode, feedback engine, learning roadmap, and analytics. They live in `exam_platform` (per-user runtime data).
+
+### `feedback_artifacts`
+Multi-layer feedback storage. See [`14-feedback-engine.md`](14-feedback-engine.md) §2.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| attempt_id | UUID FK exam_attempts(id) ON DELETE CASCADE |
+| response_id | UUID FK attempt_responses(id) ON DELETE CASCADE NULL |
+| layer | TEXT (`band` \| `criterion` \| `sentence` \| `word` \| `phoneme` \| `roadmap`) |
+| skill | TEXT |
+| payload | JSONB (shape per layer) |
+| source | TEXT (`llm` \| `analyser` \| `human`) |
+| model | TEXT NULL |
+| prompt_version_id | TEXT NULL |
+| created_at | TIMESTAMPTZ |
+
+Indexes: `(attempt_id, layer, skill)`, `(response_id)`.
+
+### `roadmaps`
+| col | type |
+|---|---|
+| id | UUID PK |
+| user_id | UUID FK auth.users(id) ON DELETE CASCADE |
+| anchor_attempt_id | UUID NULL |
+| target_band | NUMERIC(3,1) |
+| target_date | DATE |
+| weekly_hours | INT |
+| current_band_estimate | NUMERIC(3,1) |
+| predicted_band_at_target | JSONB (`{p10, p50, p90}`) |
+| plan | JSONB |
+| status | TEXT (`active` \| `at_risk` \| `superseded` \| `completed` \| `abandoned`) |
+| created_at, updated_at | TIMESTAMPTZ |
+
+Partial unique index: `(user_id) WHERE status = 'active'`.
+
+### `srs_cards`
+FSRS-4 spaced-repetition queue. See [`15-`](15-learning-roadmap.md) §5.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| user_id | UUID FK auth.users(id) ON DELETE CASCADE |
+| ref_type | TEXT (`vocab_word` \| `grammar_rule` \| `phoneme_drill`) |
+| ref_id | TEXT |
+| stability | NUMERIC |
+| difficulty | NUMERIC |
+| due_at | TIMESTAMPTZ |
+| reps | INT default 0 |
+| lapses | INT default 0 |
+| last_grade | TEXT NULL |
+| created_at, updated_at | TIMESTAMPTZ |
+
+Index: `(user_id, due_at)`.
+
+### `drill_attempts`
+Records of practice drills.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| user_id | UUID FK auth.users(id) ON DELETE CASCADE |
+| drill_id | UUID FK data_engine.drills(id) |
+| items_correct | INT |
+| items_total | INT |
+| duration_ms | INT |
+| started_at, completed_at | TIMESTAMPTZ |
+
+### `user_mastery`
+Per-error-code mastery score.
+
+| col | type |
+|---|---|
+| user_id | UUID FK auth.users(id) ON DELETE CASCADE |
+| code | TEXT FK data_engine.error_taxonomy(code) |
+| mastery | NUMERIC(4,3) — 0..1 |
+| last_practiced_at | TIMESTAMPTZ |
+| PRIMARY KEY (user_id, code) | |
+
+### `conversation_sessions` + `conversation_turns`
+AI Conversation Partner. See [`16-`](16-practice-mode.md) §4.
+
+```
+conversation_sessions:
+  id, user_id, topic_id, mode (async|realtime), started_at, ended_at,
+  total_turns, aggregate_metrics (jsonb)
+
+conversation_turns:
+  id, session_id, turn_index, user_audio_s3_key, user_transcript,
+  agent_response_text, agent_audio_url, feedback (jsonb), created_at
+```
+
+### `pronunciation_attempts`
+Pronunciation Lab clips with GOP scores.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| user_id | UUID FK auth.users(id) ON DELETE CASCADE |
+| phoneme | TEXT |
+| word | TEXT |
+| audio_s3_key | TEXT |
+| gop | NUMERIC(4,3) |
+| verdict | TEXT (`good` \| `acceptable` \| `needs_work`) |
+| created_at | TIMESTAMPTZ |
+
+---
+
+## 7. Schema `data_engine` — extended
+
+### `error_taxonomy` (seed)
+~200 error codes. See [`14-`](14-feedback-engine.md) §2.
+
+| col | type |
+|---|---|
+| code | TEXT PK |
+| skill | TEXT |
+| layer | TEXT |
+| severity | TEXT |
+| explanation_uz, explanation_en | TEXT |
+| example_correct, example_wrong | TEXT |
+| recommended_drill_ids | TEXT[] |
+
+### `drills`
+Catalogue of practice drills.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| code | TEXT UNIQUE |
+| skill | TEXT |
+| target_codes | TEXT[] FK error_taxonomy(code) |
+| cefr_level | TEXT |
+| duration_minutes | INT |
+| payload | JSONB |
+| variant_count | INT |
+| created_at | TIMESTAMPTZ |
+
+### `cefr_words` (seed)
+CEFR-J + EVP joined wordlist for vocabulary analysis.
+
+| col | type |
+|---|---|
+| word | TEXT |
+| pos | TEXT |
+| cefr_level | TEXT |
+| awl | BOOLEAN |
+| PRIMARY KEY (word, pos) | |
+
+### `conversation_topics`
+Curated topics for AI Conversation Partner.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| code | TEXT UNIQUE |
+| skill | TEXT default `speaking` |
+| cefr_level | TEXT |
+| category | TEXT (`daily` \| `ielts_part2` \| `academic`) |
+| name_uz, name_en | TEXT |
+| prompt_uz, prompt_en | TEXT |
+| follow_up_prompts | TEXT[] |
+| created_at | TIMESTAMPTZ |
+
+### `experiments` (research A/B)
+See [`18-`](18-research-and-psychometrics.md) §6.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| name | TEXT |
+| purpose | TEXT |
+| variant_a_prompt_id, variant_b_prompt_id | TEXT |
+| traffic_split | NUMERIC |
+| status | TEXT |
+| primary_metric | TEXT |
+| min_sample_size | INT |
+| created_at, started_at, ended_at | TIMESTAMPTZ |
+
+---
+
+## 8. Schema `analytics` — extended
+
+### Materialised views (refreshed nightly 03:30 UTC)
+
+- `analytics.user_mastery_daily_mat` — per-user × skill × CEFR mastery snapshots.
+- `analytics.user_band_history_mat` — band per attempt over time.
+- `analytics.user_error_freq_mat` — error code frequency, weekly delta.
+- `analytics.user_time_spent_mat` — activity time breakdown.
+- `analytics.cohort_stats_mat` — cohort-similarity buckets for roadmap MC simulation.
+- `analytics.jury_metrics_daily_mat` — Cohen's κ, Fleiss κ time series.
+- `analytics.roadmap_calibration_mat` — predicted vs actual band buckets.
+- `analytics.daily_metrics_mat` — KPIs (signups, attempts, MRR, costs).
+
+### `irr_studies` (long-form)
+Inter-rater reliability research records.
+
+| col | type |
+|---|---|
+| id | UUID PK |
+| model_version | TEXT |
+| n_essays | INT |
+| pearson_r, kappa_quadratic, mae | NUMERIC |
+| ci_low, ci_high | JSONB |
+| conducted_at | TIMESTAMPTZ |
+
+---
+
+## 9. Schema `analytics` (original)
 
 ### `events`
 | col | type |

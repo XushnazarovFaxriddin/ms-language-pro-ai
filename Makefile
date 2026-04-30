@@ -34,17 +34,24 @@ ps: ## Show running containers
 	docker compose -f infra/compose/docker-compose.dev.yml ps
 
 migrate: ## Run all Alembic migrations
-	cd apps/auth-api          && uv run alembic upgrade head
-	cd apps/data-engine-api   && uv run alembic upgrade head
-	cd apps/exam-platform-api && uv run alembic upgrade head
+	@set -e; \
+	set -a; [ ! -f .env ] || . ./.env; set +a; \
+	DB_URL="$${HOST_DATABASE_URL:-postgresql+asyncpg://$${POSTGRES_USER:-languagepro}:$${POSTGRES_PASSWORD:-changeme}@localhost:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB:-languagepro}}"; \
+	cd apps/auth-api && DATABASE_URL="$$DB_URL" uv run alembic upgrade head; \
+	cd ../data-engine-api && DATABASE_URL="$$DB_URL" uv run alembic upgrade head; \
+	cd ../exam-platform-api && DATABASE_URL="$$DB_URL" uv run alembic upgrade head
 	@echo "✅ Migrations applied."
 
 seed: ## Seed dev data (taxonomies, demo users, etc.)
-	uv run python scripts/seed_dev.py
+	@set -e; \
+	set -a; [ ! -f .env ] || . ./.env; set +a; \
+	DB_URL="$${HOST_DATABASE_URL:-postgresql+asyncpg://$${POSTGRES_USER:-languagepro}:$${POSTGRES_PASSWORD:-changeme}@localhost:$${POSTGRES_PORT:-5432}/$${POSTGRES_DB:-languagepro}}"; \
+	DATABASE_URL="$$DB_URL" uv run python scripts/seed_dev.py
 	@echo "✅ Seeded."
 
 dev: ## Start Next.js dev servers (host-side, fast HMR)
-	pnpm dev
+	@set -a; [ ! -f .env ] || . ./.env; set +a; \
+	pnpm --parallel --filter landing --filter exam-platform-web --filter data-engine-web dev
 
 typecheck: ## Type-check Python (mypy) + TS (tsc)
 	uv run mypy python/ apps/auth-api apps/data-engine-api apps/exam-platform-api

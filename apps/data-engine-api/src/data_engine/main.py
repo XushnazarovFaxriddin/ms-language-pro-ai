@@ -1,68 +1,62 @@
-from contextlib import asynccontextmanager
+"""data-engine-api FastAPI app — production middleware stack via shared factory."""
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from __future__ import annotations
 
+from languagepro_common import build_app
+from redis.asyncio import Redis
+
+from data_engine.api.v1 import (
+    blueprints,
+    calibration,
+    exports,
+    generation,
+    items,
+    llm_usage,
+    practice_catalogue,
+    practice_content,
+    research,
+)
+from data_engine.db import engine
 from data_engine.settings import settings
-from languagepro_common.errors import register_error_handlers
-from languagepro_common.logging import configure_logging, get_logger
-from languagepro_common.middleware import RequestIdMiddleware
-
-configure_logging(settings.LOG_LEVEL, settings.LOG_FORMAT)
-log = get_logger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    log.info("data_engine_api_starting", env=settings.PYTHON_ENV)
-    yield
-    log.info("data_engine_api_stopped")
+async def _redis_factory() -> Redis:
+    return Redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 
-app = FastAPI(
+app = build_app(
     title="LanguagePro AI — Data Engine API",
-    version="0.1.0",
-    lifespan=lifespan,
-    docs_url="/v1/docs",
-    redoc_url="/v1/redoc",
-    openapi_url="/v1/openapi.json",
+    settings=settings,
+    routers=[
+        items.router,
+        blueprints.router,
+        generation.router,
+        llm_usage.router,
+        practice_content.router,
+        practice_catalogue.router,
+        exports.router,
+        research.router,
+        calibration.router,
+    ],
+    redis_factory=_redis_factory,
+    db_engine_factory=lambda: engine,
+    rate_limit_rules=[
+        ("/v1/generation/jobs", 10, 60),
+        ("/v1/items/next", 600, 60),  # S2S hot path
+        ("/v1/research/calibration/run", 1, 600),  # heavy job; once per 10min
+    ],
+    csrf_skip_paths={
+        # S2S endpoints use Bearer auth, not cookies — middleware skips them
+        # automatically (sees Authorization: Bearer header). Listed for clarity:
+    },
 )
-
-app.add_middleware(RequestIdMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r"https?://(.*\.)?(localhost|aiexam\.uz)(:\d+)?",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["X-Request-Id"],
-)
-
-register_error_handlers(app)
-
-from data_engine.api.v1 import blueprints, generation, items, llm_usage  # noqa: E402
-
-app.include_router(items.router, prefix="/v1")
-app.include_router(blueprints.router, prefix="/v1")
-app.include_router(generation.router, prefix="/v1")
-app.include_router(llm_usage.router, prefix="/v1")
-
-
-@app.get("/healthz")
-async def healthz() -> dict:
-    return {"status": "ok", "service": settings.SERVICE_NAME}
-
-
-@app.get("/readyz")
-async def readyz() -> dict:
-    return {"status": "ready", "service": settings.SERVICE_NAME}
 
 
 @app.get("/v1/info")
 async def info() -> dict:
     return {
         "service": settings.SERVICE_NAME,
-        "version": "0.1.0",
+        "version": "1.0.0",
         "llm_default_model": settings.LLM_PROFILE_GENERATE_QUESTION,
         "openai_base_url": settings.OPENAI_BASE_URL,
     }

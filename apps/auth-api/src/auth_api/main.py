@@ -1,58 +1,38 @@
-from contextlib import asynccontextmanager
+"""auth-api FastAPI app — production middleware stack via shared factory."""
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from __future__ import annotations
+
+from languagepro_common import build_app
+from redis.asyncio import Redis
 
 from auth_api.api.v1 import auth as auth_router
 from auth_api.api.v1 import me as me_router
+from auth_api.db import engine
 from auth_api.settings import settings
-from languagepro_common.errors import register_error_handlers
-from languagepro_common.logging import configure_logging, get_logger
-from languagepro_common.middleware import RequestIdMiddleware
-
-configure_logging(settings.LOG_LEVEL, settings.LOG_FORMAT)
-log = get_logger(__name__)
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    log.info("auth_api_starting", env=settings.PYTHON_ENV)
-    yield
-    log.info("auth_api_stopped")
+async def _redis_factory() -> Redis:
+    return Redis.from_url(settings.REDIS_URL, decode_responses=True)
 
 
-app = FastAPI(
+app = build_app(
     title="LanguagePro AI — Auth API",
-    version="0.1.0",
-    lifespan=lifespan,
-    docs_url="/v1/docs",
-    redoc_url="/v1/redoc",
-    openapi_url="/v1/openapi.json",
+    settings=settings,
+    routers=[auth_router.router, me_router.router],
+    redis_factory=_redis_factory,
+    db_engine_factory=lambda: engine,
+    rate_limit_rules=[
+        ("/v1/login", 5, 60),
+        ("/v1/register", 3, 3600),
+        ("/v1/refresh", 30, 60),
+        ("/v1/me/change-password", 5, 300),
+    ],
+    csrf_skip_paths={
+        "/v1/login",
+        "/v1/register",
+        "/v1/refresh",
+        "/v1/logout",
+        "/v1/oauth/google/start",
+        "/v1/oauth/google/callback",
+    },
 )
-
-app.add_middleware(RequestIdMiddleware)
-# CORS handled by Caddy in dev; permissive here for direct calls
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r"https?://(.*\.)?(localhost|aiexam\.uz)(:\d+)?",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["X-Request-Id"],
-)
-
-register_error_handlers(app)
-
-app.include_router(auth_router.router, prefix="/v1")
-app.include_router(me_router.router, prefix="/v1")
-
-
-@app.get("/healthz")
-async def healthz() -> dict:
-    return {"status": "ok", "service": settings.SERVICE_NAME}
-
-
-@app.get("/readyz")
-async def readyz() -> dict:
-    # TODO: real DB ping
-    return {"status": "ready", "service": settings.SERVICE_NAME}

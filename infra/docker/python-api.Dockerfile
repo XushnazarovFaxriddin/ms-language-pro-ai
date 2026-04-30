@@ -26,8 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml uv.lock* ./
 COPY python/ ./python/
 
-ARG SERVICE_NAME
-COPY apps/${SERVICE_NAME}/ ./apps/${SERVICE_NAME}/
+COPY apps/ ./apps/
 
 RUN uv sync --frozen --no-install-project 2>/dev/null || uv sync
 
