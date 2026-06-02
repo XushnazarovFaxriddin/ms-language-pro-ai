@@ -1,0 +1,26 @@
+# Never ship host-built node_modules into the image — Windows/macOS binaries
+# break Linux containers and Windows symlinks point to absolute host paths.
+**/node_modules
+**/.pnpm-store
+**/.next
+**/.turbo
+**/dist
+**/.venv
+**/__pycache__
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+**/.uv-cache
+**/*.pyc
+**/*.pyo
+**/.DS_Store
+**/Thumbs.db
+**/.vscode
+**/.idea
+**/.git
+**/.env.local
+**/.env.*.local
+**/coverage
+**/playwright-report
+**/test-results
+**/tsconfig.tsbuildinfo

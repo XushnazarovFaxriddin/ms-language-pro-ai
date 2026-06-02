@@ -35,8 +35,33 @@ function readCookie(name: string): string | undefined {
   return match && match[1] ? decodeURIComponent(match[1]) : undefined;
 }
 
-async function call<T>(path: string, opts: FetchOpts): Promise<T> {
-  const base = opts.api === "auth" ? AUTH_API : EXAM_API;
+// Singleton in-flight refresh — many API calls may 401 simultaneously
+// (e.g. when access JWT expires mid-exam). Coalesce into one /refresh.
+let inflightRefresh: Promise<boolean> | null = null;
+
+function tryRefresh(): Promise<boolean> {
+  if (!isBrowser) return Promise.resolve(false);
+  if (inflightRefresh) return inflightRefresh;
+  inflightRefresh = (async () => {
+    try {
+      const csrf = readCookie("lp_csrf");
+      const res = await fetch(`${AUTH_API}/v1/refresh`, {
+        method: "POST",
+        credentials: "include",
+        cache: "no-store",
+        headers: csrf ? { "X-CSRF-Token": csrf } : {},
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      inflightRefresh = null;
+    }
+  })();
+  return inflightRefresh;
+}
+
+async function doFetch(base: string, path: string, opts: FetchOpts): Promise<Response> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...opts.headers,
@@ -49,13 +74,29 @@ async function call<T>(path: string, opts: FetchOpts): Promise<T> {
     const csrf = readCookie("lp_csrf");
     if (csrf) headers["X-CSRF-Token"] = csrf;
   }
-  const res = await fetch(`${base}${path}`, {
+  return fetch(`${base}${path}`, {
     method,
     headers,
     credentials: "include",
     cache: "no-store",
     body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
   });
+}
+
+async function call<T>(path: string, opts: FetchOpts): Promise<T> {
+  const base = opts.api === "auth" ? AUTH_API : EXAM_API;
+  let res = await doFetch(base, path, opts);
+
+  // Silent refresh-on-401: only browser-side, never on /refresh itself, never on
+  // login/register (those legitimately 401). On success, retry the original once.
+  const isRefreshable =
+    res.status === 401 &&
+    isBrowser &&
+    !(opts.api === "auth" && (path === "/v1/refresh" || path === "/v1/login" || path === "/v1/register"));
+  if (isRefreshable && (await tryRefresh())) {
+    res = await doFetch(base, path, opts);
+  }
+
   if (!res.ok) {
     let detail = res.statusText;
     let payload: unknown = undefined;

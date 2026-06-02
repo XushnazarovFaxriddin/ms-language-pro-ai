@@ -8,7 +8,7 @@ x-api-env: &api-env
   REDIS_URL: redis://redis:6379/0
   S3_ENDPOINT: http://minio:9000
   PROMPTS_DIR: /app/prompts
-  AUTH_REFRESH_COOKIE_PATH: /auth/v1/refresh
+  AUTH_REFRESH_COOKIE_PATH: /api/auth/v1/refresh
 
 services:
   postgres:
@@ -89,6 +89,13 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      default:
+        aliases:
+          - app.localhost
+          - admin.localhost
+          - api.localhost
+          - minio.localhost
 
   auth-api:
     build:
@@ -206,6 +213,81 @@ services:
       - ../../apps/exam-platform-api:/app/apps/exam-platform-api
       - ../../python:/app/python
       - ../../prompts:/app/prompts
+
+  landing:
+    build:
+      context: ../..
+      dockerfile: infra/docker/next-dev.Dockerfile
+    restart: unless-stopped
+    command: ["pnpm", "--filter", "landing", "dev"]
+    env_file: ../../.env
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../apps/landing:/app/apps/landing
+      - /app/apps/landing/node_modules
+      - /app/apps/landing/.next
+      - ../../packages:/app/packages
+      - /app/packages/ui/node_modules
+      - /app/packages/contracts/node_modules
+      - /app/packages/i18n/node_modules
+      - /app/packages/config-eslint/node_modules
+      - /app/packages/config-tailwind/node_modules
+      - /app/packages/config-tsconfig/node_modules
+
+  exam-platform-web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/next-dev.Dockerfile
+    restart: unless-stopped
+    command: ["pnpm", "--filter", "exam-platform-web", "dev"]
+    env_file: ../../.env
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ../../apps/exam-platform-web:/app/apps/exam-platform-web
+      - /app/apps/exam-platform-web/node_modules
+      - /app/apps/exam-platform-web/.next
+      - ../../packages:/app/packages
+      - /app/packages/ui/node_modules
+      - /app/packages/contracts/node_modules
+      - /app/packages/i18n/node_modules
+      - /app/packages/config-eslint/node_modules
+      - /app/packages/config-tailwind/node_modules
+      - /app/packages/config-tsconfig/node_modules
+
+  data-engine-web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/next-dev.Dockerfile
+    restart: unless-stopped
+    command: ["pnpm", "--filter", "data-engine-web", "dev"]
+    env_file: ../../.env
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3002:3002"
+    volumes:
+      - ../../apps/data-engine-web:/app/apps/data-engine-web
+      - /app/apps/data-engine-web/node_modules
+      - /app/apps/data-engine-web/.next
+      - ../../packages:/app/packages
+      - /app/packages/ui/node_modules
+      - /app/packages/contracts/node_modules
+      - /app/packages/i18n/node_modules
+      - /app/packages/config-eslint/node_modules
+      - /app/packages/config-tailwind/node_modules
+      - /app/packages/config-tsconfig/node_modules
 
 volumes:
   postgres-data:
