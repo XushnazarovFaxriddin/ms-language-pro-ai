@@ -25,6 +25,12 @@ _arq_pool: ArqRedis | None = None
 
 async def _get_arq() -> ArqRedis:
     global _arq_pool
+    if _arq_pool is not None:
+        try:
+            # Verify pool is alive
+            await _arq_pool.ping()
+        except Exception:
+            _arq_pool = None
     if _arq_pool is None:
         _arq_pool = await create_pool(RedisSettings.from_dsn(settings.REDIS_URL))
     return _arq_pool

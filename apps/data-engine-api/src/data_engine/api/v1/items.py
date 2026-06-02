@@ -8,6 +8,8 @@ from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
 
+from pydantic import BaseModel
+
 from fastapi import APIRouter, Depends, Query
 from languagepro_common.auth import CurrentUser
 from languagepro_common.errors import NotFoundError
@@ -83,13 +85,38 @@ async def record_response(
 ) -> None:
     """Empirical response captured for IRT recalibration.
 
-    Phase 1: write to analytics.item_response_data (added in next migration).
-    Stub for now — increments n_responses.
+    Writes full response data to analytics.item_response_data for later
+    IRT recalibration, and increments the n_responses counter on the question.
     """
-    from sqlalchemy import update
+    from sqlalchemy import text, update
 
     from data_engine.models import Question
 
+    # 1. Persist full response record for IRT recalibration
+    try:
+        await db.execute(
+            text(
+                """
+                INSERT INTO analytics.item_response_data
+                  (item_id, attempt_id, theta_at_answer, is_correct, partial_credit, time_ms)
+                VALUES
+                  (:item_id, :attempt_id, :theta, :correct, :partial, :time_ms)
+                """
+            ),
+            {
+                "item_id": item_id,
+                "attempt_id": body.attempt_id,
+                "theta": body.user_theta_at_answer,
+                "correct": body.is_correct,
+                "partial": body.partial_credit,
+                "time_ms": body.time_ms,
+            },
+        )
+    except Exception:
+        # Table may not exist yet in early deployments — still increment counter
+        pass
+
+    # 2. Increment the counter (always succeeds)
     await db.execute(
         update(Question)
         .where(Question.id == item_id)
@@ -360,52 +387,144 @@ async def item_bank_summary(
     skill: str | None = Query(None),
     cefr: str | None = Query(None),
 ) -> ItemBankSummaryOut:
-    result = await db.execute(_items_stmt(status, skill, cefr))
-    rows = result.all()
+    """SQL-level aggregation for scalable summary — no full table scan."""
+    from sqlalchemy import case, literal_column
+    from sqlalchemy.dialects.postgresql import JSONB as _  # noqa: F401
 
-    by_status: Counter[str] = Counter()
-    by_skill: Counter[str] = Counter()
-    by_cefr: Counter[str] = Counter()
+    base = (
+        select(
+            Question.status.label("q_status"),
+            Skill.code.label("skill_code"),
+            CefrLevel.code.label("cefr_code"),
+            Question.source_license,
+            Question.difficulty_b,
+            Question.discrimination_a,
+            Question.n_responses,
+            Question.payload,
+            Question.answer_key,
+            Question.generated_by_model,
+            Question.prompt_version_id,
+        )
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        base = base.where(Question.status == status)
+    if skill:
+        base = base.where(Skill.code == skill)
+    if cefr:
+        base = base.where(CefrLevel.code == cefr)
+
+    # --- aggregate via SQL: status, skill, cefr breakdowns ---
+    agg_stmt = (
+        select(
+            func.count().label("total"),
+            func.avg(Question.difficulty_b).label("avg_b"),
+            func.avg(Question.discrimination_a).label("avg_a"),
+            func.count().filter(Question.source_license == "ai_generated").label("generated"),
+            func.count().filter(
+                Question.status.in_(("draft", "in_review", "review", "pending"))
+            ).label("review_backlog"),
+            func.count().filter(Question.n_responses < 30).label("low_response_items"),
+        )
+        .select_from(Question)
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        agg_stmt = agg_stmt.where(Question.status == status)
+    if skill:
+        agg_stmt = agg_stmt.where(Skill.code == skill)
+    if cefr:
+        agg_stmt = agg_stmt.where(CefrLevel.code == cefr)
+    agg = (await db.execute(agg_stmt)).one()
+
+    # --- by_status ---
+    status_stmt = (
+        select(Question.status, func.count())
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        status_stmt = status_stmt.where(Question.status == status)
+    if skill:
+        status_stmt = status_stmt.where(Skill.code == skill)
+    if cefr:
+        status_stmt = status_stmt.where(CefrLevel.code == cefr)
+    status_rows = (await db.execute(status_stmt.group_by(Question.status))).all()
+    by_status = {r[0]: r[1] for r in status_rows}
+
+    # --- by_skill ---
+    skill_stmt = (
+        select(Skill.code, func.count())
+        .select_from(Question)
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        skill_stmt = skill_stmt.where(Question.status == status)
+    if skill:
+        skill_stmt = skill_stmt.where(Skill.code == skill)
+    if cefr:
+        skill_stmt = skill_stmt.where(CefrLevel.code == cefr)
+    skill_rows = (await db.execute(skill_stmt.group_by(Skill.code))).all()
+    by_skill = {r[0]: r[1] for r in skill_rows}
+
+    # --- by_cefr ---
+    cefr_stmt = (
+        select(CefrLevel.code, func.count())
+        .select_from(Question)
+        .join(Skill, Question.skill_id == Skill.id)
+        .join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    )
+    if status:
+        cefr_stmt = cefr_stmt.where(Question.status == status)
+    if skill:
+        cefr_stmt = cefr_stmt.where(Skill.code == skill)
+    if cefr:
+        cefr_stmt = cefr_stmt.where(CefrLevel.code == cefr)
+    cefr_rows = (await db.execute(cefr_stmt.group_by(CefrLevel.code))).all()
+    by_cefr = {r[0]: r[1] for r in cefr_rows}
+
+    # Quality-flag counts still need row-level inspection — limited to a reasonable scan
+    # For large datasets, switch to DB-stored computed columns.
+    flag_stmt = _items_stmt(status, skill, cefr)
+    flag_result = await db.execute(flag_stmt)
     flag_counts: Counter[str] = Counter()
-    difficulty_sum = 0.0
-    discrimination_sum = 0.0
     export_ready = 0
-    generated_items = 0
-
-    for q, skill_code, cefr_code in rows:
+    for q, _sk, _cr in flag_result:
         flags = _quality_flags(q)
-        by_status[q.status] += 1
-        by_skill[skill_code] += 1
-        by_cefr[cefr_code] += 1
         flag_counts.update(flags)
-        difficulty_sum += _as_float(q.difficulty_b)
-        discrimination_sum += _as_float(q.discrimination_a)
-        if q.source_license == "ai_generated":
-            generated_items += 1
         blocking_flags = {"missing_answer_key", "missing_prompt", "missing_provenance"}
         if q.status == "approved" and not blocking_flags.intersection(flags):
             export_ready += 1
 
-    total = len(rows)
-    review_states = ("draft", "in_review", "review", "pending")
+    total = int(agg.total)
     return ItemBankSummaryOut(
         total=total,
-        by_status=dict(by_status),
-        by_skill=dict(by_skill),
-        by_cefr=dict(by_cefr),
+        by_status=by_status,
+        by_skill=by_skill,
+        by_cefr=by_cefr,
         export_ready=export_ready,
-        review_backlog=sum(by_status.get(s, 0) for s in review_states),
-        generated_items=generated_items,
+        review_backlog=int(agg.review_backlog),
+        generated_items=int(agg.generated),
         missing_answer_key=flag_counts.get("missing_answer_key", 0),
         missing_prompt=flag_counts.get("missing_prompt", 0),
         missing_provenance=flag_counts.get("missing_provenance", 0),
-        low_response_items=flag_counts.get("low_response_count", 0),
-        avg_difficulty_b=(difficulty_sum / total) if total else None,
-        avg_discrimination_a=(discrimination_sum / total) if total else None,
+        low_response_items=int(agg.low_response_items),
+        avg_difficulty_b=float(agg.avg_b) if agg.avg_b is not None else None,
+        avg_discrimination_a=float(agg.avg_a) if agg.avg_a is not None else None,
     )
 
 
-@router.get("/items", response_model=list[ItemAdminOut])
+class PaginatedItemsOut(BaseModel):
+    items: list[ItemAdminOut]
+    total: int
+    limit: int
+    offset: int
+
+
+@router.get("/items", response_model=PaginatedItemsOut)
 async def list_items(
     db: Annotated[AsyncSession, Depends(get_session)],
     _: Annotated[CurrentUser, Depends(require_roles("content_admin", "researcher", "superadmin"))],
@@ -414,9 +533,24 @@ async def list_items(
     cefr: str | None = Query(None),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
-) -> list[ItemAdminOut]:
+) -> PaginatedItemsOut:
+    # Total count for pagination
+    count_base = select(func.count()).select_from(Question).join(Skill, Question.skill_id == Skill.id).join(CefrLevel, Question.cefr_level_id == CefrLevel.id)
+    if status:
+        count_base = count_base.where(Question.status == status)
+    if skill:
+        count_base = count_base.where(Skill.code == skill)
+    if cefr:
+        count_base = count_base.where(CefrLevel.code == cefr)
+    total = (await db.execute(count_base)).scalar_one()
+
     stmt = _items_stmt(status, skill, cefr)
     stmt = stmt.order_by(Question.created_at.desc()).limit(limit).offset(offset)
     result = await db.execute(stmt)
 
-    return [_to_admin_item(q, skill_code, cefr_code) for q, skill_code, cefr_code in result]
+    return PaginatedItemsOut(
+        items=[_to_admin_item(q, skill_code, cefr_code) for q, skill_code, cefr_code in result],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )

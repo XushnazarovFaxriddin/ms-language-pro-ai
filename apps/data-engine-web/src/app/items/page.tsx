@@ -22,10 +22,11 @@ export default async function ItemsPage({
   const statusLabels = copy.statusOptions as Record<string, string>;
   const flagLabels = copy.qualityFlags as Record<string, string>;
 
-  const [items, summary] = await Promise.all([
+  const [itemsResult, summary] = await Promise.all([
     api.items.list({ skill, cefr, status, limit: 100 }, ck),
     api.items.summary({ skill, cefr, status }, ck),
   ]);
+  const items = itemsResult.items;
   const exportHref = api.exports.questionsCsvUrl({ skill, cefr, status });
 
   return (
@@ -109,8 +110,10 @@ export default async function ItemsPage({
                   return (
                     <tr key={item.id} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40">
                       <td className="px-5 py-4 align-top">
-                        <div className="font-mono text-[11px] text-slate-500">{item.id.slice(0, 8)}...</div>
-                        <div className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">{item.type}</div>
+                        <Link href={`/items/${item.id}`} className="group">
+                          <div className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 group-hover:underline">{item.id.slice(0, 8)}...</div>
+                          <div className="mt-1 text-[10px] uppercase tracking-wider text-slate-400">{item.type}</div>
+                        </Link>
                       </td>
                       <td className="px-5 py-4 align-top">
                         <div className="flex flex-wrap gap-2">
@@ -170,7 +173,7 @@ export default async function ItemsPage({
 
         <div className="mt-6 flex items-center justify-between">
           <p className="text-xs text-slate-500">
-            {copy.pagination.replace("{count}", String(items.length)).replace("{total}", String(summary.total))}
+            {copy.pagination.replace("{count}", String(items.length)).replace("{total}", String(itemsResult.total))}
           </p>
         </div>
       </div>

@@ -13,7 +13,7 @@ from uuid import UUID
 from languagepro_common.errors import NotFoundError, ValidationError
 from languagepro_common.logging import get_logger
 from languagepro_llm import LLMRequest, LLMRouter
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import Integer, delete, func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exam_platform.models import (
@@ -59,6 +59,43 @@ GENERIC_WORD_CEFR: dict[str, str] = {
 }
 
 IELTS_SKILLS = ("listening", "reading", "writing", "speaking")
+
+# IELTS Academic Reading: raw score (out of 40) → band. Ranges are inclusive.
+# Source: British Council public band score conversion tables.
+IELTS_READING_ACADEMIC_TABLE: list[tuple[int, int, float]] = [
+    (39, 40, 9.0), (37, 38, 8.5), (35, 36, 8.0), (33, 34, 7.5),
+    (30, 32, 7.0), (27, 29, 6.5), (23, 26, 6.0), (19, 22, 5.5),
+    (15, 18, 5.0), (13, 14, 4.5), (10, 12, 4.0), (8, 9, 3.5),
+    (6, 7, 3.0), (4, 5, 2.5), (3, 3, 2.0), (2, 2, 1.5), (1, 1, 1.0),
+]
+
+# IELTS Listening: raw score (out of 40) → band.
+IELTS_LISTENING_TABLE: list[tuple[int, int, float]] = [
+    (39, 40, 9.0), (37, 38, 8.5), (35, 36, 8.0), (32, 34, 7.5),
+    (30, 31, 7.0), (26, 29, 6.5), (23, 25, 6.0), (18, 22, 5.5),
+    (16, 17, 5.0), (13, 15, 4.5), (11, 12, 4.0), (8, 10, 3.5),
+    (6, 7, 3.0), (4, 5, 2.5), (3, 3, 2.0), (2, 2, 1.5), (1, 1, 1.0),
+]
+
+# IELTS band → CEFR level mapping (official Cambridge English / British Council)
+def band_to_cefr(band: float | None) -> str | None:
+    """Convert IELTS band to approximate CEFR level."""
+    if band is None:
+        return None
+    if band >= 8.5:
+        return "C2"
+    if band >= 7.0:
+        return "C1"
+    if band >= 5.5:
+        return "B2"
+    if band >= 4.0:
+        return "B1"
+    if band >= 3.0:
+        return "A2"
+    if band >= 2.0:
+        return "A1"
+    return None
+
 log = get_logger(__name__)
 
 
@@ -800,9 +837,20 @@ def _score_writing_heuristically(
     task_response = _round_band(min(cap, 3.0 + length_ratio * 3.0))
     coherence = _round_band(min(cap, 3.5 + (0.5 if "\n" in essay.strip() else 0.0) + length_ratio * 1.5))
     lexical_pool = len({w.lower() for w in words})
+    # Vocabulary diversity: unique words / total words — gibberish or copy-paste has very low diversity
+    vocab_diversity = lexical_pool / max(1, word_count)
+    if vocab_diversity < 0.30 and word_count > 50:
+        # Very low diversity (many repeated words) — cap severely
+        cap = min(cap, 4.0)
     lexical = _round_band(min(cap, 3.5 + min(lexical_pool / 120, 1.0) * 2.0))
     sentence_count = len(_sentence_ranges(essay))
+    # Paragraph structure check
+    paragraphs = [p.strip() for p in essay.split("\n") if p.strip()]
+    para_count = len(paragraphs)
     grammar = _round_band(min(cap, 3.5 + min(sentence_count / 8, 1.0) * 2.0))
+    # Bonus for proper paragraphing (IELTS expects 4-5 paragraphs for Task 2)
+    if para_count >= 3:
+        coherence = _round_band(min(cap, coherence + 0.5))
     band = _round_band((task_response + coherence + lexical + grammar) / 4)
     criteria = {
         "task_response": task_response,
@@ -1057,7 +1105,15 @@ def _response_payload(response: AttemptResponse) -> dict[str, Any]:
 
 
 def _round_band(value: float) -> float:
-    rounded = floor((value * 2.0) + 0.5) / 2.0
+    """Round to nearest 0.5 within [0, 9] — IELTS standard rounding.
+
+    IELTS always rounds .25 UP to .5 and .75 UP to next whole band.
+    Python's built-in round() uses banker's rounding (round-half-even)
+    which would round 6.25 → 6.0 instead of 6.5.  We use
+    math.floor(x*2 + 0.5) / 2  to get consistent round-half-up behavior.
+    """
+    import math
+    rounded = math.floor(value * 2.0 + 0.5) / 2.0
     return max(0.0, min(9.0, rounded))
 
 
@@ -1131,23 +1187,92 @@ async def _attempt_bands(db: AsyncSession, attempt_id: UUID) -> dict[str, float 
             select(AttemptResponse.skill, ScoringResult.band)
             .join(ScoringResult, ScoringResult.response_id == AttemptResponse.id)
             .where(AttemptResponse.attempt_id == attempt_id, ScoringResult.band.is_not(None))
+            .order_by(AttemptResponse.created_at)
         )
     ).all()
     by_skill: dict[str, list[float]] = defaultdict(list)
     for skill, band in rows:
         if band is not None:
             by_skill[str(skill)].append(float(band))
-    bands: dict[str, float | None] = {
-        skill: _round_band(sum(by_skill[skill]) / len(by_skill[skill]))
-        if by_skill.get(skill)
-        else None
-        for skill in IELTS_SKILLS
-    }
-    all_bands = [
-        band for skill, band in bands.items() if skill in IELTS_SKILLS and band is not None
-    ]
-    bands["overall"] = _round_band(sum(all_bands) / len(all_bands)) if all_bands else None
+
+    # For reading/listening: if we have raw correct/total counts, use the
+    # official IELTS conversion table instead of averaging per-item heuristic bands.
+    objective_counts = await _objective_counts_by_skill(db, attempt_id)
+
+    bands: dict[str, float | None] = {}
+    for skill in IELTS_SKILLS:
+        if skill in ("reading", "listening") and skill in objective_counts:
+            correct, total = objective_counts[skill]
+            # Scale to IELTS 40-item standard if our section has fewer items
+            if total > 0:
+                scaled = round(correct * 40 / total)
+                table = IELTS_READING_ACADEMIC_TABLE if skill == "reading" else IELTS_LISTENING_TABLE
+                bands[skill] = _raw_to_band(scaled, table)
+            elif by_skill.get(skill):
+                bands[skill] = _round_band(sum(by_skill[skill]) / len(by_skill[skill]))
+            else:
+                bands[skill] = None
+        elif skill == "writing" and by_skill.get("writing"):
+            # IELTS Writing: Task 2 has DOUBLE the weight of Task 1
+            # Formula: (Task1_Band × 1 + Task2_Band × 2) / 3
+            writing_bands = by_skill["writing"]
+            if len(writing_bands) >= 2:
+                # First writing response = Task 1, second = Task 2 (ordered by created_at)
+                task1_band = writing_bands[0]
+                task2_band = writing_bands[1]
+                bands[skill] = _round_band((task1_band + task2_band * 2) / 3)
+            else:
+                # Only one writing item — use it directly
+                bands[skill] = _round_band(writing_bands[0])
+        elif by_skill.get(skill):
+            bands[skill] = _round_band(sum(by_skill[skill]) / len(by_skill[skill]))
+        else:
+            bands[skill] = None
+
+    # IELTS overall band: average of 4 skills, rounded to nearest 0.5
+    all_bands = [bands[s] for s in IELTS_SKILLS if bands.get(s) is not None]
+    if all_bands:
+        raw_avg = sum(all_bands) / len(all_bands)
+        bands["overall"] = round(raw_avg * 2) / 2  # official IELTS rounding
+    else:
+        bands["overall"] = None
     return bands
+
+
+def _raw_to_band(
+    raw_score: int, table: list[tuple[int, int, float]]
+) -> float:
+    """Convert a raw score (0-40) to an IELTS band using the conversion table."""
+    for low, high, band in table:
+        if low <= raw_score <= high:
+            return band
+    return 0.0 if raw_score <= 0 else 9.0
+
+
+async def _objective_counts_by_skill(
+    db: AsyncSession, attempt_id: UUID
+) -> dict[str, tuple[int, int]]:
+    """Return {skill: (correct, total)} for objectively-graded items."""
+    rows = (
+        await db.execute(
+            select(
+                AttemptResponse.skill,
+                func.count(AttemptResponse.id),
+                func.sum(
+                    func.cast(AttemptResponse.is_correct, Integer)
+                ),
+            )
+            .where(
+                AttemptResponse.attempt_id == attempt_id,
+                AttemptResponse.is_correct.is_not(None),
+            )
+            .group_by(AttemptResponse.skill)
+        )
+    ).all()
+    result: dict[str, tuple[int, int]] = {}
+    for skill, total, correct in rows:
+        result[str(skill)] = (int(correct or 0), int(total))
+    return result
 
 
 async def _scoring_source_summary(db: AsyncSession, attempt_id: UUID) -> dict[str, Any]:

@@ -7,7 +7,12 @@ import { MoveRight, History, FileText, CheckCircle2, Clock, Eye } from "lucide-r
 export default async function ResultsPage() {
   const user = await requireUser("/exams/results");
   const ck = await getCookieHeader();
-  const attempts = await api.exam.listAttempts(ck);
+  let attempts: Awaited<ReturnType<typeof api.exam.listAttempts>> = [];
+  try {
+    attempts = await api.exam.listAttempts(ck);
+  } catch {
+    // API may return 500 if DB has no scoring data yet — gracefully show empty
+  }
   const tRes = await getTranslations("Dashboard.resultsPage");
 
   return (

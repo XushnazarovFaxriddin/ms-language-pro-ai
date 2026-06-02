@@ -141,8 +141,13 @@ export const api = {
       }),
     getAttempt: (id: string, cookieHeader?: string) =>
       call<AttemptOut>(`/v1/attempts/${id}`, { api: "exam", cookieHeader }),
-    listAttempts: (cookieHeader?: string) =>
-      call<AttemptListItem[]>(`/v1/attempts`, { api: "exam", cookieHeader }),
+    listAttempts: (cookieHeader?: string, limit = 50, offset = 0) => {
+      const params = new URLSearchParams();
+      if (limit !== 50) params.set("limit", String(limit));
+      if (offset > 0) params.set("offset", String(offset));
+      const qs = params.toString();
+      return call<AttemptListItem[]>(`/v1/attempts${qs ? `?${qs}` : ""}`, { api: "exam", cookieHeader });
+    },
     getNextItem: (id: string) =>
       call<NextItemResponse>(`/v1/attempts/${id}/next-item`, { api: "exam" }),
     submitResponse: (
@@ -241,6 +246,10 @@ export type ItemView = {
   payload: {
     passage?: string;
     prompt?: string;
+    question?: string;
+    stem?: string;
+    instructions?: string;
+    context?: string;
     options?: { id: string; label: string }[];
     audio_url?: string;
     transcript?: string;
@@ -248,11 +257,18 @@ export type ItemView = {
     task_type?: "task1_academic" | "task1_general" | "task2";
     word_limit_min?: number;
     word_limit_max?: number;
+    word_limit_hint?: string;
     time_limit_minutes?: number;
+    chart_image_url?: string;
+    data_table?: { headers: string[]; rows: string[][] };
     // Speaking
     part?: 1 | 2 | 3;
     preparation_seconds?: number;
     speaking_seconds?: number;
+    // Matching
+    match_items?: { id: string; stem: string }[];
+    items_to_match?: { id: string; stem: string }[];
+    match_options?: { id: string; label: string }[];
   };
   estimated_seconds: number;
 };

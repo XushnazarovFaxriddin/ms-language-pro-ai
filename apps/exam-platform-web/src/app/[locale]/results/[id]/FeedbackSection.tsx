@@ -119,34 +119,34 @@ export function FeedbackSection({
 
       {/* Overview Accordion */}
       {overview && (
-        <div className="rounded-2xl border border-[var(--color-border)]/50 bg-[var(--color-bg)] overflow-hidden">
+        <div className="rounded-3xl border border-[var(--color-border)]/40 bg-white/40 dark:bg-black/20 overflow-hidden shadow-sm backdrop-blur-md">
           <button 
             onClick={() => toggleLayer("overview")}
-            className="flex w-full items-center justify-between p-6 bg-[var(--color-muted)]/10 hover:bg-[var(--color-muted)]/20 transition-colors"
+            className="flex w-full items-center justify-between p-6 bg-white/10 hover:bg-white/20 transition-all duration-300 cursor-pointer"
           >
-            <span className="font-bold text-lg flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-500" /> {t("sections.overview")}
+            <span className="font-bold text-lg flex items-center gap-2.5">
+              <FileText className="h-5 w-5 text-[var(--color-primary)]" /> {t("sections.overview")}
             </span>
             {openLayer === "overview" ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
           </button>
           
           {openLayer === "overview" && (
-            <div className="p-6 border-t border-[var(--color-border)]/50">
+            <div className="p-6 border-t border-[var(--color-border)]/40 space-y-6">
               {overview.source === "llm" ? (
-                <div className="mb-5 space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle className="h-3.5 w-3.5" />
                     {t("source.ai", { model: overview.model ?? t("source.unknownModel") })}
                   </div>
                   {fallbackScored.length > 0 && (
-                    <div className="flex items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-medium text-amber-700 dark:text-amber-300">
+                    <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs font-medium text-amber-700 dark:text-amber-300">
                       <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                       <p>{t("source.partial", { skills: fallbackScored.map((skill) => t(`skills.${skill}`)).join(", ") })}</p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="mb-5 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <p className="flex items-start gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
                     <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
                     {t("source.fallback")}
@@ -154,41 +154,64 @@ export function FeedbackSection({
                   <button
                     onClick={generateFeedback}
                     disabled={loading}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-amber-700 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-600 px-4 py-2.5 text-xs font-bold text-white transition-all hover:bg-amber-700 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                   >
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     {t("actions.regenerateAi")}
                   </button>
                 </div>
               )}
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="text-base leading-relaxed">{selectLocalized(overview.payload, "narrative", locale)}</p>
+
+              <div className="space-y-6">
+                <p className="text-sm font-medium text-[var(--color-fg)] leading-relaxed">{selectLocalized(overview.payload, "narrative", locale)}</p>
+                
                 {overview.payload.bands && (
-                  <div className="mt-5 grid gap-3 sm:grid-cols-5">
-                    {["overall", "listening", "reading", "writing", "speaking"].map((skill) => (
-                      <div key={skill} className="rounded-xl border border-[var(--color-border)]/50 p-3">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)]">
-                          {t(`skills.${skill}`)}
-                        </p>
-                        <p className="mt-1 text-xl font-black">
-                          {formatBand(overview.payload.bands[skill])}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="grid gap-3 grid-cols-2 sm:grid-cols-5">
+                    {["overall", "listening", "reading", "writing", "speaking"].map((skill) => {
+                      const band = overview.payload.bands[skill];
+                      const cefr = bandToCEFR(band);
+                      const bandColor = getBandColor(band);
+                      const isOverall = skill === "overall";
+
+                      return (
+                        <div 
+                          key={skill} 
+                          className={`rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] ${
+                            isOverall
+                              ? "border-[var(--color-primary)]/40 bg-gradient-to-br from-[var(--color-primary)]/10 via-[var(--color-primary)]/5 to-transparent shadow-md shadow-[var(--color-primary)]/5"
+                              : "border-[var(--color-border)]/40 bg-white/10 dark:bg-black/10"
+                          }`}
+                        >
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)] font-mono">
+                            {t(`skills.${skill}`)}
+                          </p>
+                          <p className={`mt-1.5 text-2xl font-black ${bandColor} leading-none`}>
+                            {formatBand(band)}
+                          </p>
+                          {cefr && (
+                            <p className="mt-1 text-[9px] font-bold tracking-widest text-[var(--color-muted-fg)] font-mono uppercase opacity-85">
+                              {cefr}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-                <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                  <p className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 mb-2">
-                    <CheckCircle className="h-4 w-4" /> {t("mainRecommendation")}
+
+                <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2 text-sm">
+                    <CheckCircle className="h-4.5 w-4.5" /> {t("mainRecommendation")}
                   </p>
-                  <p className="text-sm font-mono text-[var(--color-fg)]">{t("nextStep", { ref: overview.payload.next_step_ref })}</p>
-                  <p className="text-sm mt-1">{t.rich("biggestOpportunity", { code: () => <span className="font-bold">{overview.payload.biggest_opportunity_code}</span> })}</p>
+                  <p className="text-xs font-mono font-bold text-[var(--color-fg)]">{t("nextStep", { ref: overview.payload.next_step_ref })}</p>
+                  <p className="text-xs font-medium text-[var(--color-muted-fg)] leading-relaxed">{t.rich("biggestOpportunity", { code: () => <span className="font-bold text-[var(--color-fg)]">{overview.payload.biggest_opportunity_code}</span> })}</p>
                 </div>
               </div>
             </div>
           )}
         </div>
       )}
+
 
       {/* Sentence Accordion */}
       {sentenceItems.length > 0 && (
@@ -365,4 +388,30 @@ function selectLocalized(payload: Record<string, unknown>, baseKey: string, loca
   if (typeof localized === "string" && localized.trim()) return localized;
   const fallback = payload[fallbackKey];
   return typeof fallback === "string" ? fallback : "";
+}
+
+/**
+ * Map IELTS band score to CEFR level.
+ * Based on official Cambridge English / British Council correspondence.
+ */
+function bandToCEFR(band: unknown): string | null {
+  if (typeof band !== "number" || !Number.isFinite(band)) return null;
+  if (band >= 8.5) return "C2";
+  if (band >= 7.0) return "C1";
+  if (band >= 5.5) return "B2";
+  if (band >= 4.0) return "B1";
+  if (band >= 3.0) return "A2";
+  if (band >= 2.0) return "A1";
+  return null;
+}
+
+/**
+ * Color-code band scores for visual feedback.
+ */
+function getBandColor(band: unknown): string {
+  if (typeof band !== "number" || !Number.isFinite(band)) return "";
+  if (band >= 7.0) return "text-emerald-600 dark:text-emerald-400";
+  if (band >= 5.5) return "text-blue-600 dark:text-blue-400";
+  if (band >= 4.0) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }

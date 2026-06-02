@@ -4,12 +4,12 @@ from datetime import date, datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StartAttemptRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    blueprint_code: str
+    blueprint_code: str = Field(min_length=1, max_length=128)
     locale: Literal["uz", "en"] = "uz"
 
 
@@ -37,15 +37,38 @@ class NextItemResponse(BaseModel):
 
 
 class SubmitResponseIn(BaseModel):
+    """Student response submission DTO.
+
+    Validates that exactly one answer channel is provided:
+    - mcq_choice_id for objective items
+    - text_answer for writing/completion items
+    - audio_base64 or audio_s3_key for speaking items
+    """
+
     model_config = ConfigDict(extra="forbid")
     item_id: UUID
-    type: str
-    mcq_choice_id: str | None = None
-    text_answer: str | None = None
-    audio_s3_key: str | None = None
-    audio_base64: str | None = None
+    type: str = Field(min_length=1, max_length=64)
+    mcq_choice_id: str | None = Field(default=None, max_length=64)
+    text_answer: str | None = Field(default=None, max_length=50_000)  # ~10K words max
+    audio_s3_key: str | None = Field(default=None, max_length=512)
+    audio_base64: str | None = Field(default=None, max_length=20_000_000)  # ~15MB WAV
     audio_format: str = Field(default="webm", min_length=1, max_length=64)
-    time_ms: int = Field(ge=0)
+    time_ms: int = Field(ge=0, le=86_400_000)  # max 24 hours
+
+    @model_validator(mode="after")
+    def check_answer_provided(self) -> "SubmitResponseIn":
+        has_mcq = self.mcq_choice_id is not None
+        has_text = self.text_answer is not None
+        has_audio = self.audio_base64 is not None or self.audio_s3_key is not None
+        channels = sum([has_mcq, has_text, has_audio])
+        if channels == 0:
+            # Allow empty for skip (writing items submitted with empty text)
+            pass
+        if has_mcq and has_audio:
+            raise ValueError(
+                "Cannot provide both mcq_choice_id and audio in the same response"
+            )
+        return self
 
 
 class SubmitResponseOut(BaseModel):

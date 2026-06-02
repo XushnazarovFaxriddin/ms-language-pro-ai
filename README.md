@@ -52,11 +52,28 @@ make dev
 Primary local URLs:
 
 - `http://localhost:3000` - landing
-- `http://localhost:3001` - student app
-- `http://localhost:3002` - admin app
+- `http://localhost:3001` - student app (app.localhost via Caddy)
+- `http://localhost:3002` - admin app (admin.localhost via Caddy)
 - `http://localhost:8002/v1/docs` - auth API
-- `http://localhost:8000/v1/docs` - data API
-- `http://localhost:8001/v1/docs` - exam API
+- `http://localhost:8000/v1/docs` - data engine API
+- `http://localhost:8001/v1/docs` - exam platform API
+- `http://localhost:9001` - MinIO S3 console
+
+## Development Credentials
+
+> **⚠️ These are for local development only. Never use in production.**
+
+After running `make seed`, the following accounts are available:
+
+| Role | Email | Password | Access |
+|------|-------|----------|--------|
+| Student | `student@aiexam.uz` | `student12345` | Exam platform (port 3001) |
+| Admin | `admin@aiexam.uz` | `admin12345` | Both platforms |
+| Content Admin | `bobomurod@aiexam.uz` | `content12345` | Content Studio (port 3002) |
+
+**MinIO Console**: `minioadmin` / `minioadmin_change_in_prod`
+
+**API Key**: Set `GOOGLE_API_KEY` in `.env` before using LLM features (generation, scoring, feedback).
 
 ## Read First
 

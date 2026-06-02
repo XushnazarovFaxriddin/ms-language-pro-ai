@@ -53,3 +53,39 @@ async def info() -> dict:
         "version": "1.0.0",
         "data_engine_url": settings.DATA_ENGINE_API_URL,
     }
+
+
+@app.get("/health")
+async def health() -> dict:
+    """Production health check — verifies DB and Redis connectivity."""
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    checks: dict[str, str] = {}
+
+    # Check DB
+    try:
+        from exam_platform.db import async_session_factory
+
+        async with async_session_factory() as session:
+            await session.execute(text("SELECT 1"))
+            checks["db"] = "ok"
+    except Exception as exc:
+        checks["db"] = f"error: {exc}"
+
+    # Check Redis
+    try:
+        redis = await _redis_factory()
+        await redis.ping()
+        checks["redis"] = "ok"
+        await redis.aclose()
+    except Exception as exc:
+        checks["redis"] = f"error: {exc}"
+
+    healthy = all(v == "ok" for v in checks.values())
+    from fastapi.responses import JSONResponse
+
+    return JSONResponse(
+        content={"status": "healthy" if healthy else "unhealthy", "checks": checks},
+        status_code=200 if healthy else 503,
+    )

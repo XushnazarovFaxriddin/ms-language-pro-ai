@@ -26,9 +26,10 @@ export function DashboardLayout({
       )}
 
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-[var(--color-bg)] transition-transform duration-200 ease-in-out sm:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-transparent transition-transform duration-300 ease-in-out sm:translate-x-0 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <DashboardSidebar />
       </div>
+
 
       <div className="flex flex-1 flex-col sm:ml-64">
         <DashboardHeader user={user} onMenuClick={() => setIsMobileMenuOpen(true)} />

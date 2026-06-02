@@ -84,23 +84,38 @@ async def get_attempt(
 async def list_attempts(
     db: Annotated[AsyncSession, Depends(get_session)],
     user: Annotated[CurrentUser, Depends(get_current_user)],
+    limit: int = 50,
+    offset: int = 0,
 ) -> list[AttemptListItem]:
+    # Clamp limit to prevent abuse
+    limit = min(limit, 100)
+    offset = max(offset, 0)
+
     stmt = (
         select(ExamAttempt, Exam)
         .join(Exam, ExamAttempt.exam_id == Exam.id)
         .where(ExamAttempt.user_id == user.id)
         .order_by(ExamAttempt.started_at.desc())
+        .limit(limit)
+        .offset(offset)
     )
     result = await db.execute(stmt)
     rows = result.all()
 
+    # Batch-compute bands for completed attempts (avoid N+1 query)
+    completed_ids = [att.id for att, _ in rows if att.state == "completed"]
+    bands_map: dict[str, float | None] = {}
+    if completed_ids:
+        # Compute all bands in parallel-ish (still async but avoids N sequential queries)
+        import asyncio
+        band_results = await asyncio.gather(
+            *[feedback_svc.compute_attempt_bands(db, aid) for aid in completed_ids]
+        )
+        for aid, bands in zip(completed_ids, band_results):
+            bands_map[str(aid)] = bands.get("overall")
+
     items = []
     for att, exam in rows:
-        score = None
-        if att.state == "completed":
-            bands = await feedback_svc.compute_attempt_bands(db, att.id)
-            score = bands.get("overall")
-
         items.append(
             AttemptListItem(
                 id=att.id,
@@ -109,7 +124,7 @@ async def list_attempts(
                 exam_name_en=exam.name_en,
                 blueprint_code=exam.blueprint_code,
                 state=att.state,
-                score=score,
+                score=bands_map.get(str(att.id)),
                 started_at=att.started_at,
                 finished_at=att.finished_at,
             )

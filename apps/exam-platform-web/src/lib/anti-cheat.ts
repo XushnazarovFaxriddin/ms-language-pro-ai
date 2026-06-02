@@ -80,6 +80,10 @@ export function createAntiCheatTracker(attemptId: string) {
     e.preventDefault();
     record({ event_type: "copy_blocked", payload: { ts: Date.now() } });
   }
+  function onPaste(e: ClipboardEvent) {
+    e.preventDefault();
+    record({ event_type: "paste_blocked", payload: { ts: Date.now() } });
+  }
 
   // DevTools detection: heuristic — comparing inner vs outer dimensions.
   // It's not perfect (no detection is on modern browsers) but it's a soft
@@ -105,6 +109,7 @@ export function createAntiCheatTracker(attemptId: string) {
       window.addEventListener("focus", onFocus);
       document.addEventListener("contextmenu", onContextMenu);
       document.addEventListener("copy", onCopy);
+      document.addEventListener("paste", onPaste);
       devtoolsPollHandle = window.setInterval(checkDevtools, 2000);
       timer = window.setInterval(() => void flush(), FLUSH_INTERVAL_MS);
     },
@@ -116,6 +121,7 @@ export function createAntiCheatTracker(attemptId: string) {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("contextmenu", onContextMenu);
       document.removeEventListener("copy", onCopy);
+      document.removeEventListener("paste", onPaste);
       if (devtoolsPollHandle !== null) {
         window.clearInterval(devtoolsPollHandle);
         devtoolsPollHandle = null;

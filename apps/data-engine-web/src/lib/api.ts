@@ -226,6 +226,13 @@ export type ItemBankSummary = {
   avg_discrimination_a: number | null;
 };
 
+export type PaginatedItems = {
+  items: Item[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 export type NLPRecentValidation = {
   id: string;
   question_id: string;
@@ -316,6 +323,46 @@ export type ListeningPassageGenerateOut = {
   prompt_version_id?: string | null;
 };
 
+export type CalibrationRun = {
+  id: string;
+  started_at: string;
+  finished_at: string | null;
+  method: string;
+  n_items_recalibrated: number;
+  n_responses_used: number;
+  status: string;
+  summary: Record<string, unknown> | null;
+};
+
+export type CalibrationItemHistory = {
+  created_at: string;
+  a: number;
+  b: number;
+  c: number;
+  n_responses: number;
+  infit: number | null;
+  outfit: number | null;
+  calibration_run_id: string;
+};
+
+export type DIFFinding = {
+  question_id: string;
+  group_a: string;
+  group_b: string;
+  method: string;
+  effect_size: number;
+  p_value: number;
+  flagged: boolean;
+  created_at: string;
+};
+
+export type IRRResult = {
+  kappa: number;
+  pearson_r?: number;
+  mae?: number;
+  n: number;
+};
+
 // ---------------------------------------------------------------- API
 export const api = {
   auth: {
@@ -360,7 +407,7 @@ export const api = {
   items: {
     list: (params: { status?: string; skill?: string; cefr?: string; limit?: number; offset?: number } = {}, cookieHeader?: string) => {
       const query = queryString(params);
-      return call<Item[]>(`/v1/items${query}`, { api: "data", cookieHeader });
+      return call<PaginatedItems>(`/v1/items${query}`, { api: "data", cookieHeader });
     },
     summary: (params: { status?: string; skill?: string; cefr?: string } = {}, cookieHeader?: string) =>
       call<ItemBankSummary>(`/v1/items/summary${queryString(params)}`, { api: "data", cookieHeader }),
@@ -382,6 +429,24 @@ export const api = {
   research: {
     nlpOverview: (cookieHeader?: string) =>
       call<NLPOverview>("/v1/research/nlp-overview", { api: "data", cookieHeader }),
+    calibration: {
+      run: () =>
+        call<Record<string, unknown>>("/v1/research/calibration/run", { api: "data", method: "POST" }),
+      runs: (cookieHeader?: string) =>
+        call<CalibrationRun[]>("/v1/research/calibration/runs", { api: "data", cookieHeader }),
+      itemHistory: (itemId: string, cookieHeader?: string) =>
+        call<CalibrationItemHistory[]>(`/v1/research/calibration/items/${itemId}/history`, { api: "data", cookieHeader }),
+    },
+    dif: {
+      run: (groupA = "uz", groupB = "ru") =>
+        call<Record<string, unknown>>(`/v1/research/dif/run?group_a=${groupA}&group_b=${groupB}`, { api: "data", method: "POST" }),
+      findings: (cookieHeader?: string) =>
+        call<DIFFinding[]>("/v1/research/dif/findings", { api: "data", cookieHeader }),
+    },
+    irr: {
+      compute: (raterA: number[], raterB: number[]) =>
+        call<IRRResult>("/v1/research/irr/compute", { api: "data", method: "POST", body: { rater_a: raterA, rater_b: raterB } }),
+    },
   },
   usage: {
     summary: (period: "24h" | "7d" | "30d" = "7d", cookieHeader?: string) =>

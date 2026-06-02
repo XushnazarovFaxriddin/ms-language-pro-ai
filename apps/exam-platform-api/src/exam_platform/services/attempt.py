@@ -51,6 +51,30 @@ DEMO_AUDIO_URLS = {
         "/audio/listening/lecture_climate.m4a"
     ),
 }
+
+# Item types graded by single-choice answer key lookup
+SINGLE_CHOICE_TYPES = {
+    "mcq_single",
+    "true_false_ng",
+    "yes_no_ng",
+    "matching_information",
+    "matching_features",
+    "matching_headings",
+    "matching_sentence_endings",
+}
+
+# Item types that accept a typed text answer matched against one or more acceptable variants
+TEXT_COMPLETION_TYPES = {
+    "sentence_completion",
+    "summary_completion",
+    "note_completion",
+    "table_completion",
+    "short_answer",
+}
+
+# All objective item types (graded synchronously)
+OBJECTIVE_TYPES = SINGLE_CHOICE_TYPES | TEXT_COMPLETION_TYPES | {"mcq_multi"}
+
 log = get_logger(__name__)
 
 
@@ -136,6 +160,81 @@ async def _count_responses_in_section(
             )
         ).scalar_one()
     )
+
+
+def _check_expiry(attempt: ExamAttempt) -> None:
+    """Raise ConflictError if the attempt has expired."""
+    if attempt.expires_at and datetime.now(UTC) > attempt.expires_at:
+        raise ConflictError(
+            "Attempt has expired. The time limit for this exam has passed."
+        )
+
+
+async def _check_duplicate_response(
+    db: AsyncSession, attempt_id: UUID, item_id: UUID
+) -> None:
+    """Prevent submitting the same item twice within an attempt (idempotency guard)."""
+    existing = (
+        await db.execute(
+            select(AttemptResponse.id).where(
+                AttemptResponse.attempt_id == attempt_id,
+                AttemptResponse.item_id == item_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if existing is not None:
+        raise ConflictError(
+            f"Response for item {item_id} already submitted in this attempt"
+        )
+
+
+def _grade_text_completion(
+    given_text: str | None, answer_key: dict,
+) -> bool:
+    """Grade completion-type items by matching typed text against acceptable answers.
+
+    The answer key may have:
+      - correct_option_id: single correct text
+      - acceptable_answers: list of alternative correct texts
+    All matching is case-insensitive and whitespace-trimmed.
+    """
+    if not given_text or not given_text.strip():
+        return False
+    normalised = given_text.strip().lower()
+    # Primary correct answer
+    primary = str(answer_key.get("correct_option_id", "")).strip().lower()
+    if primary and normalised == primary:
+        return True
+    # Check list of acceptable alternatives
+    alternatives = answer_key.get("acceptable_answers", [])
+    if isinstance(alternatives, list):
+        for alt in alternatives:
+            if isinstance(alt, str) and normalised == alt.strip().lower():
+                return True
+    return False
+
+
+def _grade_multi_choice(
+    given_ids: str | None, answer_key: dict,
+) -> tuple[bool, float]:
+    """Grade multi-select MCQ items. Returns (fully_correct, partial_credit)."""
+    if not given_ids:
+        return False, 0.0
+    selected = {s.strip().lower() for s in given_ids.split(",") if s.strip()}
+    correct_raw = answer_key.get("correct_option_ids", [])
+    if not correct_raw:
+        # Fallback: single correct_option_id
+        single = str(answer_key.get("correct_option_id", "")).strip().lower()
+        return (bool(single) and selected == {single}), (1.0 if selected == {single} else 0.0)
+    correct = {str(c).strip().lower() for c in correct_raw if c}
+    if not correct:
+        return False, 0.0
+    hits = selected & correct
+    if selected == correct:
+        return True, 1.0
+    if hits:
+        return False, round(len(hits) / len(correct), 3)
+    return False, 0.0
 
 
 async def _seen_item_ids_in_section(
@@ -266,6 +365,33 @@ async def start_attempt(
     if exam is None:
         raise NotFoundError(f"Exam blueprint {blueprint_code} not found")
 
+    # ── Auto-abandon expired attempts: prevent stale in-progress from blocking ──
+    await db.execute(
+        update(ExamAttempt)
+        .where(
+            ExamAttempt.user_id == user_id,
+            ExamAttempt.state == "in_progress",
+            ExamAttempt.expires_at < datetime.now(UTC),
+        )
+        .values(state="abandoned", finished_at=datetime.now(UTC))
+    )
+    await db.commit()
+
+    # ── Concurrent attempt guard: prevent multiple in-progress attempts ──
+    existing_in_progress = (
+        await db.execute(
+            select(func.count(ExamAttempt.id)).where(
+                ExamAttempt.user_id == user_id,
+                ExamAttempt.state == "in_progress",
+            )
+        )
+    ).scalar_one()
+    if int(existing_in_progress) > 0:
+        raise ConflictError(
+            "You already have an exam in progress. Please finish or abandon it "
+            "before starting a new one."
+        )
+
     blueprint = await de.get_blueprint(blueprint_code)
     sections = blueprint.get("sections", [])
     if not sections:
@@ -348,6 +474,7 @@ async def next_item_for_attempt(
         raise NotFoundError(f"Attempt {attempt_id} not found")
     if attempt.state != "in_progress":
         raise ConflictError(f"Attempt is {attempt.state}")
+    _check_expiry(attempt)
 
     current = item_from_snapshot(attempt.current_item_snapshot)
     if current is not None:
@@ -404,6 +531,10 @@ async def submit_response(
         raise NotFoundError(f"Attempt {attempt_id} not found")
     if attempt.state != "in_progress":
         raise ConflictError(f"Attempt is {attempt.state}")
+    _check_expiry(attempt)
+
+    # ── Idempotency guard: prevent duplicate submissions ──
+    await _check_duplicate_response(db, attempt_id, item_id)
 
     sections = _sections(attempt)
     section_idx = int(attempt.current_section_index or 0)
@@ -417,33 +548,35 @@ async def submit_response(
 
     # ── Grade objective items synchronously; defer writing/speaking to async ──
     is_correct: bool | None = None
+    partial: Decimal | None = None
     raw_answer: dict[str, Any] = {}
-    # All these item types reduce to a single-choice grading via answer_key.correct_option_id
-    objective = item_type in {
-        "mcq_single",
-        "mcq_multi",
-        "true_false_ng",
-        "yes_no_ng",
-        "matching_information",
-        "matching_features",
-        "matching_headings",
-        "matching_sentence_endings",
-        "sentence_completion",
-        "summary_completion",
-        "note_completion",
-        "table_completion",
-        "short_answer",
-    }
+    objective = item_type in OBJECTIVE_TYPES
 
-    if objective:
+    if item_type in SINGLE_CHOICE_TYPES:
+        # Single-choice grading via answer_key.correct_option_id
         if not mcq_choice_id:
             raise ValidationError(f"mcq_choice_id required for {item_type}")
         key = await de.get_answer_key(item_id)
-        # Tolerant matching for completion-style items: case + whitespace
         expected = str(key.get("correct_option_id", "")).strip().lower()
         given = str(mcq_choice_id).strip().lower()
         is_correct = bool(expected) and given == expected
         raw_answer = {"mcq_choice_id": mcq_choice_id}
+    elif item_type == "mcq_multi":
+        # Multi-select MCQ with partial credit
+        if not mcq_choice_id:
+            raise ValidationError(f"mcq_choice_id required for {item_type}")
+        key = await de.get_answer_key(item_id)
+        is_correct, pc = _grade_multi_choice(mcq_choice_id, key)
+        partial = Decimal(str(pc))
+        raw_answer = {"mcq_choice_id": mcq_choice_id}
+    elif item_type in TEXT_COMPLETION_TYPES:
+        # Text completion: typed answer matched against acceptable variants
+        answer_text = text_answer if text_answer is not None else mcq_choice_id
+        if not answer_text or not str(answer_text).strip():
+            raise ValidationError(f"An answer is required for {item_type}")
+        key = await de.get_answer_key(item_id)
+        is_correct = _grade_text_completion(str(answer_text), key)
+        raw_answer = {"text_answer": str(answer_text)} if text_answer else {"mcq_choice_id": mcq_choice_id}
     elif text_answer is not None:
         raw_answer = {"text_answer": text_answer}
     elif audio_base64 is not None:
@@ -465,6 +598,14 @@ async def submit_response(
     new_theta = theta_now
     new_se = float(attempt.theta_se.get(skill, 1.0))
 
+    # Compute partial credit for non-multi types (multi already set above)
+    if partial is None:
+        partial = (
+            Decimal("1.0")
+            if is_correct
+            else (Decimal("0.0") if is_correct is False else None)
+        )
+
     await db.execute(
         insert(AttemptResponse).values(
             id=response_id,
@@ -475,11 +616,7 @@ async def submit_response(
             type=item_type,
             raw_answer=raw_answer,
             is_correct=is_correct,
-            partial_credit=(
-                Decimal("1.0")
-                if is_correct
-                else (Decimal("0.0") if is_correct is False else None)
-            ),
+            partial_credit=partial,
             theta_at_answer=Decimal(str(theta_now)),
             skill=skill,
             time_ms=time_ms,
@@ -488,7 +625,12 @@ async def submit_response(
 
     # IRT theta update for objective items
     if objective and is_correct is not None:
-        a, b, c = 1.0, 0.0, 0.25 if item_type == "mcq_single" else 0.0
+        # Try to read per-item IRT parameters from the item snapshot
+        item_payload = (attempt.current_item_snapshot or {}).get("payload", {})
+        a = float(item_payload.get("irt_a", 1.0))
+        b = float(item_payload.get("irt_b", 0.0))
+        c_default = 0.25 if item_type == "mcq_single" else 0.0
+        c = float(item_payload.get("irt_c", c_default))
         new_theta, new_se = update_theta_eap(
             theta_now,
             float(attempt.theta_se.get(skill, 1.0)),

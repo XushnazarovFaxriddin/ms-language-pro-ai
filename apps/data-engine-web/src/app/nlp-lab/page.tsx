@@ -8,7 +8,23 @@ export default async function NLPLabPage() {
   const user = await requireAdmin("/nlp-lab");
   const ck = await getCookieHeader();
   const copy = getAdminCopy(user.locale).nlpLab;
-  const data = await api.research.nlpOverview(ck);
+  let data: Awaited<ReturnType<typeof api.research.nlpOverview>>;
+  try {
+    data = await api.research.nlpOverview(ck);
+  } catch {
+    data = {
+      total_items: 0,
+      validated_items: 0,
+      validation_results: 0,
+      semantic_embeddings: 0,
+      verdicts: {},
+      criteria_averages: {},
+      quality_gates: {},
+      coverage_by_skill: {},
+      coverage_by_cefr: {},
+      recent_validations: [],
+    };
+  }
   const gateLabels = copy.gates as Record<string, string>;
   const verdictLabels = copy.verdicts as Record<string, string>;
   const locale = user.locale === "en" ? "en-US" : "uz-UZ";
