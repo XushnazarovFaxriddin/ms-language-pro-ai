@@ -75,4 +75,5 @@ ENV PORT=${APP_PORT}
 EXPOSE ${APP_PORT}
 
 ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
 CMD ["sh", "-c", "pnpm --filter ${APP_NAME} start"]
