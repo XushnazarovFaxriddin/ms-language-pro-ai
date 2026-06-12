@@ -234,6 +234,7 @@ services:
         APP_PORT: "3000"
         <<: *next-build-args
     restart: unless-stopped
+    user: root
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
@@ -254,6 +255,7 @@ services:
         APP_PORT: "3001"
         <<: *next-build-args
     restart: unless-stopped
+    user: root
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
@@ -274,6 +276,7 @@ services:
         APP_PORT: "3002"
         <<: *next-build-args
     restart: unless-stopped
+    user: root
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
