@@ -5,7 +5,7 @@ x-api-env: &api-env
   DATA_ENGINE_API_URL: http://data-engine-api:8000
   EXAM_PLATFORM_API_URL: http://exam-platform-api:8000
   DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-languagepro}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-languagepro}
-  REDIS_URL: redis://redis:6379/0
+  REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
   S3_ENDPOINT: http://minio:9000
   PROMPTS_DIR: /app/prompts
   AUTH_REFRESH_COOKIE_PATH: /api/auth/v1/refresh
