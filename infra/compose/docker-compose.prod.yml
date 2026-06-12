@@ -237,6 +237,7 @@ services:
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
+    command: ["sh", "-c", "pnpm --filter landing start"]
     ports:
       - "127.0.0.1:3000:3000"
     deploy:
@@ -256,6 +257,7 @@ services:
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
+    command: ["sh", "-c", "pnpm --filter exam-platform-web start"]
     ports:
       - "127.0.0.1:3001:3001"
     deploy:
@@ -275,6 +277,7 @@ services:
     env_file: ../../.env.production
     environment:
       NODE_ENV: production
+    command: ["sh", "-c", "pnpm --filter data-engine-web start"]
     ports:
       - "127.0.0.1:3002:3002"
     deploy:
