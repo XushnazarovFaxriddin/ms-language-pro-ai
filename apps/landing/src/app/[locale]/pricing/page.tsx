@@ -6,6 +6,8 @@ import { Check, Info, Sparkles, Zap, ShieldCheck, Crown } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
+const EXAM_APP_URL = process.env.NEXT_PUBLIC_EXAM_WEB_URL || "https://app.aiexam.uz";
+
 export default function PricingPage() {
   const t = useTranslations("Pricing");
 
@@ -67,7 +69,7 @@ export default function PricingPage() {
               perMonth={t("perMonth")}
               features={[0, 1].map(i => t(`plans.free.features.${i}`))}
               cta={t("plans.free.cta")}
-              href="http://app.localhost/login"
+              href={`${EXAM_APP_URL}/login`}
               icon={Zap}
             />
 
@@ -78,7 +80,7 @@ export default function PricingPage() {
               perMonth={t("perMonth")}
               features={[0, 1].map(i => t(`plans.starter.features.${i}`))}
               cta={t("plans.starter.cta")}
-              href="http://app.localhost/login"
+              href={`${EXAM_APP_URL}/login`}
               icon={ShieldCheck}
             />
 
@@ -89,7 +91,7 @@ export default function PricingPage() {
               perMonth={t("perMonth")}
               features={[0, 1, 2, 3].map(i => t(`plans.pro.features.${i}`))}
               cta={t("plans.pro.cta")}
-              href="http://app.localhost/login"
+              href={`${EXAM_APP_URL}/login`}
               icon={Crown}
               featured={true}
               badge={t("plans.pro.badge")}
