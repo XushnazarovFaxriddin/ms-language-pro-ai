@@ -186,3 +186,13 @@ async def submit(
                 error=str(exc),
             )
     return out
+
+
+@router.post("/attempts/{attempt_id}/abandon", status_code=204)
+async def abandon(
+    attempt_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_session)],
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+) -> None:
+    await attempt_svc.abandon_attempt(db, user_id=user.id, attempt_id=attempt_id)
+

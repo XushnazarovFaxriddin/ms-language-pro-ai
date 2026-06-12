@@ -23,7 +23,7 @@ from data_engine.services.calibration import (
 router = APIRouter(tags=["research"])
 
 
-@router.post("/research/calibration/run")
+@router.post("/research/calibration/trigger")
 async def trigger_recalibration(
     db: Annotated[AsyncSession, Depends(get_session)],
     _: Annotated[CurrentUser, Depends(require_roles("content_admin", "superadmin"))],

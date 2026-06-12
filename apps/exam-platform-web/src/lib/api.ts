@@ -121,11 +121,11 @@ export const api = {
         body: { email, password },
       }),
     logout: () => call<void>("/v1/logout", { api: "auth", method: "POST" }),
-    register: (email: string, password: string, locale: "uz" | "en" = "uz") =>
+    register: (email: string, password: string, displayName?: string, locale: "uz" | "en" = "uz") =>
       call<{ user: User }>("/v1/register", {
         api: "auth",
         method: "POST",
-        body: { email, password, locale },
+        body: { email, password, display_name: displayName, locale },
       }),
     me: (cookieHeader?: string) =>
       call<User>("/v1/me", { api: "auth", cookieHeader }),
@@ -158,6 +158,11 @@ export const api = {
         api: "exam",
         method: "POST",
         body,
+      }),
+    abandonAttempt: (attemptId: string) =>
+      call<void>(`/v1/attempts/${attemptId}/abandon`, {
+        api: "exam",
+        method: "POST",
       }),
   },
   feedback: {

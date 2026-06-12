@@ -458,7 +458,7 @@ export function ExamRunner({
       const body: SubmitResponseIn = {
         item_id: item.id,
         type: item.type,
-        text_answer: item.skill === "writing" ? "" : undefined,
+        text_answer: (item.skill === "writing" || item.skill === "speaking") ? "" : undefined,
         time_ms,
       };
       const r = await api.exam.submitResponse(attemptId, body);
@@ -771,7 +771,7 @@ export function ExamRunner({
         answeredSet={answeredSet}
         flaggedSet={flaggedSet}
         onFlag={handleFlag}
-        sectionLabel={`${(locale === "en" ? currentSection.name_en : currentSection.name_uz) ?? tSkill(item.skill as "listening" | "reading" | "writing" | "speaking")} · {sectionIndex + 1}/${sections.length}`}
+        sectionLabel={`${(locale === "en" ? currentSection.name_en : currentSection.name_uz) ?? tSkill(item.skill as "listening" | "reading" | "writing" | "speaking")} · ${sectionIndex + 1}/${sections.length}`}
       />
     </main>
   );

@@ -30,14 +30,17 @@ type MatchOption = {
  */
 export function MatchingItem({ item, answer, onChange, disabled }: Props) {
   const payload = item.payload;
+  const isMultiMatch = !!(payload.match_items ?? payload.items_to_match);
 
   // Parse left items to match and right options pool
-  const leftItems: MatchPair[] = (payload.match_items ?? payload.items_to_match ?? []).map(
-    (it, idx) => ({
-      leftId: it.id ?? String(idx),
-      leftLabel: it.stem ?? `Item ${idx + 1}`,
-    })
-  );
+  const leftItems: MatchPair[] = isMultiMatch
+    ? (payload.match_items ?? payload.items_to_match ?? []).map(
+        (it, idx) => ({
+          leftId: it.id ?? String(idx),
+          leftLabel: it.stem ?? `Item ${idx + 1}`,
+        })
+      )
+    : [{ leftId: item.id, leftLabel: payload.prompt ?? "Match the statement" }];
 
   const rightOptions: MatchOption[] = (payload.match_options ?? payload.options ?? []).map(
     (opt, idx) => ({
@@ -46,26 +49,34 @@ export function MatchingItem({ item, answer, onChange, disabled }: Props) {
     })
   );
 
-  // Parse current answer: "leftId:rightId,leftId:rightId"
+  // Parse current answer: "leftId:rightId,leftId:rightId" or just "rightId" for single match
   const selections: Record<string, string> = {};
   if (answer) {
-    answer.split(",").forEach((pair) => {
-      const [left, right] = pair.split(":");
-      if (left && right) selections[left] = right;
-    });
+    if (isMultiMatch) {
+      answer.split(",").forEach((pair) => {
+        const [left, right] = pair.split(":");
+        if (left && right) selections[left] = right;
+      });
+    } else {
+      selections[item.id] = answer;
+    }
   }
 
   function updateSelection(leftId: string, rightId: string) {
-    const next = { ...selections };
-    if (rightId) {
-      next[leftId] = rightId;
+    if (isMultiMatch) {
+      const next = { ...selections };
+      if (rightId) {
+        next[leftId] = rightId;
+      } else {
+        delete next[leftId];
+      }
+      const encoded = Object.entries(next)
+        .map(([l, r]) => `${l}:${r}`)
+        .join(",");
+      onChange(encoded);
     } else {
-      delete next[leftId];
+      onChange(rightId);
     }
-    const encoded = Object.entries(next)
-      .map(([l, r]) => `${l}:${r}`)
-      .join(",");
-    onChange(encoded);
   }
 
   // Type-specific instructions

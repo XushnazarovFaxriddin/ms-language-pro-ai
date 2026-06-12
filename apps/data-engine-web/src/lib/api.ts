@@ -431,7 +431,7 @@ export const api = {
       call<NLPOverview>("/v1/research/nlp-overview", { api: "data", cookieHeader }),
     calibration: {
       run: () =>
-        call<Record<string, unknown>>("/v1/research/calibration/run", { api: "data", method: "POST" }),
+        call<Record<string, unknown>>("/v1/research/calibration/trigger", { api: "data", method: "POST" }),
       runs: (cookieHeader?: string) =>
         call<CalibrationRun[]>("/v1/research/calibration/runs", { api: "data", cookieHeader }),
       itemHistory: (itemId: string, cookieHeader?: string) =>

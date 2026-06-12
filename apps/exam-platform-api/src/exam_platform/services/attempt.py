@@ -773,3 +773,23 @@ async def submit_response(
         next_section_index=(next_section_index if not attempt_complete else None),
         next_skill=(next_item.skill if next_item is not None else None),
     )
+
+
+async def abandon_attempt(
+    db: AsyncSession,
+    *,
+    user_id: UUID,
+    attempt_id: UUID,
+) -> None:
+    """Explicitly abandon an active attempt."""
+    await db.execute(
+        update(ExamAttempt)
+        .where(
+            ExamAttempt.id == attempt_id,
+            ExamAttempt.user_id == user_id,
+            ExamAttempt.state == "in_progress",
+        )
+        .values(state="abandoned", finished_at=datetime.now(UTC))
+    )
+    await db.commit()
+

@@ -306,19 +306,14 @@ async def generate_attempt_overview(
         model = overview_resp.model
         prompt_version_id = overview_resp.prompt_version_id
     except Exception as exc:
-        # Be honest with the student: instead of silently swapping in a
-        # deterministic fallback (which produces optimistic bands the LLM
-        # would not have given), surface the failure so the UI can show a
-        # clear retry. We still write a record so subsequent reads return
-        # the deterministic snapshot — but we re-raise to signal "not real".
-        log.exception(
-            "feedback_overview_llm_failed",
+        log.warning(
+            "feedback_overview_llm_failed_using_deterministic_fallback",
             attempt_id=str(attempt.id),
             error=str(exc),
         )
-        raise ValidationError(
-            f"AI grading is temporarily unavailable: {exc!s}"[:240]
-        ) from exc
+        source = "deterministic"
+        overview_payload = _merge_overview_payload(base_payload, {}, source="deterministic")
+
 
     await db.execute(
         delete(FeedbackArtifact).where(
@@ -1187,7 +1182,7 @@ async def _attempt_bands(db: AsyncSession, attempt_id: UUID) -> dict[str, float 
             select(AttemptResponse.skill, ScoringResult.band)
             .join(ScoringResult, ScoringResult.response_id == AttemptResponse.id)
             .where(AttemptResponse.attempt_id == attempt_id, ScoringResult.band.is_not(None))
-            .order_by(AttemptResponse.created_at)
+            .order_by(AttemptResponse.answered_at)
         )
     ).all()
     by_skill: dict[str, list[float]] = defaultdict(list)

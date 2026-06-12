@@ -54,7 +54,7 @@ export function TrueFalseNGItem({ item, choice, onChange, disabled }: Props) {
           {isYesNo ? "Does the writer's opinion match?" : "Does this agree with the information?"}
         </p>
         <p className="text-lg font-medium leading-relaxed">
-          {item.payload.stem ?? item.payload.question ?? ""}
+          {item.payload.prompt ?? item.payload.stem ?? item.payload.question ?? ""}
         </p>
       </div>
 

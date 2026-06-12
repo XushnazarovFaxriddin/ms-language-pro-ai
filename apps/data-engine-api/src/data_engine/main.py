@@ -43,7 +43,7 @@ app = build_app(
     rate_limit_rules=[
         ("/v1/generation/jobs", 10, 60),
         ("/v1/items/next", 600, 60),  # S2S hot path
-        ("/v1/research/calibration/run", 1, 600),  # heavy job; once per 10min
+        ("/v1/research/calibration/trigger", 1, 600),  # heavy job; once per 10min
     ],
     csrf_skip_paths={
         # S2S endpoints use Bearer auth, not cookies — middleware skips them

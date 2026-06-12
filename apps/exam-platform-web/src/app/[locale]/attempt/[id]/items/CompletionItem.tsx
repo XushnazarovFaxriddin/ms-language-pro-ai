@@ -58,7 +58,7 @@ export function CompletionItem({ item, answer, onChange, disabled }: Props) {
           {typeLabels[item.type] ?? "Complete the answer"}
         </p>
         <p className="text-lg font-medium leading-relaxed">
-          {payload.stem ?? payload.question ?? ""}
+          {payload.prompt ?? payload.stem ?? payload.question ?? ""}
         </p>
       </div>
 
