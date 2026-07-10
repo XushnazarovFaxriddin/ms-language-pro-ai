@@ -62,23 +62,6 @@ export default async function LoginPage({
           </div>
 
           <LoginForm returnTo={returnTo} copy={copy} locale={locale} />
-          
-          <div className="mt-8 space-y-4 rounded-2xl bg-emerald-500/5 p-4 border border-emerald-500/10">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
-              <ShieldCheck className="h-4 w-4" />
-              {copy.demoPermissions}
-            </div>
-            <div className="space-y-1.5 font-mono text-xs text-slate-600 dark:text-slate-400">
-              <div className="flex justify-between">
-                <span>{copy.adminLabel}:</span>
-                <span className="text-slate-800 dark:text-slate-200">admin@aiexam.uz / admin12345</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{copy.contentLabel}:</span>
-                <span className="text-slate-800 dark:text-slate-200">bobomurod@aiexam.uz / content12345</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-sm text-slate-500">

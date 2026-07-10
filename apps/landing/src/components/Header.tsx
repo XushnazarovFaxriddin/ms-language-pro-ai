@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 
+const EXAM_APP_URL = process.env.NEXT_PUBLIC_EXAM_WEB_URL || "https://app.aiexam.uz";
+
 export function Header() {
   const t = useTranslations("Common");
   const locale = useLocale();
@@ -21,6 +23,8 @@ export function Header() {
   const toggleLocale = (newLocale: "uz" | "en") => {
     router.replace(pathname, { locale: newLocale });
   };
+
+  const loginUrl = `${EXAM_APP_URL}/login`;
 
   return (
     <header className="fixed top-0 z-50 w-full px-6 py-4">
@@ -75,14 +79,14 @@ export function Header() {
           
           <div className="flex items-center gap-3">
             <a
-              href="http://app.localhost/login"
+              href={loginUrl}
               className="hidden lg:flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-white transition-colors"
             >
               <User className="h-4 w-4" />
               {t("actions.login")}
             </a>
             <a
-              href="http://app.localhost/login"
+              href={loginUrl}
               className="group relative flex items-center justify-center overflow-hidden rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-blue-500 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
             >
               <span className="relative z-10">{t("actions.register")}</span>
@@ -112,11 +116,11 @@ export function Header() {
               {t("nav.features") || "Imkoniyatlar"}
             </Link>
             <hr className="border-white/10" />
-            <a href="http://app.localhost/login" className="flex items-center gap-3 text-slate-300">
+            <a href={loginUrl} className="flex items-center gap-3 text-slate-300">
               <User className="h-5 w-5" />
               {t("actions.login")}
             </a>
-            <a href="http://app.localhost/login" className="rounded-2xl bg-blue-600 py-4 text-center text-white">
+            <a href={loginUrl} className="rounded-2xl bg-blue-600 py-4 text-center text-white">
               {t("actions.register")}
             </a>
           </nav>
@@ -125,4 +129,3 @@ export function Header() {
     </header>
   );
 }
-

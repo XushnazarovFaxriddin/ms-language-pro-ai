@@ -82,10 +82,14 @@ export function AIGradingProgress({
   const pct = Math.min(99, (elapsedMs / totalMs) * 100);
 
   return (
-    <div className="rounded-3xl border border-[var(--color-primary)]/20 bg-gradient-to-br from-[var(--color-primary)]/5 via-transparent to-[var(--color-primary)]/5 p-8 sm:p-10 shadow-sm overflow-hidden relative">
-      <div className="relative">
+    <div className="glass-panel rounded-3xl border border-[var(--color-primary)]/20 bg-gradient-to-br from-[var(--color-primary)]/5 via-transparent to-[var(--color-primary)]/5 p-8 sm:p-10 shadow-2xl overflow-hidden relative">
+      {/* Decorative ambient glowing mesh */}
+      <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[var(--color-primary)]/20 blur-3xl pointer-events-none mesh-glow animate-pulse" />
+      <div className="absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-violet-500/20 blur-3xl pointer-events-none mesh-glow animate-pulse" />
+
+      <div className="relative z-10">
         <div className="flex items-center gap-4 mb-2">
-          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] shadow-sm">
             <motion.div
               className="absolute inset-0 rounded-2xl border-2 border-[var(--color-primary)]/40"
               animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0, 0.6] }}
@@ -94,14 +98,14 @@ export function AIGradingProgress({
             <Brain className="h-7 w-7 relative" />
           </div>
           <div>
-            <h3 className="text-xl font-bold">{t("title")}</h3>
-            <p className="text-sm text-[var(--color-muted-fg)]">{t("subtitle")}</p>
+            <h3 className="text-xl font-bold tracking-tight">{t("title")}</h3>
+            <p className="text-sm font-medium text-[var(--color-muted-fg)]">{t("subtitle")}</p>
           </div>
         </div>
 
-        <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-muted)]/30">
+        <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-[var(--color-muted)]/30 border border-[var(--color-border)]/20">
           <motion.div
-            className="h-full bg-gradient-to-r from-[var(--color-primary)] via-blue-400 to-[var(--color-primary)]"
+            className="h-full bg-gradient-to-r from-[var(--color-primary)] via-violet-400 to-[var(--color-primary)]"
             style={{ backgroundSize: "200% 100%" }}
             animate={{ width: `${pct}%`, backgroundPosition: ["0% 0%", "200% 0%"] }}
             transition={{
@@ -110,12 +114,12 @@ export function AIGradingProgress({
             }}
           />
         </div>
-        <div className="mt-2 flex items-center justify-between text-xs font-mono text-[var(--color-muted-fg)]">
+        <div className="mt-2.5 flex items-center justify-between text-xs font-bold font-mono text-[var(--color-muted-fg)]">
           <span>{elapsedSec}s</span>
-          <span>{Math.round(pct)}%</span>
+          <span className="text-[var(--color-primary)]">{Math.round(pct)}%</span>
         </div>
 
-        <ul className="mt-6 space-y-3">
+        <ul className="mt-6 space-y-3.5">
           {STAGES.map((s, i) => (
             <StageRow
               key={s.key}
@@ -126,12 +130,13 @@ export function AIGradingProgress({
           ))}
         </ul>
 
-        <p className="mt-6 text-xs text-[var(--color-muted-fg)] text-center">
+        <p className="mt-6 text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-fg)] text-center font-mono">
           {t("hint")}
         </p>
       </div>
     </div>
   );
+
 }
 
 function StageRow({

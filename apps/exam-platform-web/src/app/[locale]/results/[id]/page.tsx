@@ -58,36 +58,51 @@ export default async function ResultsPage({
           {t("backToDashboard")}
         </Link>
 
-        <div className="overflow-hidden rounded-3xl border border-[var(--color-border)] bg-white/5 shadow-sm backdrop-blur-md dark:bg-black/20">
-          <div className="border-b border-[var(--color-border)]/50 bg-[var(--color-primary)]/5 p-8 text-center sm:p-12">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
-              <Trophy className="h-10 w-10" />
+        {/* Ambient background glows */}
+        <div className="absolute top-10 left-1/4 h-80 w-80 rounded-full bg-[var(--color-primary)]/10 blur-3xl pointer-events-none mesh-glow" />
+        <div className="absolute top-40 right-1/4 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl pointer-events-none mesh-glow" />
+
+        <div className="glass-panel overflow-hidden rounded-[2.5rem] border border-[var(--color-border)]/40 shadow-2xl relative z-10 bg-white/50 dark:bg-black/20">
+          <div className="border-b border-[var(--color-border)]/40 bg-gradient-to-b from-[var(--color-primary)]/5 to-transparent p-8 text-center sm:p-12 flex flex-col items-center">
+            {/* Elegant Circular Score Badge */}
+            <div className="relative mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-violet-600 shadow-xl shadow-[var(--color-primary)]/20 ring-4 ring-white/10 dark:ring-white/5 text-white">
+              <div className="absolute inset-2 rounded-full border border-dashed border-white/20 animate-[spin_40s_linear_infinite]" />
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-4xl font-extrabold tracking-tight">{scoreLabel}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/70">{t("ieltsBand")}</span>
+              </div>
             </div>
+            
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{t("title")}</h1>
-            <p className="mt-2 text-lg text-[var(--color-muted-fg)]">
+            <p className="mt-2 text-sm font-semibold text-[var(--color-muted-fg)] uppercase tracking-wider">
               {user.locale === "uz" ? attempt.blueprint_snapshot.name_uz : attempt.blueprint_snapshot.name_en}
             </p>
           </div>
 
-          <div className="grid gap-px bg-[var(--color-border)]/50 sm:grid-cols-2">
-            <div className="bg-[var(--color-bg)] p-8">
-              <div className="flex items-center gap-3 text-[var(--color-muted-fg)]">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium">{t("score")}</span>
+          <div className="grid gap-px bg-[var(--color-border)]/40 sm:grid-cols-2">
+            <div className="bg-white/30 dark:bg-black/10 p-8 flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-primary)]/10 text-[var(--color-primary)] shadow-sm">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-3xl font-bold tracking-tight">
-                {scoreLabel} <span className="text-sm font-medium text-[var(--color-muted-fg)]">{t("ieltsBand")}</span>
-              </p>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)] font-mono">{t("score")}</p>
+                <p className="mt-1 text-2xl font-extrabold tracking-tight">
+                  {scoreLabel} <span className="text-xs font-semibold text-[var(--color-muted-fg)]">/ 9.0</span>
+                </p>
+              </div>
             </div>
-            <div className="bg-[var(--color-bg)] p-8">
-              <div className="flex items-center gap-3 text-[var(--color-muted-fg)]">
-                <Clock className="h-5 w-5" />
-                <span className="font-medium">{t("timeTaken")}</span>
+            <div className="bg-white/30 dark:bg-black/10 p-8 flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-sm">
+                <Clock className="h-6 w-6" />
               </div>
-              <p className="mt-3 text-3xl font-bold tracking-tight">{timeStr}</p>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)] font-mono">{t("timeTaken")}</p>
+                <p className="mt-1 text-2xl font-extrabold tracking-tight">{timeStr}</p>
+              </div>
             </div>
           </div>
         </div>
+
 
         <div className="mt-12">
           <FeedbackSection

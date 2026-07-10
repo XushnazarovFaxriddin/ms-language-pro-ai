@@ -61,6 +61,11 @@ async def register(
     )
     await db.commit()
 
+    # Re-fetch user with roles populated to prevent MissingGreenlet lazy-loading error
+    db_user = await users.get_user_by_id(db, user.id)
+    if db_user:
+        user = db_user
+
     role_codes = users.user_role_codes(user)
     access = tokens.mint_access_jwt(user.id, role_codes, user.locale)
     set_session_cookies(

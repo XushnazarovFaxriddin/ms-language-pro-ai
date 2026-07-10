@@ -71,38 +71,47 @@ async def regenerate_roadmap(
             .limit(1)
         )
     ).scalar_one_or_none()
-    if anchor_attempt is None:
-        raise NotFoundError("Cannot generate roadmap without at least one completed attempt")
 
-    current_bands = await _current_bands_estimate(db, anchor_attempt.id)
-    current_band = current_bands.get("overall")
-    variables = {
-        "bands": current_bands,
-        "criterion_scores": {},
-        "top_error_codes": [],
-        "vocabulary_metrics": {},
-        "target_band": body.target_band,
-        "target_date": body.target_date.isoformat(),
-        "weekly_hours": body.weekly_hours,
-        "focus_skill": body.focus_skill,
-        "user_locale": anchor_attempt.locale,
-        "drill_catalogue": [],
-        "weeks_until_target": body.weeks_until_target,
-    }
-    resp = await router.complete(
-        LLMRequest(
-            purpose="feedback",
-            prompt_id="feedback/roadmap_generate",
-            variables=variables,
-            user_id=user_id,
-            attempt_id=anchor_attempt.id,
+    # If no completed attempt exists, use fallback bands and skip LLM call
+    if anchor_attempt is None:
+        current_bands: dict[str, float | None] = {
+            **dict.fromkeys(IELTS_SKILLS),
+            "overall": max(4.0, body.target_band - 1.5),
+        }
+        current_band = current_bands.get("overall")
+        plan = _fallback_plan(body, current_bands)
+        anchor_id = None
+    else:
+        current_bands = await _current_bands_estimate(db, anchor_attempt.id)
+        current_band = current_bands.get("overall")
+        anchor_id = anchor_attempt.id
+        variables = {
+            "bands": current_bands,
+            "criterion_scores": {},
+            "top_error_codes": [],
+            "vocabulary_metrics": {},
+            "target_band": body.target_band,
+            "target_date": body.target_date.isoformat(),
+            "weekly_hours": body.weekly_hours,
+            "focus_skill": body.focus_skill,
+            "user_locale": anchor_attempt.locale,
+            "drill_catalogue": [],
+            "weeks_until_target": body.weeks_until_target,
+        }
+        resp = await router.complete(
+            LLMRequest(
+                purpose="feedback",
+                prompt_id="feedback/roadmap_generate",
+                variables=variables,
+                user_id=user_id,
+                attempt_id=anchor_attempt.id,
+            )
         )
-    )
-    plan = _roadmap_plan_from_response(
-        resp.parsed,
-        body=body,
-        current_bands=current_bands,
-    )
+        plan = _roadmap_plan_from_response(
+            resp.parsed,
+            body=body,
+            current_bands=current_bands,
+        )
 
     await db.execute(
         update(Roadmap)
@@ -111,7 +120,7 @@ async def regenerate_roadmap(
     )
     roadmap = Roadmap(
         user_id=user_id,
-        anchor_attempt_id=anchor_attempt.id,
+        anchor_attempt_id=anchor_id,
         target_band=Decimal(str(body.target_band)),
         target_date=body.target_date,
         weekly_hours=body.weekly_hours,

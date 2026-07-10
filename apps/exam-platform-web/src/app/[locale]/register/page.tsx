@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { tryGetUser } from "@/lib/auth-server";
-import { LoginForm } from "./LoginForm";
+import { RegisterForm } from "./RegisterForm";
 import { Sparkles } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
-export default async function LoginPage({
+export default async function RegisterPage({
   searchParams,
   params,
 }: {
@@ -14,7 +14,8 @@ export default async function LoginPage({
   const sp = await searchParams;
   const p = await params;
   const user = await tryGetUser();
-  if (user) redirect(`/${p.locale}${sp.returnTo ?? "/exams"}`);
+  const locale = p.locale as "uz" | "en";
+  if (user) redirect(`/${locale}${sp.returnTo ?? "/exams"}`);
   
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
@@ -31,23 +32,25 @@ export default async function LoginPage({
             <Sparkles className="h-3 w-3" /> LanguagePro AI
           </span>
           <h1 className="text-3xl font-extrabold tracking-tight mt-1">
-            Tizimga kirish
+            {locale === "uz" ? "Ro'yxatdan o'tish" : "Sign Up"}
           </h1>
           <p className="mt-2 text-sm text-[var(--color-muted-fg)] max-w-xs">
-            IELTS & CEFR imtihon platformasida faoliyatingizni davom ettiring
+            {locale === "uz" 
+              ? "Platformada yangi hisob yarating va imtihonlarni topshiring" 
+              : "Create a new account and start taking exams"}
           </p>
         </div>
 
-        <LoginForm returnTo={sp.returnTo ?? "/exams"} />
+        <RegisterForm returnTo={sp.returnTo ?? "/exams"} locale={locale} />
 
         <div className="mt-6 text-center">
           <p className="text-sm text-[var(--color-muted-fg)]">
-            Hisobingiz yo'qmi?{" "}
+            {locale === "uz" ? "Hisobingiz bormi?" : "Already have an account?"}{" "}
             <Link
-              href="/register"
+              href="/login"
               className="font-bold text-[var(--color-primary)] hover:underline transition-colors"
             >
-              Ro'yxatdan o'tish
+              {locale === "uz" ? "Kirish" : "Log in"}
             </Link>
           </p>
         </div>

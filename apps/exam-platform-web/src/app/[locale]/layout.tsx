@@ -1,5 +1,6 @@
 import "@languagepro/ui/styles";
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -7,6 +8,12 @@ import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export async function generateMetadata({
   params,
@@ -37,7 +44,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-white dark:bg-[#050505] text-slate-900 dark:text-slate-100 antialiased min-h-screen transition-colors duration-300" suppressHydrationWarning>
+      <body className={`${plusJakartaSans.variable} ${plusJakartaSans.className} bg-[var(--color-bg)] text-[var(--color-fg)] antialiased min-h-screen transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider messages={messages}>
             {children}
@@ -47,3 +54,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

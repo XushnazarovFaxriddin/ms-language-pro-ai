@@ -67,19 +67,23 @@ export default async function ExamsPage() {
   const firstName = (user.display_name || user.email.split("@")[0] || "").trim();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 pb-16">
+    <div className="mx-auto max-w-6xl space-y-10 pb-16 relative">
+      {/* Decorative ambient glowing mesh */}
+      <div className="absolute top-0 right-1/4 h-72 w-72 rounded-full bg-[var(--color-primary)]/10 blur-3xl pointer-events-none mesh-glow" />
+      <div className="absolute top-40 left-1/4 h-72 w-72 rounded-full bg-violet-500/10 blur-3xl pointer-events-none mesh-glow" />
+
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#0c2d6b] via-indigo-700 to-[#5b21b6] p-8 sm:p-12 shadow-2xl shadow-indigo-500/20 text-white">
+      <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-violet-950 p-8 sm:p-12 shadow-2xl dark:shadow-indigo-500/5 text-white border border-white/5">
         <div className="relative z-10 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-end">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/80 backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" />
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white/95 backdrop-blur-md border border-white/10">
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
               {t("hero.eyebrow")}
             </div>
-            <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl drop-shadow-sm">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl leading-tight">
               {t("welcome", { name: firstName })}
             </h1>
-            <p className="mt-3 text-lg text-white/80 max-w-xl font-medium">
+            <p className="text-base text-white/80 max-w-xl font-medium leading-relaxed">
               {avgBand !== null ? t("hero.subtitleWithStats", { band: avgBand.toFixed(1) }) : t("welcomeSub")}
             </p>
           </div>
@@ -87,30 +91,30 @@ export default async function ExamsPage() {
           {inProgress && (
             <Link
               href={`/attempt/${inProgress.id}`}
-              className="group relative flex items-center justify-between gap-4 rounded-2xl border border-white/20 bg-white/10 px-5 py-4 backdrop-blur-sm transition-all hover:bg-white/15"
+              className="group relative flex items-center justify-between gap-4 rounded-3xl border border-white/15 bg-white/5 p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/20 shadow-lg"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
-                  <PlayCircle className="h-5 w-5" />
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 shadow-inner group-hover:scale-105 transition-transform duration-300">
+                  <PlayCircle className="h-5.5 w-5.5 text-emerald-400" />
                 </span>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-white/70">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
                     {t("hero.resume")}
                   </p>
-                  <p className="text-sm font-semibold">
+                  <p className="text-sm font-bold text-white/95 mt-0.5">
                     {locale === "uz" ? inProgress.exam_name_uz : inProgress.exam_name_en}
                   </p>
                 </div>
               </div>
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-5 w-5 text-white/70 transition-transform group-hover:translate-x-1.5" />
             </Link>
           )}
         </div>
 
         {/* Decorative blobs */}
-        <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/10 blur-3xl pointer-events-none mix-blend-overlay" />
-        <div className="absolute right-40 -bottom-32 h-64 w-64 rounded-full bg-blue-400/20 blur-3xl pointer-events-none mix-blend-overlay" />
-        <div className="absolute left-20 -bottom-20 h-48 w-48 rounded-full bg-fuchsia-400/15 blur-2xl pointer-events-none mix-blend-overlay" />
+        <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none mix-blend-overlay" />
+        <div className="absolute right-40 -bottom-32 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none mix-blend-overlay" />
+        <div className="absolute left-20 -bottom-20 h-48 w-48 rounded-full bg-violet-500/10 blur-2xl pointer-events-none mix-blend-overlay" />
       </section>
 
       {/* Stats */}
@@ -142,25 +146,25 @@ export default async function ExamsPage() {
 
       {/* Available exams */}
       <section>
-        <div className="mb-6 flex items-end justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">{t("title")}</h2>
-            <p className="text-[var(--color-muted-fg)] mt-1">{t("description")}</p>
+            <p className="text-[var(--color-muted-fg)] mt-1 text-sm font-medium">{t("description")}</p>
           </div>
           {exams.length > 0 && (
-            <span className="hidden sm:inline-flex rounded-full border border-[var(--color-border)]/60 bg-[var(--color-muted)]/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--color-muted-fg)]">
+            <span className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-muted)] px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--color-muted-fg)]">
               {t("examCount", { count: exams.length })}
             </span>
           )}
         </div>
 
         {exams.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-[var(--color-border)] p-16 text-center">
-            <BookOpen className="h-10 w-10 text-[var(--color-muted-fg)] opacity-50 mb-3" />
-            <p className="text-lg font-medium">{t("empty")}</p>
+          <div className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-[var(--color-border)] p-16 text-center bg-white/20 dark:bg-black/10 backdrop-blur-md">
+            <BookOpen className="h-10 w-10 text-[var(--color-muted-fg)] opacity-55 mb-3" />
+            <p className="text-lg font-bold">{t("empty")}</p>
             <Link
               href="/"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--color-primary)] px-6 py-2.5 text-sm font-semibold text-[var(--color-primary-fg)] transition-all hover:opacity-90"
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[var(--color-primary)] to-violet-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary)]/15 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
               {t("goHome")} <ArrowRight className="h-4 w-4" />
             </Link>
@@ -176,40 +180,40 @@ export default async function ExamsPage() {
 
       {/* Recent results */}
       {recent.length > 0 && (
-        <section>
-          <div className="mb-5 flex items-end justify-between">
+        <section className="space-y-4">
+          <div className="flex items-end justify-between">
             <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <History className="h-5 w-5 text-[var(--color-primary)]" />
               {t("recentTitle")}
             </h2>
             <Link
               href="/exams/results"
-              className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
+              className="text-xs font-bold text-[var(--color-primary)] hover:underline tracking-wider uppercase"
             >
               {t("viewAll")} →
             </Link>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recent.map((a) => (
               <Link
                 key={a.id}
                 href={`/results/${a.id}`}
-                className="group flex items-center justify-between gap-4 rounded-2xl border border-[var(--color-border)]/60 bg-[var(--color-bg)] p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-[var(--color-primary)]/30 hover:shadow-md"
+                className="group flex items-center justify-between gap-4 rounded-3xl border border-[var(--color-border)]/50 bg-white/40 dark:bg-black/20 p-5 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-primary)]/30 hover:shadow-md"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="truncate text-sm font-bold">
                     {locale === "uz" ? a.exam_name_uz : a.exam_name_en}
                   </p>
-                  <p className="text-xs text-[var(--color-muted-fg)] mt-1">
+                  <p className="text-xs text-[var(--color-muted-fg)] font-medium">
                     {a.finished_at ? formatRelativeDate(a.finished_at, locale) : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-xs font-bold uppercase tracking-wider text-[var(--color-muted-fg)]">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-muted-fg)] font-mono">
                       {t("recentBand")}
                     </p>
-                    <p className="text-2xl font-black text-[var(--color-primary)]">
+                    <p className="text-2xl font-extrabold text-[var(--color-primary)] leading-none mt-1">
                       {typeof a.score === "number" ? a.score.toFixed(1) : "—"}
                     </p>
                   </div>
@@ -238,28 +242,29 @@ function StatCard({
   accent: "blue" | "emerald" | "purple";
 }) {
   const tone = {
-    blue: "from-blue-500/15 to-blue-600/5 text-blue-500 border-blue-500/20",
-    emerald: "from-emerald-500/15 to-emerald-600/5 text-emerald-500 border-emerald-500/20",
-    purple: "from-purple-500/15 to-fuchsia-600/5 text-purple-500 border-purple-500/20",
+    blue: "from-blue-500/10 to-transparent border-blue-500/10 text-blue-500 dark:border-blue-500/20",
+    emerald: "from-emerald-500/10 to-transparent border-emerald-500/10 text-emerald-500 dark:border-emerald-500/20",
+    purple: "from-purple-500/10 to-transparent border-purple-500/10 text-purple-500 dark:border-purple-500/20",
   }[accent];
+
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border bg-gradient-to-br p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${tone} bg-white/40 dark:bg-black/20`}
+      className={`group relative overflow-hidden rounded-[2rem] border bg-gradient-to-br p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${tone} bg-white/50 dark:bg-black/25`}
     >
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-col justify-between h-full min-h-[5.5rem]">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/60 dark:bg-black/30 shadow-inner">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/70 dark:bg-zinc-900/60 shadow-inner group-hover:scale-110 transition-transform duration-300">
             <Icon className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-muted-fg)]">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)] font-mono">
               {label}
             </p>
-            <p className="text-3xl font-black mt-0.5 leading-none text-[var(--color-fg)]">{value}</p>
+            <p className="text-3xl font-extrabold mt-1 leading-none text-[var(--color-fg)]">{value}</p>
           </div>
         </div>
         {subtitle && (
-          <p className="mt-4 text-xs text-[var(--color-muted-fg)] leading-snug">{subtitle}</p>
+          <p className="mt-4 text-xs font-medium text-[var(--color-muted-fg)] leading-normal">{subtitle}</p>
         )}
       </div>
     </div>
@@ -283,27 +288,27 @@ function ExamCard({
 
   return (
     <div
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl ${
+      className={`group relative flex flex-col overflow-hidden rounded-[2rem] border p-6 shadow-sm backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
         highlight
-          ? "border-[var(--color-primary)]/40 bg-gradient-to-br from-[var(--color-primary)]/8 via-[var(--color-bg)] to-[var(--color-bg)]"
-          : "border-[var(--color-border)]/60 bg-[var(--color-bg)] hover:border-[var(--color-primary)]/30"
+          ? "border-[var(--color-primary)] bg-gradient-to-br from-[var(--color-primary)]/5 via-white/50 to-white/50 dark:from-[var(--color-primary)]/10 dark:via-black/20 dark:to-black/20"
+          : "border-[var(--color-border)]/50 bg-white/40 dark:bg-black/20 hover:border-[var(--color-primary)]/30"
       }`}
     >
       {highlight && (
-        <span className="absolute right-5 top-5 inline-flex items-center gap-1 rounded-full bg-[var(--color-primary)] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-[var(--color-primary-fg)] shadow-sm">
+        <span className="absolute right-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)] px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[var(--color-primary-fg)] shadow-sm">
           <Sparkles className="h-3 w-3" />
           {t("popular")}
         </span>
       )}
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap gap-1.5">
         {hint.skills.map((skill) => {
           const Icon = SKILL_ICON[skill];
           return (
             <span
               key={skill}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${SKILL_TONE[skill]}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider border border-current/10 ${SKILL_TONE[skill]}`}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-3 w-3" />
               {t(`skills.${skill}`)}
             </span>
           );
@@ -312,24 +317,24 @@ function ExamCard({
 
       <h3 className="text-xl font-bold tracking-tight leading-snug">{name}</h3>
 
-      <div className="mt-3 flex items-center gap-4 text-xs font-medium text-[var(--color-muted-fg)]">
+      <div className="mt-2.5 flex items-center gap-3.5 text-xs font-semibold text-[var(--color-muted-fg)]">
         <span className="inline-flex items-center gap-1.5">
-          <CheckCircle2 className="h-3.5 w-3.5" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
           {sectionsLabel}
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <Clock className="h-3.5 w-3.5" />
+          <Clock className="h-3.5 w-3.5 text-[var(--color-primary)]" />
           {t("minutes", { count: hint.minutes })}
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-[var(--color-muted-fg)] leading-relaxed line-clamp-3">
+      <p className="mt-4 text-xs font-medium text-[var(--color-muted-fg)] leading-relaxed line-clamp-3">
         {translateOrDefault(t, `blueprintDesc.${exam.blueprint_code}`, "blueprintDesc.default")}
       </p>
 
-      <div className="mt-auto pt-5 flex items-center justify-between border-t border-[var(--color-border)]/50">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-muted-fg)] flex items-center gap-1.5">
-          <Award className="h-3.5 w-3.5" />
+      <div className="mt-6 pt-5 flex items-center justify-between border-t border-[var(--color-border)]/40">
+        <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-[var(--color-muted-fg)] flex items-center gap-1.5">
+          <Award className="h-3.5 w-3.5 text-[var(--color-primary)]" />
           {exam.blueprint_code}
         </span>
         <StartAttemptButton blueprintCode={exam.blueprint_code} />
@@ -337,6 +342,7 @@ function ExamCard({
     </div>
   );
 }
+
 
 function translateOrDefault(
   t: (key: string, values?: any) => string,

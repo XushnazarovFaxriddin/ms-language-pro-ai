@@ -23,6 +23,9 @@ import { Footer } from "@/components/Footer";
 import { Hero3D } from "@/components/Hero3D";
 import { useRef, useEffect, useState } from "react";
 
+const EXAM_APP_URL = process.env.NEXT_PUBLIC_EXAM_WEB_URL || "https://app.aiexam.uz";
+const ADMIN_APP_URL = process.env.NEXT_PUBLIC_ADMIN_WEB_URL || "https://admin.aiexam.uz";
+
 export default function HomePage() {
   const t = useTranslations("Landing");
   const containerRef = useRef(null);
@@ -122,7 +125,7 @@ export default function HomePage() {
                   transition={{ delay: 0.3, duration: 0.8 }}
                   className="flex flex-col sm:flex-row items-center gap-4 lg:gap-6"
                 >
-                  <a href="http://app.localhost/login" className="group relative flex w-full sm:w-auto items-center justify-center gap-4 overflow-hidden rounded-2xl lg:rounded-3xl bg-blue-600 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-black text-white transition-all hover:bg-blue-500 hover:shadow-[0_20px_50px_rgba(37,99,235,0.4)]">
+                  <a href={`${EXAM_APP_URL}/login`} className="group relative flex w-full sm:w-auto items-center justify-center gap-4 overflow-hidden rounded-2xl lg:rounded-3xl bg-blue-600 px-8 lg:px-12 py-4 lg:py-5 text-lg lg:text-xl font-black text-white transition-all hover:bg-blue-500 hover:shadow-[0_20px_50px_rgba(37,99,235,0.4)]">
                     {t("hero.startFree")}
                     <ArrowRight className="h-5 w-5 lg:h-6 lg:w-6 transition-transform group-hover:translate-x-1" />
                     <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -207,7 +210,7 @@ export default function HomePage() {
                 title="Adaptive Assessment"
                 desc="Item Response Theory (IRT) modelimiz orqali darajangizni soniyalar ichida aniqlaymiz."
                 image="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=2000"
-                href="http://app.localhost"
+                href={EXAM_APP_URL}
               />
               
               <BentoCard 
@@ -216,7 +219,7 @@ export default function HomePage() {
                 title="AI Studio"
                 desc="Ekspertlar uchun savol generatsiyasi va avtomatik kalibratsiya."
                 image="/images/ai-studio.png"
-                href="http://admin.localhost"
+                href={ADMIN_APP_URL}
               />
 
               <BentoCard 
@@ -336,7 +339,7 @@ export default function HomePage() {
               <h2 className="relative z-10 text-5xl font-black text-white sm:text-8xl">{t("cta.title")}</h2>
               <p className="relative z-10 mt-8 text-xl text-blue-100 max-w-2xl mx-auto">{t("cta.subtitle")}</p>
               <div className="relative z-10 mt-12 flex justify-center">
-                <a href="http://app.localhost/login" className="rounded-full bg-white px-12 py-5 text-xl font-black text-blue-600 hover:scale-105 transition-transform shadow-xl">
+                <a href={`${EXAM_APP_URL}/login`} className="rounded-full bg-white px-12 py-5 text-xl font-black text-blue-600 hover:scale-105 transition-transform shadow-xl">
                   {t("cta.button")}
                 </a>
               </div>

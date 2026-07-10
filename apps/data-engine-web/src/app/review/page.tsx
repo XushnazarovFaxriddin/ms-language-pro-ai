@@ -12,7 +12,8 @@ export default async function ReviewPage() {
   const copy = getAdminCopy(user.locale).review;
   
   // Filter for questions that need review
-  const items = await api.items.list({ status: "in_review" }, ck);
+  const result = await api.items.list({ status: "in_review" }, ck);
+  const items = result.items;
 
   return (
     <AdminShell user={user}>

@@ -18,8 +18,8 @@ export function LoginForm({
   locale: "uz" | "en";
 }) {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@aiexam.uz");
-  const [password, setPassword] = useState("admin12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
